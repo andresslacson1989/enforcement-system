@@ -1,0 +1,60 @@
+{
+  "menu": [
+    {
+      "url": "/",
+      "name": "Home",
+      "icon": "menu-icon icon-base ti tabler-smart-home",
+      "slug": "pages-home"
+    },
+    {
+      "name": "Access",
+      "icon": "menu-icon tf-icons ti tabler-password-user",
+      "slug": "access",
+      "submenu": [
+        {
+          "url": "/roles",
+          "name": "Roles",
+          "slug": "access-pages-roles"
+        },
+        {
+          "url": "/permissions",
+          "name": "Permissions",
+          "slug": "access-pages-permissions"
+        }
+      ]
+    },
+    {
+      "url": "/activity-board",
+      "icon": "menu-icon icon-base ti tabler-layout-kanban",
+      "name": "Activity Board",
+      "slug": "activity-board"
+    },
+    {
+      "url": "/page-2",
+      "icon": "menu-icon icon-base ti tabler-file",
+      "name": "Page 2",
+      "slug": "pages-page-2"
+    },
+    {
+      "url": "/pages/misc-error",
+      "name": "Error",
+      "icon": "menu-icon icon-base ti tabler-alert-triangle",
+      "slug": "pages-misc-error",
+      "target": "_blank"
+    },
+    {
+      "url": "/auth/login-basic",
+      "name": "Login",
+      "icon": "menu-icon icon-base ti tabler-login",
+      "slug": "auth-login-basic",
+      "target": "_blank"
+    },
+    {
+      "url": "/auth/register-basic",
+      "name": "Register",
+      "icon": "menu-icon icon-base ti tabler-user",
+      "slug": "auth-register-basic",
+      "target": "_blank"
+    }
+  ]
+}
