@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -7,34 +8,36 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Notification extends Model
 {
-  use HasFactory;
+    use HasFactory;
 
-  /**
-   * The attributes that are mass assignable.
-   *
-   * @var array
-   */
-  protected $fillable = [
-    'user_id',
-    'title',
-    'body',
-    'read_at',
-  ];
+    public mixed $user_id;
 
-  /**
-   * The attributes that should be cast to native types.
-   *
-   * @var array
-   */
-  protected $casts = [
-    'read_at' => 'datetime',
-  ];
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'user_id',
+        'title',
+        'body',
+        'read_at',
+    ];
 
-  /**
-   * Get the user that owns the notification.
-   */
-  public function user(): BelongsTo
-  {
-    return $this->belongsTo(User::class);
-  }
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'read_at' => 'datetime',
+    ];
+
+    /**
+     * Get the user that owns the notification.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 }

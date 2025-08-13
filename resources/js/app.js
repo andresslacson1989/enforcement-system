@@ -31,7 +31,6 @@ window.Echo = new Echo({
 //     $('#notification-container').prepend(notification);
 //   });
 
-
 /**
  * Main function to handle new notifications and update the UI.
  * @param {object} notificationData The JSON data from the Pusher event.
@@ -43,7 +42,7 @@ function updateNotifications(notificationData) {
   let currentCount = parseInt(countElement.text().replace(' New', '')) || 0;
 
   if (notificationData) {
-      currentCount++;
+    currentCount++;
     countElement.text(currentCount + ' New');
     $('#notification-bell-badge').removeClass('d-none');
 
@@ -51,7 +50,7 @@ function updateNotifications(notificationData) {
     let notificationList = $('#notification-list');
 
     const newNotificationItem = `
-                  <a href="/form/view/${notificationData.form_type}/${notificationData.form_id}" class="list-group-item list-group-item-action dropdown-notifications-item">
+                  <a href="${notificationData.link}" class="list-group-item list-group-item-action dropdown-notifications-item" data-notification-id="${notificationData.notification_id}">
                     <div class="d-flex">
                         <div class="flex-shrink-0 me-3">
                             <div class="avatar">
@@ -59,8 +58,8 @@ function updateNotifications(notificationData) {
                             </div>
                         </div>
                         <div class="flex-grow-1">
-                            <h6 class="small mb-1">${notificationData.message}</h6>
-                            <small class="mb-1 d-block text-body">New submission received.</small>
+                            <h6 class="small mb-1">${notificationData.title}</h6>
+                            <small class="mb-1 d-block text-body">${notificationData.message}.</small>
                             <small class="text-body-secondary">${notificationData.formatted_date}</small>
                         </div>
                         <div class="flex-shrink-0 dropdown-notifications-actions">
@@ -84,8 +83,46 @@ function updateNotifications(notificationData) {
 if (typeof window.Echo !== 'undefined') {
   // IMPORTANT: Change from .channel() to .private()
   // The channel name should match the one in your broadcastOn() method.
-  window.Echo.private('users.' + window.current_user_id)
-    .listen('NotificationSent', (e) => {
-      updateNotifications(e);
-    });
+  window.Echo.private('users.' + window.current_user_id).listen('NotificationSent', e => {
+    updateNotifications(e);
+  });
 }
+
+//Mark Notifications as read when clicked
+document.addEventListener('DOMContentLoaded', function () {
+  // Find all notification links
+  const notificationLinks = document.querySelectorAll('.notification-link');
+
+  notificationLinks.forEach(link => {
+    link.addEventListener('click', function (event) {
+      // 1. Prevent the browser from immediately going to the link's href
+      event.preventDefault();
+
+      const notificationId = this.dataset.notificationId;
+      const originalUrl = this.href;
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+      // 2. Send the request to your new endpoint
+      fetch(`/notifications/${notificationId}/read`, {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': csrfToken,
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
+        }
+      })
+        .then(response => {
+          if (!response.ok) {
+            console.error('Failed to mark notification as read.');
+          }
+          // 3. Whether it succeeded or failed, navigate to the original URL
+          window.location.href = originalUrl;
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          // Still navigate even if the fetch fails
+          window.location.href = originalUrl;
+        });
+    });
+  });
+});

@@ -205,7 +205,7 @@
       <ul class="dropdown-menu dropdown-menu-end">
         <li>
           <a class="dropdown-item mt-0"
-             href="{{ Route::has('profile.show') ? route('profile.show') : url('pages/profile-user') }}">
+             href="{{ Route::has('profile.show') ? route('profile.show') : url('pages/profile-user') }}" data-notification-id="">
             <div class="d-flex align-items-center">
               <div class="flex-shrink-0 me-2">
                 <div class="avatar avatar-online">

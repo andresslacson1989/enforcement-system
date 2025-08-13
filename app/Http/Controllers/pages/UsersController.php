@@ -29,19 +29,14 @@ class UsersController
     {
         try {
             // 1. Get the already validated data from the request.
-            $validatedData = $request->validated();
+            $data = $request->validated();
 
             // 2. Prepare the final data array for creating the model.
-            $employeeData = array_merge($validatedData, [
-                // Construct the full name from validated parts.
-                'name' => trim($validatedData['first_name'].' '.$validatedData['last_name'].' '.$validatedData['suffix']),
-
-                // Hash the password correctly using a specific field.
-                'password' => Hash::make('esiai'.$validatedData['employee_number']),
-            ]);
+            $data->name = $data->first_name.' '.$data->last_name.' '.$data->suffix;
+            $data->passowrd = Hash::make('esiai'.$data->employee_number);
 
             // 3. Create the employee.
-            $employee = User::create($employeeData);
+            $employee = User::create($data);
 
             // 4. Return a success response.
             return response()->json([

@@ -17,7 +17,7 @@ $(function () {
     const form = $('#approval_form');
 
     // The core function that handles the form submission via fetch
-    const submitForm = async (status, denial_reason = null) => {
+    const submitForm = async status => {
       // Get the boolean values for the checkboxes
       const complete_requirements_bool = $('#complete_requirements').is(':checked');
       const qualified_for_loan_bool = $('#qualified_for_loan').is(':checked');
@@ -38,7 +38,6 @@ $(function () {
         complete_requirements,
         qualified_for_loan,
         id,
-        denial_reason,
         form_type
       };
 
@@ -87,47 +86,20 @@ $(function () {
       });
     };
 
-    // Determine the action based on the checkboxes
-    const isApproved = $complete_requirements.is(':checked') && $qualified_for_loan.is(':checked');
-
-    if (isApproved) {
-      // This is the approval flow
-      Swal.fire({
-        title: 'Confirm Approval?',
-        text: 'Are you sure you want to approve this request?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, approve it!',
-        showLoaderOnConfirm: true,
-        preConfirm: () => {
-          return submitForm('approved');
-        },
-        allowOutsideClick: () => !Swal.isLoading()
-      });
-    } else {
-      // This is the denial flow
-      Swal.fire({
-        title: 'Reason for Denial',
-        input: 'textarea',
-        inputLabel: 'Please explain why you are denying this request.',
-        inputPlaceholder: 'Enter your reason here...',
-        showCancelButton: true,
-        confirmButtonText: 'Submit Denial',
-        cancelButtonText: 'Cancel',
-        showLoaderOnConfirm: true,
-        preConfirm: reason => {
-          if (!reason) {
-            Swal.showValidationMessage('A reason for denial is required.');
-            return false;
-          }
-          // Use the form's ID to append the data
-          return submitForm('denied', reason);
-        },
-        allowOutsideClick: () => !Swal.isLoading()
-      });
-    }
+    // This is the approval flow
+    Swal.fire({
+      title: 'Are your sure?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, update it!',
+      showLoaderOnConfirm: true,
+      preConfirm: () => {
+        return submitForm('filed');
+      },
+      allowOutsideClick: () => !Swal.isLoading()
+    });
   });
 
   // Get references to the checkboxes and the button
@@ -137,7 +109,7 @@ $(function () {
   const $deny_button = $('#deny_button');
 
   // Function to check if both checkboxes are checked
-  function checkCheckboxes() {
+  /*  function checkCheckboxes() {
     if ($completeRequirements.is(':checked') && $qualifiedForLoan.is(':checked')) {
       $approveButton.prop('disabled', false); // Enable the button
       $deny_button.prop('disabled', true); // Disable
@@ -152,7 +124,7 @@ $(function () {
 
   // Listen for changes on both checkboxes
   $completeRequirements.on('change', checkCheckboxes);
-  $qualifiedForLoan.on('change', checkCheckboxes);
+  $qualifiedForLoan.on('change', checkCheckboxes);*/
 
   //exp date init flatpickr
   var exp_date = $('.exp_date');
@@ -231,7 +203,8 @@ $(function () {
 
             let errorMessage = 'An error occurred. Please try again.';
             // Handle Laravel validation errors
-            if (xhr.responseJSON && xhr.responseJSON.errors) {``
+            if (xhr.responseJSON && xhr.responseJSON.errors) {
+              ``;
               errorMessage = 'Please check the form for errors.';
               // You can loop through xhr.responseJSON.errors and display them
               // next to the corresponding input fields if you want more specific feedback.

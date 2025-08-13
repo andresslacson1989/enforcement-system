@@ -18,7 +18,11 @@ return new class extends Migration {
       $table->string('last_name');
       $table->string('suffix')->nullable();
       $table->string('employee_number')->unique()->default('123');
-
+      $table->string('street')->nullable();
+      $table->string('city')->nullable();
+      $table->string('province')->nullable();
+      $table->string('zip_code')->nullable();
+      $table->string('phone_number')->nullable();
       $table->string('email')->unique()->nullable();
       $table->timestamp('email_verified_at')->nullable();
       $table->string('password');

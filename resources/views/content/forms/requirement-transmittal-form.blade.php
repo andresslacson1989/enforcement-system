@@ -48,6 +48,7 @@
     <div class="row">
       <form @can('edit '.$form_name) action="/form/{{ str_replace(' ', '-', strtolower($submission->name)) }}/update/{{ $submission->id }}" method="put" id="requirement_transmittal_form" @endcan>
         @csrf
+        <input type="hidden" value="{{ $submission->id }}" id="form_id" name="form_id">
         <div class="col-12">
           <div class="card">
             @include('content.snippets.form_header')
@@ -65,21 +66,50 @@
                     </div>
                   </div>
                   <div class="row g-6">
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                       <label class="form-label" for="employee_name">Full Name</label>
-                      <!-- Populate employee name from the submission's user -->
-                      <input type="text" readonly class="form-control"
-                             value="{{ $user->first_name ?? '' }} {{ $user->middle_name ?? '' }} {{ $user->last_name ?? '' }} {{ $user->suffix ?? '' }}" />
+                      <div class="input-group">
+                        <input type="text" class="form-control" value="{{ $employee->first_name }}" placeholder="First Name" id="first_name" name="first_name" />
+                        <input type="text" class="form-control" value="{{ $employee->middle_name }}" placeholder="Middle Name" id="middle_name" name="middle_name" />
+                        <input type="text" class="form-control" value="{{ $employee->last_name }}" placeholder="Last Name" id="last_name" name="last_name" />
+                        <input type="text" class="form-control" value="{{ $employee->suffix ?? '' }}" placeholder="Suffix" id="suffix" name="suffix" />
+                      </div>
+                    </div>
+                    <div class="col-md-12">
+                      <label class="form-label" for="employee_name">Address</label>
+                      <div class="input-group">
+                        <input type="text" class="form-control" value="{{ $employee->street }}" placeholder="Street" id="street" name="street" />
+                        <input type="text" class="form-control" value="{{ $employee->city }}" placeholder="City" id="city" name="city" />
+                        <input type="text" class="form-control" value="{{ $employee->province }}" placeholder="Province" id="province" name="province" />
+                        <input type="text" class="form-control" value="{{ $employee->zip_code }}" placeholder="Zip Code" id="zip_code" name="zip_code" />
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label" for="email">Email</label>
+                      <input class="form-control" type="email" aria-label="email" aria-describedby="email@example.com" value="{{ $employee->email }}" id="email" name="email" />
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label" for="phone_number">Phone No</label>
+                      <input class="form-control" type="number" aria-label="phone-number" aria-describedby="09xx xxxx xxx" value="{{ $employee->phone_number }}" id="phone_number" name="phone_number" />
                     </div>
                     <div class="col-md-6">
                       <label class="form-label" for="employee_number">Employee No</label>
-                      <!-- Populate employee number from the submission's user -->
-                      <input class="form-control" type="text" readonly aria-label="ID1234" aria-describedby="ID1234" value="{{ $user->employee_number ?? '' }}" />
+                      <input class="form-control" type="text" aria-label="ID1234" aria-describedby="ID1234" value="{{ $employee->employee_number }}" id="employee_number" name="employee_number" />
                     </div>
-                    <div class="col-md-12">
+                    <div class="col-md-6">
                       <label class="form-label" for="deployment">Deployment</label>
-                      <!-- Populate deployment from the submission's detachment -->
-                      <input type="text" id="deployment" name="deployment" class="form-control" placeholder="Manila" aria-label="Manila" value="{{ $user->detachment->name ?? '' }} [{{ $detachment->address ?? '' }}]" />
+                      <select id="deployment"
+                              name="deployment"
+                              class="selectpicker w-100"
+                              data-style="btn-default"
+                              data-live-search="true">
+                        <option value="" selected disabled>Choose an item</option>
+                        @forelse($detachments as $item)
+
+                          <option value="{{ $item->id }}" @if($employee->detachment_id == $item->id) selected @endif>{{ $item->name }}</option>
+                        @empty
+                        @endforelse
+                      </select>
                     </div>
                   </div>
                   <hr />
@@ -443,30 +473,36 @@
                   </div>
                 </div>
                 <div class="row mt-3">
-                  <div class="row mt-5 text-center">
-{{--                    <div class="{{ $submission->status == 'approved' ? 'col-6' : 'col-12' }}">--}}
-{{--                      <p>Submitted By:</p>--}}
-{{--                      <!-- Populate the submitted by section with the submission's user and submission date -->--}}
-{{--                      <h5 class="mb-0 fw-bolder">{{ $submitted_by->first_name }} {{ $submitted_by->last_name }} {{ $submitted_by->suffix ?? '' }}</h5>--}}
-{{--                      <p>{{ ucwords($submitted_by->getRoleNames()[0]) }} - {{ \Carbon\Carbon::parse($submission->created_at)->format('F d, Y H:i:s') }}</p>--}}
-{{--                    </div>--}}
-                    @if($submission->status == 'approved')
-                      <div class="col-6">
-                        <p>Approved By:</p>
-                        <!-- Populate the submitted by section with the submission's user and submission date -->
-                        <h5
-                          class="mb-0 fw-bolder">{{ $approved_by->first_name ?? ''}} {{ $approved_by->last_name ?? ''}} {{ $approved_by->suffix ?? '' }}</h5>
-                        <p>{{ ucwords($approved_by->getRoleNames()[0]) }} - {{ \Carbon\Carbon::parse($submission->date_approved)->format('F d, Y H:i:s') }}</p>
-                      </div>
-                    @endif
+                  <div class="col-6 text-center mt-5 mb-5">
+                    <p>Submitted By:</p>
+                    <!-- Populate the submitted by section with the submission's user and submission date -->
+                    <h5 class="mb-0 fw-bolder">{{ $employee->first_name }} {{ $employee->last_name }} {{ $employee->suffix ?? '' }}</h5>
+                    <p>{{ ucwords($employee->getRoleNames()[0]) }} <br> {{ \Carbon\Carbon::parse($submission->created_at)->format('F d, Y') }}</p>
                   </div>
-                  @if($submission->status == 'pending')
-                    @can('edit requirement transmittal form')
-                      <div class="d-grid d-md-flex justify-content-md-center gap-2 mb-5">
-                        <button type="submit" class="btn btn-primary">Update Form</button>
-                      </div>
-                    @endcan
-                  @endif
+                  <div class="col-6 text-center mt-5 mb-5">
+                    <p>Released By:</p>
+                    <!-- Populate the submitted by section with the submission's user and submission date -->
+                    <h5 class="mb-0 fw-bolder border-bottom border-2 border-gray w-50 m-auto mb-1 mt-5"></h5>
+                    <p>HR Department <br> Date: <span class="w-px-200 border-bottom border-gray border-2 text-center">&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;</span>
+                  </div>
+                  <div class="col-6 text-center mt-5">
+                    <p>Received By:</p>
+                    <!-- Populate the submitted by section with the submission's user and submission date -->
+                    <h5 class="mb-0 fw-bolder">{{ $user->first_name ?? ''}} {{ $user->last_name ?? ''}} {{ $user->suffix ?? '' }}</h5>
+                    <p>{{ ucwords($user->getRoleNames()[0] ?? '') }} <br> {{ \Carbon\Carbon::parse($submission->created_at)->format('F d, Y') }}</p>
+                  </div>
+                  <div class="col-6 text-center mt-5">
+                    <p>Received By:</p>
+                    <!-- Populate the submitted by section with the submission's user and submission date -->
+                    <h5 class="mb-0 fw-bolder">{{ $employee->first_name }} {{ $employee->last_name }} {{ $employee->suffix ?? '' }}</h5>
+                    <p>{{ ucwords($employee->getRoleNames()[0]) }} <br> Date: <span class="w-px-200 border-bottom border-gray border-2 text-center">&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;</span>
+                    </p>
+                  </div>
+                  @can('edit requirement transmittal form')
+                    <div class="d-grid d-md-flex justify-content-md-end gap-2 mb-5">
+                      <button type="submit" class="btn btn-primary">Update Form</button>
+                    </div>
+                  @endcan
                 </div>
               </div>
             </div>
@@ -474,62 +510,59 @@
         </div>
       </form>
     </div>
-    @if($submission->status == 'pending' || $submission->status == 'processing')
-      @can('approve requirement transmittal form')
-        <div class="row">
-          <form action="/form/requirement-transmittal-form/approve" id="approval_form" method="patch">
-            @csrf
-            <input type="hidden" id="form_id" value="{{ $submission->id }}">
-            <input type="hidden" id="form_type" value="{{ $submission->name }}">
-            <div class="card">
-              <div class="card-body pt-6">
-                <div class="row g-6">
-                  <div class="col-md-12">
-                    <div class="col">
-                      <h5>REMARKS</h5>
-                    </div>
-                    <div class="row">
-                      <div class="col-md mb-md-0 mb-2">
-                        <div class="form-check custom-option custom-option-basic">
-                          <label class="form-check-label custom-option-content" for="complete_requirements">
-                            <input class="form-check-input" type="checkbox" id="complete_requirements" name="complete_requirements" @if($submission->complete_requirements ?? false) checked @endif />
-                            <span class="custom-option-header">
+    @can('edit requirement transmittal form')
+      <div class="row">
+        <form action="/form/requirement-transmittal-form/approve" id="approval_form" method="patch">
+          @csrf
+          <input type="hidden" id="form_id" value="{{ $submission->id }}">
+          <input type="hidden" id="form_type" value="{{ $submission->name }}">
+          <div class="card">
+            <div class="card-body pt-6">
+              <div class="row g-6">
+                <div class="col-md-12">
+                  <div class="col">
+                    <h5>REMARKS</h5>
+                  </div>
+                  <div class="row">
+                    <div class="col-md mb-md-0 mb-2">
+                      <div class="form-check custom-option custom-option-basic">
+                        <label class="form-check-label custom-option-content" for="complete_requirements">
+                          <input class="form-check-input" type="checkbox" id="complete_requirements" name="complete_requirements" @if($submission->complete_requirements ?? false) checked @endif />
+                          <span class="custom-option-header">
                                     <span class="h6 mb-0">Completed Requirements</span>
                                   </span>
-                            <span class="custom-option-body">
+                          <span class="custom-option-body">
                                     <small class="option-text">Employee have satisfied the requirements.</small>
                                   </span>
-                          </label>
-                        </div>
+                        </label>
                       </div>
-                      <div class="col-md mb-md-0 mb-2">
-                        <div class="form-check custom-option custom-option-basic">
-                          <label class="form-check-label custom-option-content" for="qualified_for_loan">
-                            <input class="form-check-input" type="checkbox" id="qualified_for_loan" name="qualified_for_loan" @if($submission->qualified_for_loan ?? false) checked @endif />
-                            <span class="custom-option-header">
+                    </div>
+                    <div class="col-md mb-md-0 mb-2">
+                      <div class="form-check custom-option custom-option-basic">
+                        <label class="form-check-label custom-option-content" for="qualified_for_loan">
+                          <input class="form-check-input" type="checkbox" id="qualified_for_loan" name="qualified_for_loan" @if($submission->qualified_for_loan ?? false) checked @endif />
+                          <span class="custom-option-header">
                                     <span class="h6 mb-0">Qualified for ESIAI Loan</span>
                                   </span>
-                            <span class="custom-option-body">
+                          <span class="custom-option-body">
                                     <small>Employee can request ESIAI Loan</small>
                                   </span>
-                          </label>
-                        </div>
+                        </label>
                       </div>
                     </div>
                   </div>
-                  @can('edit requirement transmittal form')
-                    <div class="d-grid d-md-flex justify-content-md-end gap-2 mb-5">
-                      <button type="submit" class="btn btn-primary" id="approve_button">Approve</button>
-                      <button type="submit" class="btn btn-danger" id="deny_button">Deny</button>
-                    </div>
-                  @endcan
                 </div>
+                @can('edit requirement transmittal form')
+                  <div class="d-grid d-md-flex justify-content-md-end gap-2 mb-5">
+                    <button type="submit" class="btn btn-primary" id="approve_button">Update Remarks</button>
+                  </div>
+                @endcan
               </div>
             </div>
-          </form>
-        </div>
-      @endcan
-    @endif
+          </div>
+        </form>
+      </div>
+    @endcan
   @else
     <div class="row">
       <form action="/form/requirement-transmittal-form/store" method="post" id="requirement_transmittal_form">
@@ -553,15 +586,32 @@
                     <div class="col-md-12">
                       <label class="form-label" for="employee_name">Full Name</label>
                       <div class="input-group">
-                        <input type="text" class="form-control" value="" placeholder="First Name" id="first_name" name="first_name"/>
-                        <input type="text" class="form-control" value="" placeholder="Middle Name" id="middle_name" name="middle_name"/>
-                        <input type="text" class="form-control" value="" placeholder="Last Name" id="last_name" name="last_name"/>
-                        <input type="text" class="form-control" value="" placeholder="Suffix" id="suffix" name="suffix"/>
+                        <input type="text" class="form-control" value="" placeholder="First Name" id="first_name" name="first_name" />
+                        <input type="text" class="form-control" value="" placeholder="Middle Name" id="middle_name" name="middle_name" />
+                        <input type="text" class="form-control" value="" placeholder="Last Name" id="last_name" name="last_name" />
+                        <input type="text" class="form-control" value="" placeholder="Suffix" id="suffix" name="suffix" />
+                      </div>
+                    </div>
+                    <div class="col-md-12">
+                      <label class="form-label" for="employee_name">Address</label>
+                      <div class="input-group">
+                        <input type="text" class="form-control" value="" placeholder="Street" id="street" name="street" />
+                        <input type="text" class="form-control" value="" placeholder="City" id="city" name="city" />
+                        <input type="text" class="form-control" value="" placeholder="Province" id="province" name="province" />
+                        <input type="text" class="form-control" value="" placeholder="Zip Code" id="zip_code" name="zip_code" />
                       </div>
                     </div>
                     <div class="col-md-6">
+                      <label class="form-label" for="email">Email</label>
+                      <input class="form-control" type="email" aria-label="email" aria-describedby="email@example.com" value="" id="email" name="email" />
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label" for="phone_number">Phone No</label>
+                      <input class="form-control" type="number" aria-label="phone-number" aria-describedby="09xx xxxx xxx" value="" id="phone_number" name="phone_number" />
+                    </div>
+                    <div class="col-md-6">
                       <label class="form-label" for="employee_number">Employee No</label>
-                      <input class="form-control" type="text" aria-label="ID1234" aria-describedby="ID1234" value="" id="employee_number" name="employee_number"/>
+                      <input class="form-control" type="text" aria-label="ID1234" aria-describedby="ID1234" value="" id="employee_number" name="employee_number" />
                     </div>
                     <div class="col-md-6">
                       <label class="form-label" for="deployment">Deployment</label>
@@ -573,7 +623,7 @@
                         <option value="" selected disabled>Choose an item</option>
                         @forelse($detachments as $item)
                           <option value="{{ $item->id }}">{{ $item->name }}</option>
-                          @empty
+                        @empty
                         @endforelse
                       </select>
                     </div>
@@ -950,13 +1000,13 @@
                         This document is a system-generated form. By submitting this form, you acknowledge and agree that all relevant information, including your employee ID, will be recorded for processing and record-keeping purposes.
                       </div>
                     </div>
-{{--                    <div class="row mt-5">--}}
-{{--                      <div class="col-md-12 text-center">--}}
-{{--                        <p>Submitted By:</p>--}}
-{{--                        <h5 class="mb-0 fw-bolder">{{ auth()->user()->first_name }} {{ auth()->user()->last_name }}</h5>--}}
-{{--                        <p>{{ ucwords(auth()->user()->getRoleNames()[0]) }}</p>--}}
-{{--                      </div>--}}
-{{--                    </div>--}}
+                    {{--                    <div class="row mt-5">--}}
+                    {{--                      <div class="col-md-12 text-center">--}}
+                    {{--                        <p>Submitted By:</p>--}}
+                    {{--                        <h5 class="mb-0 fw-bolder">{{ auth()->user()->first_name }} {{ auth()->user()->last_name }}</h5>--}}
+                    {{--                        <p>{{ ucwords(auth()->user()->getRoleNames()[0]) }}</p>--}}
+                    {{--                      </div>--}}
+                    {{--                    </div>--}}
                     <div class="d-grid d-md-flex justify-content-md-end gap-2 mb-5">
                       <button type="submit" class="btn btn-primary">Submit Form</button>
                     </div>

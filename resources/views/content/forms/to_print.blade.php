@@ -1,3 +1,4 @@
+@php use Carbon\Carbon;use Illuminate\Support\Facades\Auth; @endphp
 @extends('layouts/blankLayout')
 
 @section('title', 'ESIAI FORM')
@@ -18,7 +19,7 @@
     </div>
     <div class="col">
       <!-- Display the submission date -->
-      <h5 class="mb-4 text-end">{{ \Carbon\Carbon::parse($submission->created_at)->format('F d, Y') }}</h5>
+      <h5 class="mb-4 text-end">{{ Carbon::parse($submission->created_at)->format('F d, Y') }}</h5>
     </div>
   </div>
   <div class="row g-6">
@@ -43,12 +44,14 @@
         <tr>
           <td>
             <span class="fw-bold mb">1. Application Form with 2 pcs. 2x2 recent picture (white background)</span>
-           <div class="mt-2">
-             <input class="form-check-input ms-5" type="checkbox" id="original_application_form_and_recent_picture" name="original_application_form_and_recent_picture" @if($submission->original_application_form_and_recent_picture ?? false) checked @endif>
-             <label class="me-2" for="original_application_form_and_recent_picture">Original</label>
-             <input class="form-check-input ms-5" type="checkbox" id="photocopy_application_form_and_recent_picture" name="photocopy_application_form_and_recent_picture" @if($submission->photocopy_application_form_and_recent_picture ?? false) checked @endif>
-             <label class="me-2" for="photocopy_application_form_and_recent_picture">Photocopy</label>
-           </div>
+            <div class="mt-2">
+              <input class="form-check-input ms-5" type="checkbox" id="original_application_form_and_recent_picture" name="original_application_form_and_recent_picture"
+                     @if($submission->original_application_form_and_recent_picture ?? false) checked @endif>
+              <label class="me-2" for="original_application_form_and_recent_picture">Original</label>
+              <input class="form-check-input ms-5" type="checkbox" id="photocopy_application_form_and_recent_picture" name="photocopy_application_form_and_recent_picture"
+                     @if($submission->photocopy_application_form_and_recent_picture ?? false) checked @endif>
+              <label class="me-2" for="photocopy_application_form_and_recent_picture">Photocopy</label>
+            </div>
           </td>
           <td class="bg-dark-subtle"></td>
         </tr>
@@ -312,71 +315,79 @@
         </tr>
         </tbody>
       </table>
+      <div class="row mt-5 mb-5">
+        <div class="col-md-6 text-center">
+          <p class="fw-bold h4">@if($submission->complete_requirements)
+              Completed Requirements: Yes
+            @else
+              Completed Requirements: No
+            @endif</p>
+        </div>
+        <div class="col-md-6 text-center">
+          <p class="fw-bold h4">@if($submission->qualified_for_loan)
+              Qualified For ESIAI Loan: Yes
+            @else
+              Qualified For ESIAI Loan: No
+            @endif</p>
+        </div>
+      </div>
     </div>
     <div class="row d-flex justify-content-between">
       <div class="col-6 text-center mt-5 mb-5">
         <p>Submitted By:</p>
         <!-- Populate the submitted by section with the submission's user and submission date -->
-        <h5 class="mb-0 fw-bolder">{{ $submitted_by->first_name }} {{ $submitted_by->last_name }} {{ $submitted_by->suffix ?? '' }}</h5>
-        <p>{{ ucwords($submitted_by->getRoleNames()[0]) }} <br> {{ \Carbon\Carbon::parse($submission->created_at)->format('F d, Y H:i:s') }}</p>
+        <h5 class="mb-0 fw-bolder">{{ $employee->first_name }} {{ $employee->last_name }} {{ $employee->suffix ?? '' }}</h5>
+        <p>{{ ucwords($employee->getRoleNames()[0]) }} <br> {{ Carbon::parse($submission->created_at)->format('F d, Y') }}</p>
       </div>
-      @if($submission->status == 'approved')
-        <div class="col-6 text-center mt-5 mb-5">
-          <p>Released By:</p>
-          <!-- Populate the submitted by section with the submission's user and submission date -->
-          <span class="w-px-200 border-bottom border-gray border-2 text-center">&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;</span>
-          <p class="mt-2">HR Department <br> Date: <span class="w-px-200 border-bottom border-gray border-2 text-center">&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;</span></p>
-        </div>
-        <div class="col-6 text-center mt-5">
-          <p>Approved By:</p>
-          <!-- Populate the submitted by section with the submission's user and submission date -->
-          <h5 class="mb-0 fw-bolder">{{ $approved_by->first_name ?? ''}} {{ $approved_by->last_name ?? ''}} {{ $approved_by->suffix ?? '' }}</h5>
-          <p>{{ ucwords($approved_by->getRoleNames()[0]) }} <br> {{ \Carbon\Carbon::parse($submission->date_approved)->format('F d, Y H:i:s') }}</p>
-        </div>
-        <div class="col-6 text-center mt-5">
-          <p>Received By:</p>
-          <!-- Populate the submitted by section with the submission's user and submission date -->
-          <h5 class="mb-0 fw-bolder">{{ $user->first_name }} {{ $user->last_name }} {{ $user->suffix ?? '' }}</h5>
-          <p>{{ ucwords($user->getRoleNames()[0]) }} <br> Date: <span class="w-px-200 border-bottom border-gray border-2 text-center">&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;</span></p>
-        </div>
-      @else
-        <div class="col-6 text-center mt-5">
-          <p>Denied By:</p>
-          <!-- Populate the submitted by section with the submission's user and submission date -->
-          <h5 class="mb-0 fw-bolder">{{ $denied_by->first_name ?? ''}} {{ $denied_by->last_name ?? '' }} {{ $denied_by->suffix ?? '' }}</h5>
-          <p>{{ ucwords($denied_by->getRoleNames()[0]) ?? ''}} <br> {{ \Carbon\Carbon::parse($submission->date_denied)->format('F d, Y H:i:s') }}</p>
-        </div>
-      @endif
-     <div class="alert bg-warning-subtle text-center">This is document is system generated. Printed by the authorized signature above.</div>
+      <div class="col-6 text-center mt-5 mb-5">
+        <p>Released By:</p>
+        <!-- Populate the submitted by section with the submission's user and submission date -->
+        <h5 class="mb-0 fw-bolder border-bottom border-2 border-gray w-50 m-auto mb-1 mt-5"></h5>
+        <p>HR Department <br> Date: <span class="w-px-200 border-bottom border-gray border-2 text-center">&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;</span>
+      </div>
+      <div class="col-6 text-center mt-5">
+        <p>Received By:</p>
+        <!-- Populate the submitted by section with the submission's user and submission date -->
+        <h5 class="mb-0 fw-bolder">{{ $user->first_name ?? ''}} {{ $user->last_name ?? ''}} {{ $user->suffix ?? '' }}</h5>
+        <p>{{ ucwords($user->getRoleNames()[0]) }} <br> {{ Carbon::parse($submission->created_at)->format('F d, Y') }}</p>
+      </div>
+      <div class="col-6 text-center mt-5">
+        <p>Received By:</p>
+        <!-- Populate the submitted by section with the submission's user and submission date -->
+        <h5 class="mb-0 fw-bolder">{{ $employee->first_name }} {{ $employee->last_name }} {{ $employee->suffix ?? '' }}</h5>
+        <p>{{ ucwords($employee->getRoleNames()[0]) }} <br> Date: <span class="w-px-200 border-bottom border-gray border-2 text-center">&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;</span>
+        </p>
+      </div>
+      <div class="alert bg-warning-subtle text-center">This is document is system generated.</div>
     </div>
   </div>
 @endsection
 
-{{--<script>--}}
-{{--  window.print();--}}
-{{--   document.addEventListener('contextmenu', event => event.preventDefault());--}}
+<script>
+  window.print();
+  document.addEventListener('contextmenu', event => event.preventDefault());
 
-{{--  window.onafterprint = function() {--}}
-{{--    //Use the Fetch API to make an AJAX POST request--}}
-{{--    fetch('/form/print-report/{{ $submission->id }}', {--}}
-{{--      method: 'POST',--}}
-{{--      headers: {--}}
-{{--        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')--}}
-{{--      }--}}
-{{--    })--}}
-{{--      .then(response => {--}}
-{{--        if (!response.ok) {--}}
-{{--          location.reload();--}}
-{{--        }--}}
-{{--        window.close()--}}
-{{--      })--}}
-{{--      .catch(error => {--}}
-{{--        location.reload();--}}
-{{--      });--}}
-{{--  };--}}
+  window.onafterprint = function() {
+    //Use the Fetch API to make an AJAX POST request
+    fetch('/form/print-report/{{ $submission->id }}', {
+      method: 'POST',
+      headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+      }
+    })
+      .then(response => {
+        if (!response.ok) {
+          location.reload();
+        }
+        window.close();
+      })
+      .catch(error => {
+        location.reload();
+      });
+  };
 
-{{--  window.addEventListener('afterprint', () => self.close);--}}
-{{--  window.onfocus = function() {--}}
-{{--    window.close();--}}
-{{--  };--}}
-{{--</script>--}}
+  window.addEventListener('afterprint', () => self.close);
+  window.onfocus = function() {
+    window.close();
+  };
+</script>

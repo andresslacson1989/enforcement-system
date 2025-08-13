@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\pages;
 
 use App\Events\NotificationSent;
-use App\Http\Classes\EmployeeClass;
+use App\Http\Classes\UserClass;
 use App\Http\Requests\StoreRequirementTransmittalFormRequest;
 use App\Models\Detachment;
 use App\Models\Form;
@@ -14,76 +14,93 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 
 class RequirementTransmittalFormController
 {
-    public function store(StoreRequirementTransmittalFormRequest $request, EmployeeClass $employeeClass): JsonResponse
+    public function store(StoreRequirementTransmittalFormRequest $request): JsonResponse
     {
-        try {
+        $user = Auth::user();
+        $data = $request->validated();
+        $form_name = 'Requirement Transmittal Form';
 
-            $user = Auth::user();
-            $data = $request->validated();
-            $data['deployment'] = $user->detachment->id;
-            $data['submitted_by'] = $user->id;
-            $form_name = 'Requirement Transmittal Form';
+        // Create the Employee Profile First
+        $employee_name = $data['first_name'].' '.$data['last_name'].' '.($data['suffix'] ?? '');
+        $employee_data = [
+            'name' => $employee_name,
+            'first_name' => $data['first_name'],
+            'middle_name' => $data['middle_name'],
+            'last_name' => $data['last_name'],
+            'suffix' => $data['suffix'],
+            'phone_number' => $data['phone_number'],
+            'street' => $data['street'],
+            'city' => $data['city'],
+            'province' => $data['province'],
+            'zip_code' => $data['zip_code'],
+            'detachment_id' => $data['deployment'],
+            'employee_number' => $data['employee_number'],
+            'password' => HASH::make('esiai'.$data['employee_number']),
+            'email' => $data['email'],
+            'email_verified_at' => Carbon::now(),
+        ];
 
-            // Validate info of Employee
-            // Your form request should validate these fields.
-            $employeeData = $request->only([
-                'first_name',
-                'middle_name',
-                'last_name',
-                'suffix',
-                'deployment',
-                'employee_number',
-            ]);
+        $employee = (new UserClass)->create($employee_data);
+        // give role to new employee
+        // TODO: make role dynamic
+        $employee->assignRole('security guard');
 
-            // Create the Employee Profile
-            $employeeClass->createEmployee($employeeData);
+        // Additional info from employee to Request
+        $data['employee_number'] = $employee['employee_number'];
+        $data['employee_name'] = $employee_name;
+        $data['employee_id'] = $employee->id;
+        $data['submitted_by'] = $user->id;
 
-            //Create the Requirement Transmittal and associate it with the new employee
-            // Create the new form record
-            $form = RequirementTransmittalForm::create($data);
+        // Create the Requirement Transmittal and associate it with the new employee
+        // Create the new form record
+        $form = RequirementTransmittalForm::create($data);
 
-            // Create a new submission record that points to the form.
-            // The morphOne relationship makes this easy.
-            $submission = $form->submission()->create([
-                'user_id' => auth()->id(), // Automatically get the logged-in user's ID
-            ]);
+        // Create a new submission record that points to the form.
+        // The morphOne relationship makes this easy.
+        $submission = $form->submission()->create([
+            'user_id' => auth()->id(), // Automatically get the logged-in user's ID
+        ]);
 
-            // roles to notify
-            $roles = [
-                'accounting manager',
-                'senior accounting manager',
-                'accounting specialist',
-                'hr manager',
-                'hr specialist',
-            ];
-            $to_notify = User::whereHas('roles', function ($query) use ($roles) {
-                $query->whereIn('name', $roles);
-            })->pluck('id')->toArray();
-            $to_notify[] = Auth::id();
+        // Add Requirement Transmittal Form id to employee
+        $employee->requirement_transmittal_form_id = $form->id;
+        $employee->save();
 
-            // parameters to send
-            $message = ucfirst($user->name)." submitted a $form_name.";
-            $users_id = $to_notify; // staff
-            $form_type = str_replace(' ', '-', strtolower($form_name));
-            $form_id = $form->id;
-            $formatted_date = Carbon::parse($submission->created_at)->format('Y-m-d, H:i:s');
+        // roles to notify
+        $roles = [
+            'accounting manager',
+            'senior accounting manager',
+            'accounting specialist',
+            'hr manager',
+            'hr specialist',
+            'operation manager',
+        ];
+        $to_notify = User::whereHas('roles', function ($query) use ($roles) {
+            $query->whereIn('name', $roles);
+        })->pluck('id')->toArray();
+        $to_notify[] = $employee->id;
 
-            // dd(compact('message', 'user_id', 'form_type', 'form_id', 'formatted_date'));
+        // parameters to send
+        $title = $form_name;
+        $message = ucfirst($user->name)." submitted a $form_name of $employee_name.";
+        $users_id = $to_notify; // staff
+        $form_type = str_replace(' ', '-', strtolower($form_name));
+        $form_id = $form->id;
+        $link = "/form/view/$form_type/$form_id";
+        $formatted_date = Carbon::parse($submission->created_at)->format('Y-m-d, H:i:s');
 
-            // send the notification
-            event(new NotificationSent($message, $users_id, $form_type, $form_id, $formatted_date));
+        // dd(compact('message', 'user_id', 'form_type', 'form_id', 'formatted_date'));
 
-            // Return a success JSON response for the AJAX call
-            return response()->json(['message' => 'Success', 'form_id' => $form->id], 201);
+        // send the notification
+        event(new NotificationSent($title, $message, $link, $users_id, $form_type, $form_id, $formatted_date));
 
-        } catch (\Exception $e) {
-            // Return an error JSON response
-            return response()->json(['message' => $e->getMessage(), 'error' => 'Error'], 500);
-        }
+        // Return a success JSON response for the AJAX call
+        return response()->json(['message' => 'Success', 'form_id' => $form->id], 201);
+
     }
 
     public function update(StoreRequirementTransmittalFormRequest $request, $type, $id): JsonResponse
@@ -109,7 +126,6 @@ class RequirementTransmittalFormController
             $request->validate([
                 'id' => 'required|integer',
                 'status' => 'required|string',
-                'denial_reason' => 'nullable|string',
                 'qualified_for_loan' => 'nullable|boolean',
                 'complete_requirements' => 'nullable|boolean',
                 'form_type' => 'required|string',
@@ -120,29 +136,9 @@ class RequirementTransmittalFormController
             $qualified_for_loan = $request->qualified_for_loan;
             $complete_requirements = $request->complete_requirements;
             $form_type = $request->form_type;
+            $user = Auth::user();
 
             $form = RequirementTransmittalForm::find($id);
-
-            if ($form->submitted_by == Auth::id()) {
-                return response()->json(['message' => 'Error', 'error' => 'You cannot deny/approve your own form.'], 401);
-            }
-
-            $user = Auth::user();
-            if ($status == 'approved') {
-                $form->approved_by = $user->id;
-                $form->date_approved = Carbon::now();
-                $form->denied_by = null;
-                $form->date_denied = null;
-                $denial_reason = null;
-            } else {
-                $form->approved_by = null;
-                $form->date_approved = null;
-                $form->denied_by = $user->id;
-                $form->date_denied = Carbon::now();
-                $denial_reason = $request->denial_reason;
-            }
-
-            $form->denial_reason = $denial_reason;
             $form->status = $status;
             $form->qualified_for_loan = $qualified_for_loan;
             $form->complete_requirements = $complete_requirements;
@@ -173,18 +169,16 @@ class RequirementTransmittalFormController
         }
 
         $submission = $submittable->submittable;
-        $user = $submittable->user;
-        $approved_by = User::find($submission->approved_by);
-        $denied_by = User::find($submission->denied_by);
-        $detachment = Detachment::find($user->detachment_id);
+        $user = Auth::user();
+        $employee = User::find($submission->employee_id);
+        $detachment = Detachment::find($employee->detachment_id);
         $roles = Role::where('name', '!=', 'root')
             ->whereNotIn('name', ['root', 'president', 'vice president', 'general manager'])->get();
 
         return view('content.forms.to_print')
             ->with('user', $user)
+            ->with('employee', $employee)
             ->with('submitted_by', $submittable->user)
-            ->with('approved_by', $approved_by)
-            ->with('denied_by', $denied_by)
             ->with('detachment', $detachment)
             ->with('submission', $submission)
             ->with('roles', $roles);
