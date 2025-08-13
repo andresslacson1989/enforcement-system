@@ -44,20 +44,21 @@ class FirstMonthPerformanceEvaluationFormController
                 'improvement_3' => $validatedData['improvement_3'] ?? null,
                 'supervisor_comment' => $validatedData['supervisor_comment'] ?? null,
                 'security_comment' => $validatedData['security_comment'] ?? null,
-                'meeting_date' => $validatedData['meeting_date'] ?? null,
             ]);
 
             $submission = $form->submission()->create([
                 'user_id' => auth()->id(),
             ]);
-
-            $to_notify = [$form->employee_id];
+            $roles_to_notify = User::whereHas('roles', function ($query) {
+              $query->whereIn('name', ['hr manager', 'hr specialist', 'operation manager']);
+            })->get()->pluck('id')->toArray();
+            $roles_to_notify[] = $form->employee_id;
             $user = Auth::user();
             $form_name = 'First Month Performance Evaluation Form';
 
             // parameters to send
             $message = ucfirst($user->name)." has submitted your $form_name.";
-            $users_id = $to_notify; // employee under evaluation
+            $users_id = $roles_to_notify; // employee under evaluation
             $form_type = str_replace(' ', '-', strtolower($form_name));
             $form_id = $form->id;
             $formatted_date = Carbon::parse($submission->created_at)->format('Y-m-d, H:i:s');

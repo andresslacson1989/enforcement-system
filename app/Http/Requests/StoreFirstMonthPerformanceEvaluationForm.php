@@ -56,7 +56,6 @@ class StoreFirstMonthPerformanceEvaluationForm extends FormRequest
         // Comments
         'supervisor_comment' => 'nullable|string',
         'security_comment' => 'nullable|string',
-        'meeting_date' => 'required|date',
       ];
     }
 }

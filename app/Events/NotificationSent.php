@@ -22,6 +22,7 @@ class NotificationSent implements ShouldBroadcast
 
   public function __construct(string $message, array $users_to_notify, string $form_type, int $form_id, string $date)
   {
+
     $this->message = $message;
     $this->users_to_notify = $users_to_notify;
     $this->form_type = $form_type;

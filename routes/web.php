@@ -54,7 +54,7 @@ Route::middleware(['auth:web'])->group(function () {
   Route::get('/form/new/{form}', [ActivityBoard::class, 'formNew']);
   Route::get('/form/view/{form}/{id}', [ActivityBoard::class, 'formView']);
 
-  //Requirement Transmittal Form 
+  //Requirement Transmittal Form
   Route::post('/form/requirement-transmittal-form/store/', [RequirementTransmittalFormController::class, 'store']);
   Route::put('/form/requirement-transmittal-form/{form}/{id}', [RequirementTransmittalFormController::class, 'update']);
   Route::patch('/form/requirement-transmittal-form/approve', [RequirementTransmittalFormController::class, 'approve']);
@@ -64,8 +64,4 @@ Route::middleware(['auth:web'])->group(function () {
   //First Month Performance Evaluation Form
   Route::post('/form/first-month-performance-evaluation-form/store/', [FirstMonthPerformanceEvaluationFormController::class, 'store']);
 
-// Or, for a quick fix just to make the test pass, you can do this:
-  Route::get('/dashboard', function () {
-    return "Welcome to the dashboard!";
-  })->middleware(['auth'])->name('dashboard');
 });

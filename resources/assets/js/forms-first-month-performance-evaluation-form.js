@@ -10,48 +10,21 @@ $(function () {
   form.on('submit', function (e) {
     e.preventDefault(); // Prevent the default form submission
 
-    // Show SweetAlert to get the meeting date
+    // Show a simple confirmation SweetAlert
     Swal.fire({
-      title: 'Schedule a Meeting',
-      html: `
-                <p>Please select a date for the evaluation feedback meeting.</p>
-                <input class="form-control" id="swal-date" type="text" placeholder="Select a date...">
-            `,
-      confirmButtonText: 'Submit Evaluation',
-      focusConfirm: false,
+      title: 'Are you sure?',
+      text: 'This action will submit the evaluation.',
+      icon: 'warning',
       showCancelButton: true,
-      cancelButtonText: 'Cancel',
-      didOpen: () => {
-        // Initialize Flatpickr on the date input inside the SweetAlert modal
-        flatpickr('#swal-date', {
-          enableTime: true,
-          dateFormat: 'Y-m-d H:i',
-          minDate: 'today',
-          // Disable weekend days
-          disable: [
-            function (date) {
-              return date.getDay() === 0 || date.getDay() === 6;
-            }
-          ]
-        });
-      },
-      preConfirm: () => {
-        const date = $('#swal-date').val();
-        if (!date) {
-          Swal.showValidationMessage('Please select a meeting date.');
-        }
-        return date;
-      }
+      confirmButtonText: 'Yes, submit it!',
+      cancelButtonText: 'Cancel'
     }).then(result => {
-      // Check if the user clicked the confirm button and a date was returned
-      if (result.isConfirmed && result.value) {
-        // Set the value of the hidden input field with the selected date
-        $('#meeting_date_input').val(result.value);
-
-        // Now, proceed with the AJAX form submission
+      // Check if the user clicked the "confirm" button.
+      if (result.isConfirmed) {
+        // If confirmed, proceed with the AJAX form submission.
+        // NOTE: The line for setting the meeting_date_input has been removed.
         const url = form.attr('action');
         const formData = form.serialize();
-
         $.ajax({
           type: 'POST',
           url: url,
@@ -61,7 +34,7 @@ $(function () {
           },
           success: function (response) {
             Swal.fire('Success!', response.message, 'success');
-            form[0].reset();
+            location.reload();  //form[0].reset();
           },
           error: function (response) {
             let errors = response.responseJSON.errors;
@@ -98,7 +71,7 @@ $(function () {
       type: 'GET',
       dataType: 'json',
       success: function (response) {
-        console.log(response);
+        // console.log(response);
         // This function runs on a successful response from the server.
         // We populate the input fields using their IDs.
         if (response) {
@@ -121,19 +94,19 @@ $(function () {
   //compute overall performance
   // Define the numerical values for each rating
   const ratingScores = {
-    'poor': 1,
-    'fair': 2,
-    'good': 3,
-    'excellent': 4
+    poor: 1,
+    fair: 2,
+    good: 3,
+    excellent: 4
   };
 
   // Find the table and listen for changes on any radio button inside it
-  $('#performance-criteria-table').on('change', 'input[type="radio"]', function() {
+  $('#performance-criteria-table').on('change', 'input[type="radio"]', function () {
     let totalScore = 0;
     let ratingCount = 0;
 
     // Find all checked radio buttons within the criteria table
-    $('#performance-criteria-table input[type="radio"]:checked').each(function() {
+    $('#performance-criteria-table input[type="radio"]:checked').each(function () {
       const ratingValue = $(this).val();
       if (ratingScores[ratingValue]) {
         totalScore += ratingScores[ratingValue];

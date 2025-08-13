@@ -23,6 +23,10 @@ class StoreRequirementTransmittalFormRequest extends FormRequest
     public function rules(): array
     {
       return [
+        //Validation rules for employee info
+        'employee_number' => ['required', 'string'],
+        'deployment' => ['required', 'string'],
+
         // Validation rules for checkboxes - all are nullable booleans
         'original_application_form_and_recent_picture' => ['nullable', 'boolean'],
         'photocopy_application_form_and_recent_picture' => ['nullable', 'boolean'],

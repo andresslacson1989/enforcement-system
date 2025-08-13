@@ -6,7 +6,6 @@ use Illuminate\Support\ServiceProvider;
 
 class RouteServiceProvider extends ServiceProvider
 {
-  const HOME = '/dashboard';
 
   /**
      * Register services.

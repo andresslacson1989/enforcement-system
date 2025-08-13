@@ -6,7 +6,8 @@ $(function () {
       'X-CSRF-TOKEN': $('input[name="_token"]').val()
     }
   });
-  // Logic for the deny button with SweetAlert
+
+  // Approve
   $('#approval_form').on('submit', function (e) {
     e.preventDefault(); // Prevent the default form submission
 
@@ -30,7 +31,7 @@ $(function () {
       const id = $('#form_id').val();
       const form_type = $('#form_type').val();
 
-      // **This is the key fix:** Prepare the data object
+      // Prepare the data object
       const post_data = {
         _token: $('input[name="_token"]').val(), // <-- The CSRF token is added here
         status,
@@ -209,11 +210,12 @@ $(function () {
                 },
                 buttonsStyling: false
               }).then(function () {
-                window.location.href = '/';
+                window.location.href = '/form/view/requirement-transmittal-form/' + data.form_id;
               });
             } else {
               Swal.fire({
-                title: data.message,
+                title: data.error,
+                text: data.message,
                 icon: 'error',
                 customClass: {
                   confirmButton: 'btn btn-primary'
@@ -229,7 +231,7 @@ $(function () {
 
             let errorMessage = 'An error occurred. Please try again.';
             // Handle Laravel validation errors
-            if (xhr.responseJSON && xhr.responseJSON.errors) {
+            if (xhr.responseJSON && xhr.responseJSON.errors) {``
               errorMessage = 'Please check the form for errors.';
               // You can loop through xhr.responseJSON.errors and display them
               // next to the corresponding input fields if you want more specific feedback.
@@ -238,7 +240,7 @@ $(function () {
 
             Swal.fire({
               title: 'Error',
-              text: errorMessage,
+              text: xhr.responseJSON.message,
               icon: 'error',
               customClass: {
                 confirmButton: 'btn btn-primary'

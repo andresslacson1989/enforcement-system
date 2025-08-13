@@ -1,5 +1,5 @@
 @if($submission)
-  <div class="card-header sticky-element bg-label-warning d-flex justify-content-sm-between align-items-sm-center flex-column flex-sm-row">
+  <div class="card-header sticky-element bg-label-warning d-flex justify-content-sm-between align-items-sm-center flex-column flex-sm-row mb-5">
   <h5 class="card-title mb-sm-0 me-2">ESIAI {{ strtoupper($form_name) }}
     <br>
     <span class="mt-2 badge {{ $color = ($submission->status === 'pending') ? 'bg-warning' : (($submission->status === 'denied') ? 'bg-danger' : (($submission->status === 'approved') ? 'bg-green' : 'default'))  }}">

@@ -18,10 +18,10 @@ class PermissionsAndRolesSeeder extends Seeder
     {
       //Create Permission
       //Staff Permissions
-      $add_staff = Permission::create(['name' => 'add staff', 'group' => 'Staff']);
-      $delete_staff = Permission::create(['name' => 'delete staff', 'group' => 'Staff']);
-      $edit_staff = Permission::create(['name' => 'edit staff', 'group' => 'Staff']);
-      $view_staff = Permission::create(['name' => 'view staff', 'group' => 'Staff']);
+      $add_employee = Permission::create(['name' => 'add employee', 'group' => 'Employee']);
+      $delete_employee = Permission::create(['name' => 'delete employee', 'group' => 'Employee']);
+      $edit_employee = Permission::create(['name' => 'edit employee', 'group' => 'Employee']);
+      $view_employee = Permission::create(['name' => 'view employee', 'group' => 'Employee']);
 
       //Guard Permissions
       $add_guard = Permission::create(['name' => 'add guard', 'group' => 'Guard']);
@@ -70,7 +70,7 @@ class PermissionsAndRolesSeeder extends Seeder
       $process_leave_application_form = Permission::create(['name' => 'process leave application form', 'group' => 'Leave Application Form']);
 
       //Requirement Transmittal Form
-      $fill_requirement_transmittal_form = Permission::create(['name' => 'fill requirement transmittal form', 'group' => 'Requirement Transmittal Form']);
+      $fill_requirement_transmittal_form = Permission::create(['name' => 'fill requirement transmittal form', 'group' => 'Requirement Transmittal Form']); // submission is hiring/onboarding upon submission of documents, releasing is resignation and releasing of original copies of documents submitted.
       $delete_requirement_transmittal_form = Permission::create(['name' => 'delete requirement transmittal form', 'group' => 'Requirement Transmittal Form']);
       $edit_requirement_transmittal_form = Permission::create(['name' => 'edit requirement transmittal form', 'group' => 'Requirement Transmittal Form']);
       $view_requirement_transmittal_form = Permission::create(['name' => 'view requirement transmittal form', 'group' => 'Requirement Transmittal Form']);
@@ -208,37 +208,57 @@ class PermissionsAndRolesSeeder extends Seeder
       $pres_perm = [
         'update processed form',
         'delete processed form',
+
+        'view requirement transmittal form',
         'view first month performance evaluation form',
       ];
 
       $vice_pres_perm = [
         'update processed form',
         'delete processed form',
+
+        'view requirement transmittal form',
         'view first month performance evaluation form',
       ];
 
       $gen_manager_perm = [
         'update processed form',
         'delete processed form',
+
+        'view requirement transmittal form',
         'view first month performance evaluation form',
       ];
 
       $accounting_perm = [
         'view requirement transmittal form',
-        'print requirement transmittal form',
+
         'view first month performance evaluation form',
       ];
 
-      $hr_perm = [
+      $hr_manager_perm = [
         'fill requirement transmittal form',
         'view requirement transmittal form',
         'edit requirement transmittal form',
         'approve requirement transmittal form',
         'print requirement transmittal form',
+
         'view first month performance evaluation form',
       ];
 
+      $hr_specialist_perm = [
+        'fill requirement transmittal form',
+        'view requirement transmittal form',
+        'edit requirement transmittal form',
+        'approve requirement transmittal form',
+        'print requirement transmittal form',
+
+        'view first month performance evaluation form',
+      ];
+
+
       $operation_manager_perm = [
+        'view requirement transmittal form',
+
         'view first month performance evaluation form',
         'fill first month performance evaluation form',
         'edit first month performance evaluation form'
@@ -264,7 +284,6 @@ class PermissionsAndRolesSeeder extends Seeder
 
       $security_guard_perm = [
         'view requirement transmittal form',
-        'fill requirement transmittal form',
         'view first month performance evaluation form'
       ];
 
@@ -289,10 +308,10 @@ class PermissionsAndRolesSeeder extends Seeder
       $accounting_specialist->givePermissionTo($accounting_perm);
 
       //HR Manager
-      $hr_manager->givePermissionTo($hr_perm);
+      $hr_manager->givePermissionTo($hr_manager_perm);
 
       //HR Specialist
-      $hr_specialist->givePermissionTo($hr_perm);
+      $hr_specialist->givePermissionTo($hr_specialist_perm);
 
       //Operation Manager
       $operation_manager->givePermissionTo($operation_manager_perm);
@@ -310,7 +329,7 @@ class PermissionsAndRolesSeeder extends Seeder
       $security_guard->givePermissionTo($security_guard_perm);
 
 
-
+      // Demo Accounts
       $detachment = Detachment::create([
         'name' => 'Tarlac Detachment',
         'address' => 'Sto Domingo 2nd Capas, Tarlac',

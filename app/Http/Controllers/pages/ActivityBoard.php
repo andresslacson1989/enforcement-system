@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\pages;
 
-use App\FormClass;
+use App\Http\Classes\FormClass;
 use App\Models\Detachment;
 use App\Models\Form;
 use App\Models\Submission;

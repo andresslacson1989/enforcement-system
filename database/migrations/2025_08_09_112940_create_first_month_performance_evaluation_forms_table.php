@@ -23,7 +23,7 @@ return new class extends Migration
       $table->string('supervisor')->nullable();
 
       //actions
-      $table->dateTime('meeting_date');
+      $table->dateTime('meeting_date')->nullable();
       $table->string('status')->default('pending');
       $table->boolean('printed')->default(false);
       $table->boolean('times_printed')->default(false);

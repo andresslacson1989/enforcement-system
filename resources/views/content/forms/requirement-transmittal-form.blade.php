@@ -441,16 +441,15 @@
                       </table>
                     </div>
                   </div>
-                  <hr>
                 </div>
-                <div class="row">
+                <div class="row mt-3">
                   <div class="row mt-5 text-center">
-                    <div class="{{ $submission->status == 'approved' ? 'col-6' : 'col-12' }}">
-                      <p>Submitted By:</p>
-                      <!-- Populate the submitted by section with the submission's user and submission date -->
-                      <h5 class="mb-0 fw-bolder">{{ $submitted_by->first_name }} {{ $submitted_by->last_name }} {{ $submitted_by->suffix ?? '' }}</h5>
-                      <p>{{ ucwords($submitted_by->getRoleNames()[0]) }} - {{ \Carbon\Carbon::parse($submission->created_at)->format('F d, Y H:i:s') }}</p>
-                    </div>
+{{--                    <div class="{{ $submission->status == 'approved' ? 'col-6' : 'col-12' }}">--}}
+{{--                      <p>Submitted By:</p>--}}
+{{--                      <!-- Populate the submitted by section with the submission's user and submission date -->--}}
+{{--                      <h5 class="mb-0 fw-bolder">{{ $submitted_by->first_name }} {{ $submitted_by->last_name }} {{ $submitted_by->suffix ?? '' }}</h5>--}}
+{{--                      <p>{{ ucwords($submitted_by->getRoleNames()[0]) }} - {{ \Carbon\Carbon::parse($submission->created_at)->format('F d, Y H:i:s') }}</p>--}}
+{{--                    </div>--}}
                     @if($submission->status == 'approved')
                       <div class="col-6">
                         <p>Approved By:</p>
@@ -477,16 +476,12 @@
     </div>
     @if($submission->status == 'pending' || $submission->status == 'processing')
       @can('approve requirement transmittal form')
-        <hr>
         <div class="row">
           <form action="/form/requirement-transmittal-form/approve" id="approval_form" method="patch">
             @csrf
             <input type="hidden" id="form_id" value="{{ $submission->id }}">
             <input type="hidden" id="form_type" value="{{ $submission->name }}">
             <div class="card">
-              <div class="card-header sticky-element bg-label-warning d-flex justify-content-sm-between align-items-sm-center flex-column flex-sm-row">
-                <h5 class="card-title mb-sm-0 me-2">For HR Department Use Only</h5>
-              </div>
               <div class="card-body pt-6">
                 <div class="row g-6">
                   <div class="col-md-12">
@@ -555,17 +550,32 @@
                     </div>
                   </div>
                   <div class="row g-6">
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                       <label class="form-label" for="employee_name">Full Name</label>
-                      <input type="text" readonly class="form-control" value="{{ $user->first_name ?? ''  }} {{ $user->middle_name ?? '' }} {{ $user->last_name ?? '' }} {{ $user->suffix ?? '' }}" />
+                      <div class="input-group">
+                        <input type="text" class="form-control" value="" placeholder="First Name" id="first_name" name="first_name"/>
+                        <input type="text" class="form-control" value="" placeholder="Middle Name" id="middle_name" name="middle_name"/>
+                        <input type="text" class="form-control" value="" placeholder="Last Name" id="last_name" name="last_name"/>
+                        <input type="text" class="form-control" value="" placeholder="Suffix" id="suffix" name="suffix"/>
+                      </div>
                     </div>
                     <div class="col-md-6">
                       <label class="form-label" for="employee_number">Employee No</label>
-                      <input class="form-control" type="text" readonly aria-label="ID1234" aria-describedby="ID1234" value="{{ $user->employee_number ?? '' }}" />
+                      <input class="form-control" type="text" aria-label="ID1234" aria-describedby="ID1234" value="" id="employee_number" name="employee_number"/>
                     </div>
-                    <div class="col-md-12">
+                    <div class="col-md-6">
                       <label class="form-label" for="deployment">Deployment</label>
-                      <input type="text" id="deployment" name="deployment" class="form-control" placeholder="Manila" aria-label="Manila" value="{{ $detachment->name  }} [{{ $detachment->address }}]" />
+                      <select id="deployment"
+                              name="deployment"
+                              class="selectpicker w-100"
+                              data-style="btn-default"
+                              data-live-search="true">
+                        <option value="" selected disabled>Choose an item</option>
+                        @forelse($detachments as $item)
+                          <option value="{{ $item->id }}">{{ $item->name }}</option>
+                          @empty
+                        @endforelse
+                      </select>
                     </div>
                   </div>
                   <hr />
@@ -940,13 +950,13 @@
                         This document is a system-generated form. By submitting this form, you acknowledge and agree that all relevant information, including your employee ID, will be recorded for processing and record-keeping purposes.
                       </div>
                     </div>
-                    <div class="row mt-5">
-                      <div class="col-md-12 text-center">
-                        <p>Submitted By:</p>
-                        <h5 class="mb-0 fw-bolder">{{ auth()->user()->first_name }} {{ auth()->user()->last_name }}</h5>
-                        <p>{{ ucwords(auth()->user()->getRoleNames()[0]) }}</p>
-                      </div>
-                    </div>
+{{--                    <div class="row mt-5">--}}
+{{--                      <div class="col-md-12 text-center">--}}
+{{--                        <p>Submitted By:</p>--}}
+{{--                        <h5 class="mb-0 fw-bolder">{{ auth()->user()->first_name }} {{ auth()->user()->last_name }}</h5>--}}
+{{--                        <p>{{ ucwords(auth()->user()->getRoleNames()[0]) }}</p>--}}
+{{--                      </div>--}}
+{{--                    </div>--}}
                     <div class="d-grid d-md-flex justify-content-md-end gap-2 mb-5">
                       <button type="submit" class="btn btn-primary">Submit Form</button>
                     </div>

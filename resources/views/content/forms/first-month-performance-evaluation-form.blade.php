@@ -467,8 +467,8 @@
                     </div>
                   </div>
                   <div class="row g-6">
-                    <div class="col-md-4 mb-2">
-                      <label class="form-label" for="employee_name">Employee</label>
+                    <div class="col-md-6 mb-2">
+                      <label class="form-label" for="employee">Employee</label>
                       <select class="selectpicker w-100" data-style="btn-default" data-live-search="true" name="employee" id="employee">
                         <option value=" " disabled selected>Choose an option</option>
                         @forelse($guards as $item)
@@ -478,31 +478,17 @@
                         @endforelse
                       </select>
                     </div>
-                    <div class="col-md-4 mb-2">
+                    <div class="col-md-6 mb-2">
                       <label class="form-label" for="employee_number">Employee No</label>
                       <input class="form-control" type="text" id="employee_number" name="employee_number" aria-label="ID1234" aria-describedby="ID1234" value="" />
                     </div>
-                    <div class="col-md-4 mb-2">
-                      <label class="form-label" for="employee_number">Job Title</label>
-                      <input class="form-control" type="text" id="job_title" name="job_title" aria-label="ID1234" aria-describedby="ID1234" value="" />
-                    </div>
                     <div class="col-md-6 mb-2">
                       <label class="form-label" for="deployment">Deployment</label>
-                      <select id="deployment" name="deployment" class="selectpicker w-100" data-style="btn-default" data-live-search="true">
-                        @forelse($deployment as $item)
-                          <option value="{{ $item->id }}">{{ $item->name }} [{{ $item->address }}]</option>
-                        @empty
-                        @endforelse
-                      </select>
+                      <input class="form-control" type="text" id="deployment" name="deployment" aria-label="supervisor" aria-describedby="supervisor" value="{{ $deployment->name }}" readonly />
                     </div>
                     <div class="col-md-6 mb-2">
                       <label class="form-label" for="supervisor">Supervisor</label>
-                      <select class="selectpicker w-100" data-style="btn-default" data-live-search="true" name="supervisor" id="supervisor">
-                        @forelse($dc as $item)
-                          <option value="{{ $item->id }}">{{ $item->first_name }} {{ $item->last_name }} {{ $item->suffix ?? '' }}</option>
-                        @empty
-                        @endforelse
-                      </select>
+                      <input class="form-control" type="text" id="supervisor" name="supervisor" aria-label="supervisor" aria-describedby="supervisor" value="{{ $user->first_name }} {{ $user->last_name }} {{ $user->suffix ?? '' }}" readonly />
                     </div>
                   </div>
                   <hr />
