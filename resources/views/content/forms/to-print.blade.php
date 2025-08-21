@@ -24,9 +24,9 @@
   </div>
   <div class="row g-6">
     <div class="col-md-12">
-      <label class="form-label" for="employee_name">Full Name: </label> <span class="fw-bold">{{ $user->first_name ?? '' }} {{ $user->middle_name ?? '' }} {{ $user->last_name ?? '' }} {{ $user->suffix ?? '' }}</span> <br>
-      <label class="form-label" for="employee_number">Employee No: </label> <span class="fw-bold">{{ $user->employee_number ?? '' }}</span> <br>
-      <label class="form-label" for="deployment">Deployment: </label> <span class="fw-bold">{{ $user->detachment->name ?? '' }} <small class="text-muted">[{{ $detachment->address ?? '' }}]</small></span>
+      <label class="form-label" for="employee_name">Full Name: </label> <span class="fw-bold">{{ $employee->first_name ?? '' }} {{ $employee->middle_name ?? '' }} {{ $employee->last_name ?? '' }} {{ $employee->suffix ?? '' }}</span> <br>
+      <label class="form-label" for="employee_number">Employee No: </label> <span class="fw-bold">{{ $employee->employee_number ?? '' }}</span> <br>
+      <label class="form-label" for="deployment">Deployment: </label> <span class="fw-bold">{{ $employee->detachment->name ?? '' }} <small class="text-muted">[{{ $detachment->address ?? '' }}]</small></span>
     </div>
     <div class="col-md-6">
     </div>

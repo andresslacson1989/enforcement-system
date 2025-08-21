@@ -7,26 +7,26 @@ use Illuminate\Support\Facades\Auth;
 
 class NotificationHelper
 {
-  public static function getLatestNotifications()
-  {
-    if (Auth::check()) {
-      return Notification::where('user_id', Auth::id())
-        ->orderBy('created_at', 'desc')
-        ->limit(10)
-        ->get();
+    public static function getLatestNotifications()
+    {
+        if (Auth::check()) {
+            return Notification::where('user_id', Auth::id())
+                ->orderBy('created_at', 'desc')
+                ->limit(10)
+                ->get();
+        }
+
+        return collect();
     }
 
-    return collect();
-  }
+    public static function getUnreadNotificationCount()
+    {
+        if (Auth::check()) {
+            return Notification::where('user_id', Auth::id())
+                ->whereNull('read_at')
+                ->count();
+        }
 
-  public static function getUnreadNotificationCount()
-  {
-    if (Auth::check()) {
-      return Notification::where('user_id', Auth::id())
-        ->whereNull('read_at')
-        ->count();
+        return 0;
     }
-
-    return 0;
-  }
 }

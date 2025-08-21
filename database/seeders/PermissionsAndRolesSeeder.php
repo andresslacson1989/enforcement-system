@@ -178,6 +178,13 @@ class PermissionsAndRolesSeeder extends Seeder
         $update_processed_form = Permission::create(['name' => 'update processed form', 'group' => 'Processed Form']);
         $delete_processed_form = Permission::create(['name' => 'delete processed form', 'group' => 'Processed Form']);
 
+        // Detachment Permission
+        $add_detachment = Permission::create(['name' => 'add detachment', 'group' => 'Detachment']);
+        $edit_detachment = Permission::create(['name' => 'edit detachment', 'group' => 'Detachment']);
+        $delete_detachment = Permission::create(['name' => 'delete detachment', 'group' => 'Detachment']);
+        $view_detachment = Permission::create(['name' => 'view detachment', 'group' => 'Detachment']);
+        $approve_detachment = Permission::create(['name' => 'approve detachment', 'group' => 'Detachment']);
+
         // Create Roles
         $root = Role::create(['name' => 'root', 'description' => 'Super Admin Access']); // superadmin
 
@@ -192,13 +199,19 @@ class PermissionsAndRolesSeeder extends Seeder
         $accounting_specialist = Role::create(['name' => 'accounting specialist', 'description' => 'Accounting Specialist']);
         $hr_manager = Role::create(['name' => 'hr manager', 'description' => 'HR Manager']);
         $hr_specialist = Role::create(['name' => 'hr specialist', 'description' => 'HR Specialist']);
-        $operation_manager = Role::create(['name' => 'operation manager', 'description' => 'Operation Manager']);
+        $operation_manager = Role::create(['name' => 'operation manager', 'description' => 'Overall management']);
 
         // Guard
-        $detachment_commander = Role::create(['name' => 'detachment commander', 'description' => 'Detach Commander']);
+        $assigned_officer = Role::create(['name' => 'assigned officer', 'description' => 'Head of Detachment']);
+        $detachment_commander = Role::create(['name' => 'detachment commander', 'description' => 'Overall in charge']);
+        $officer_in_charge = Role::create(['name' => 'officer in charge', 'description' => 'Overall in charge in the absence of a Detachment Commander']);
+        $security_in_charge = Role::create(['name' => 'security in charge', 'description' => 'Second in command, assists the OIC/Detachment Commander']);
         $security_officer = Role::create(['name' => 'security officer', 'description' => 'Security Officer']);
-        $head_guard = Role::create(['name' => 'head guard', 'description' => 'Head Guard']);
-        $security_guard = Role::create(['name' => 'security guard', 'description' => 'Security Guard']);
+        $cluster_head_guard = Role::create(['name' => 'cluster head guard', 'description' => 'Supervises the security guards within a specific cluster or unit']);
+        $head_guard = Role::create(['name' => 'head guard', 'description' => 'In charge of the small team']);
+        $assistant_head_guard = Role::create(['name' => 'assistant head guard', 'description' => 'Assists the Head Guard']);
+        $security_guard = Role::create(['name' => 'security guard', 'description' => 'The main security force (male)']);
+        $lady_guard = Role::create(['name' => 'lady guard', 'description' => 'The main security force (female)']);
 
         // Give Permissions
         $pres_perm = [
@@ -207,6 +220,9 @@ class PermissionsAndRolesSeeder extends Seeder
 
             'view requirement transmittal form',
             'view first month performance evaluation form',
+
+            'view detachment',
+            'approve detachment',
         ];
 
         $vice_pres_perm = [
@@ -215,6 +231,9 @@ class PermissionsAndRolesSeeder extends Seeder
 
             'view requirement transmittal form',
             'view first month performance evaluation form',
+
+            'view detachment',
+            'approve detachment',
         ];
 
         $gen_manager_perm = [
@@ -223,6 +242,9 @@ class PermissionsAndRolesSeeder extends Seeder
 
             'view requirement transmittal form',
             'view first month performance evaluation form',
+
+            'view detachment',
+            'approve detachment',
         ];
 
         $accounting_perm = [
@@ -238,6 +260,9 @@ class PermissionsAndRolesSeeder extends Seeder
             'print requirement transmittal form',
 
             'view first month performance evaluation form',
+
+            'add detachment',
+            'view detachment',
         ];
 
         $hr_specialist_perm = [
@@ -247,6 +272,9 @@ class PermissionsAndRolesSeeder extends Seeder
             'print requirement transmittal form',
 
             'view first month performance evaluation form',
+
+            'add detachment',
+            'view detachment',
         ];
 
         $operation_manager_perm = [
@@ -257,13 +285,51 @@ class PermissionsAndRolesSeeder extends Seeder
             'edit first month performance evaluation form',
         ];
 
+        $assigned_officer_perm = [
+            'view first month performance evaluation form',
+            'fill first month performance evaluation form',
+            'edit first month performance evaluation form',
+
+            'view detachment',
+        ];
+
         $detachment_commander_perm = [
+            'view first month performance evaluation form',
+            'fill first month performance evaluation form',
+            'edit first month performance evaluation form',
+
+            'view detachment',
+        ];
+
+        $officer_in_charge_perm = [
+            'view first month performance evaluation form',
+            'fill first month performance evaluation form',
+            'edit first month performance evaluation form',
+
+            'view detachment',
+        ];
+
+        $security_in_charge_perm = [
+            'view first month performance evaluation form',
+            'fill first month performance evaluation form',
+            'edit first month performance evaluation form',
+
+            'view detachment',
+        ];
+
+        $cluster_head_guard_perm = [
             'view first month performance evaluation form',
             'fill first month performance evaluation form',
             'edit first month performance evaluation form',
         ];
 
         $head_guard_perm = [
+            'view first month performance evaluation form',
+            'fill first month performance evaluation form',
+            'edit first month performance evaluation form',
+        ];
+
+        $assistant_head_guard_perm = [
             'view first month performance evaluation form',
             'fill first month performance evaluation form',
             'edit first month performance evaluation form',
@@ -310,8 +376,20 @@ class PermissionsAndRolesSeeder extends Seeder
         // Detachment Commander
         $detachment_commander->givePermissionTo($detachment_commander_perm);
 
+        // Officer In Charge
+        $officer_in_charge->givePermissionTo($officer_in_charge_perm);
+
+        // Security In Charge
+        $security_in_charge->givePermissionTo($security_in_charge_perm);
+
+        // Head Guard
+        $cluster_head_guard->givePermissionTo($cluster_head_guard_perm);
+
         // Head Guard
         $head_guard->givePermissionTo($head_guard_perm);
+
+        // Head Guard
+        $assistant_head_guard->givePermissionTo($assistant_head_guard_perm);
 
         // Security Office
         $security_officer->givePermissionTo($security_officer_perm);
@@ -319,15 +397,24 @@ class PermissionsAndRolesSeeder extends Seeder
         // Security Guard
         $security_guard->givePermissionTo($security_guard_perm);
 
+        // Lady Guard
+        $lady_guard->givePermissionTo($security_guard_perm);
+
         // Demo Accounts
         $detachment = Detachment::create([
             'name' => 'Tarlac Detachment',
-            'address' => 'Sto Domingo 2nd Capas, Tarlac',
+            'street' => 'street2',
+            'city' => 'Tarlac City',
+            'province' => 'Tarlac',
+            'zip_code' => '12345',
         ]);
 
         $detachment2 = Detachment::create([
             'name' => 'Capas Detachment',
-            'address' => 'Sto Domingo 2nd Capas, Tarlac',
+            'street' => 'street1',
+            'city' => 'Capas',
+            'province' => 'Tarlac',
+            'zip_code' => '12345',
         ]);
 
         $admin = User::factory()->create([
@@ -339,6 +426,16 @@ class PermissionsAndRolesSeeder extends Seeder
             'email' => 'phcyber2018@gmail.com',
             'password' => '123456',
             'detachment_id' => $detachment->id,
+        ]);
+
+        $president = User::factory()->create([
+            'name' => 'Mario',
+            'first_name' => 'Mario',
+            'middle_name' => 'Pinas',
+            'last_name' => 'Caparas',
+            'email' => 'president1@gmail.com',
+            'employee_number' => uniqid(),
+            'password' => '123456',
         ]);
 
         $guard = User::factory()->create([
@@ -417,12 +514,13 @@ class PermissionsAndRolesSeeder extends Seeder
         $accounting1->assignRole('accounting manager');
         $dc1->assignRole('detachment commander');
 
-        $detachment->commander = $admin->id;
+        $detachment->assigned_officer = $admin->id;
         $detachment->save();
 
-        $detachment2->commander = $guard3->id;
+        $detachment2->assigned_officer = $guard3->id;
         $detachment2->save();
 
         $admin->assignRole('root');
+        $president->assignRole('president');
     }
 }

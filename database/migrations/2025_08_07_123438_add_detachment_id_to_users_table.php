@@ -16,6 +16,7 @@ return new class extends Migration {
         ->constrained('detachments')
         ->onDelete('set null');
     });
+
   }
 
   /**

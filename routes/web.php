@@ -6,12 +6,14 @@ use App\Http\Controllers\language\LanguageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\pages\Access;
 use App\Http\Controllers\pages\ActivityBoard;
+use App\Http\Controllers\pages\DetachmentController;
 use App\Http\Controllers\pages\FirstMonthPerformanceEvaluationFormController;
 use App\Http\Controllers\pages\HomePage;
 use App\Http\Controllers\pages\MiscError;
 use App\Http\Controllers\pages\Page2;
 use App\Http\Controllers\pages\RequirementTransmittalFormController;
 use App\Http\Controllers\pages\UsersController;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 // locale
@@ -29,6 +31,7 @@ Route::middleware(['auth:web'])->group(function () {
 
     Route::get('users', [UsersController::class, 'index'])->name('users-index');
     Route::get('user/{id}', [UsersController::class, 'usersData'])->name('users-index');
+    Route::patch('user/{id}', [UsersController::class, 'update']);
 
     // Access Routes
     // Roles
@@ -53,7 +56,7 @@ Route::middleware(['auth:web'])->group(function () {
     Route::get('/form/view/{form}/{id}', [ActivityBoard::class, 'formView']);
 
     // Requirement Transmittal Form
-    Route::post('/form/requirement-transmittal-form/store/', [RequirementTransmittalFormController::class, 'store']);
+    Route::post('/form/requirement-transmittal-form/store', [RequirementTransmittalFormController::class, 'store']);
     Route::put('/form/requirement-transmittal-form/{form}/{id}', [RequirementTransmittalFormController::class, 'update']);
     Route::patch('/form/requirement-transmittal-form/approve', [RequirementTransmittalFormController::class, 'approve']);
     Route::get('/form/requirement-transmittal-form/print/{id}', [RequirementTransmittalFormController::class, 'print']);
@@ -62,6 +65,17 @@ Route::middleware(['auth:web'])->group(function () {
     // First Month Performance Evaluation Form
     Route::post('/form/first-month-performance-evaluation-form/store/', [FirstMonthPerformanceEvaluationFormController::class, 'store']);
 
+    // Detachments Route
+    Route::get('/detachments', [DetachmentController::class, 'detachments'])->name('detachments');
+    Route::post('/detachments/store', [DetachmentController::class, 'store']);
+    Route::post('/detachments/add-personnel', [DetachmentController::class, 'addPersonnel']);
+    Route::get('/detachments/view/{id}', [DetachmentController::class, 'view']);
+    Route::put('/detachments/update/{id}', [DetachmentController::class, 'update']);
+    Route::patch('/detachments/approve/{id}', [DetachmentController::class, 'approve']);
+    Route::get('/detachments/table', [DetachmentController::class, 'detachmentTable']);
+
     // This single route will handle marking any notification as read
-    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->middleware('auth:sanctum');
+
+
 });

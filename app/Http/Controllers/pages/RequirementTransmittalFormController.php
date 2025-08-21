@@ -5,6 +5,7 @@ namespace App\Http\Controllers\pages;
 use App\Events\NotificationSent;
 use App\Http\Classes\UserClass;
 use App\Http\Requests\StoreRequirementTransmittalFormRequest;
+use App\Jobs\SendAndBroadcastNotification;
 use App\Models\Detachment;
 use App\Models\Form;
 use App\Models\RequirementTransmittalForm;
@@ -26,7 +27,7 @@ class RequirementTransmittalFormController
         $form_name = 'Requirement Transmittal Form';
 
         // Create the Employee Profile First
-        $employee_name = $data['first_name'].' '.$data['last_name'].' '.($data['suffix'] ?? '');
+        $employee_name = trim($data['first_name'].' '.$data['last_name'].' '.($data['suffix'] ?? ''));
         $employee_data = [
             'name' => $employee_name,
             'first_name' => $data['first_name'],
@@ -91,12 +92,11 @@ class RequirementTransmittalFormController
         $form_type = str_replace(' ', '-', strtolower($form_name));
         $form_id = $form->id;
         $link = "/form/view/$form_type/$form_id";
-        $formatted_date = Carbon::parse($submission->created_at)->format('Y-m-d, H:i:s');
 
         // dd(compact('message', 'user_id', 'form_type', 'form_id', 'formatted_date'));
 
-        // send the notification
-        event(new NotificationSent($title, $message, $link, $users_id, $form_type, $form_id, $formatted_date));
+        // Dispatch the job
+        SendAndBroadcastNotification::dispatch($title, $message, $link, $users_id);
 
         // Return a success JSON response for the AJAX call
         return response()->json(['message' => 'Success', 'form_id' => $form->id], 201);
@@ -175,7 +175,7 @@ class RequirementTransmittalFormController
         $roles = Role::where('name', '!=', 'root')
             ->whereNotIn('name', ['root', 'president', 'vice president', 'general manager'])->get();
 
-        return view('content.forms.to_print')
+        return view('content.forms.to-print')
             ->with('user', $user)
             ->with('employee', $employee)
             ->with('submitted_by', $submittable->user)

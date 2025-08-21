@@ -7,7 +7,6 @@
 @section('vendor-style')
   @vite([
   'resources/assets/vendor/libs/bootstrap-select/bootstrap-select.scss',
-  'resources/assets/vendor/libs/animate-css/animate.scss"',
   'resources/assets/vendor/libs/sweetalert2/sweetalert2.scss',
   'resources/assets/vendor/libs/flatpickr/flatpickr.scss',
   ])

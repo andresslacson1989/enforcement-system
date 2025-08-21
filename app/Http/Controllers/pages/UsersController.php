@@ -16,11 +16,11 @@ class UsersController
     {
         $user = User::find($id);
         $data = $user->toArray();
-        $dc = User::find($user->detachment->commander);
+        $dc = User::find($user->detachment->assigned_officer);
         $job_title = $user->getRoleNames()[0];
         $data['job_title'] = ucwords($job_title);
         $data['deployment'] = ucwords($user->detachment->name);
-        $data['detachment_commander'] = $dc->id;
+        $data['assigned_officer'] = $dc->id;
 
         return response()->json($data);
     }
@@ -50,4 +50,5 @@ class UsersController
         }
 
     }
+
 }

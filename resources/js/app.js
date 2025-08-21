@@ -50,23 +50,23 @@ function updateNotifications(notificationData) {
     let notificationList = $('#notification-list');
 
     const newNotificationItem = `
-                  <a href="${notificationData.link}" class="list-group-item list-group-item-action dropdown-notifications-item" data-notification-id="${notificationData.notification_id}">
+                 <a href="${notificationData.link}" class="list-group-item list-group-item-action dropdown-notifications-item notification-link border-0" data-notification-id="${notificationData.notification_id}">
                     <div class="d-flex">
-                        <div class="flex-shrink-0 me-3">
-                            <div class="avatar">
-                                <span class="avatar-initial rounded-circle bg-label-info"><i class="ti ti-check"></i></span>
-                            </div>
+                      <div class="flex-shrink-0 me-3">
+                        <div class="avatar">
+                          <span class="avatar-initial rounded-circle bg-label-info"><i class="ti ti-bell"></i></span>
                         </div>
-                        <div class="flex-grow-1">
-                            <h6 class="small mb-1">${notificationData.title}</h6>
-                            <small class="mb-1 d-block text-body">${notificationData.message}.</small>
-                            <small class="text-body-secondary">${notificationData.formatted_date}</small>
-                        </div>
-                        <div class="flex-shrink-0 dropdown-notifications-actions">
-                            <span class="badge badge-dot"></span>
-                        </div>
+                      </div>
+                      <div class="flex-grow-1">
+                        <h6 class="small mb-1">${notificationData.title}</h6>
+                        <small class="mb-1 d-block text-body">${notificationData.message}</small>
+                        <small class="text-body-secondary">${notificationData.formatted_date}</small>
+                      </div>
+                      <div class="flex-shrink-0 dropdown-notifications-actions">
+                          <span class="badge badge-dot"></span> <br>
+                      </div>
                     </div>
-                </a>
+                  </a>
             `;
 
     notificationList.prepend(newNotificationItem);
@@ -89,40 +89,36 @@ if (typeof window.Echo !== 'undefined') {
 }
 
 //Mark Notifications as read when clicked
-document.addEventListener('DOMContentLoaded', function () {
-  // Find all notification links
-  const notificationLinks = document.querySelectorAll('.notification-link');
+// Listen on a static parent (like 'document') for a 'click' on a '.notification-link'
+$(document).on('click', '.notification-link', function (event) {
+  // 1. Prevent the browser from immediately going to the link's href
+  event.preventDefault();
 
-  notificationLinks.forEach(link => {
-    link.addEventListener('click', function (event) {
-      // 1. Prevent the browser from immediately going to the link's href
-      event.preventDefault();
+  // 'this' correctly refers to the .notification-link that was clicked
+  const notificationId = this.dataset.notificationId;
+  const originalUrl = this.href;
+  const csrfToken = $('meta[name="csrf-token"]').attr('content'); // A slightly more "jQuery" way to get the token
 
-      const notificationId = this.dataset.notificationId;
-      const originalUrl = this.href;
-      const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-      // 2. Send the request to your new endpoint
-      fetch(`/notifications/${notificationId}/read`, {
-        method: 'POST',
-        headers: {
-          'X-CSRF-TOKEN': csrfToken,
-          'Content-Type': 'application/json',
-          Accept: 'application/json'
-        }
-      })
-        .then(response => {
-          if (!response.ok) {
-            console.error('Failed to mark notification as read.');
-          }
-          // 3. Whether it succeeded or failed, navigate to the original URL
-          window.location.href = originalUrl;
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          // Still navigate even if the fetch fails
-          window.location.href = originalUrl;
-        });
+  // 2. Send the request to your new endpoint
+  fetch(`/notifications/${notificationId}/read`, {
+    method: 'POST',
+    headers: {
+      'X-CSRF-TOKEN': csrfToken,
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    }
+  })
+    .then(response => {
+      if (!response.ok) {
+        console.error('Failed to mark notification as read.');
+      }
+      // 3. IMPORTANT: You'll need to uncomment the line below to navigate
+      //    to the link's destination after the API call.
+      window.location.href = originalUrl;
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      // Also uncomment this line to navigate even if the API call fails
+      window.location.href = originalUrl;
     });
-  });
 });

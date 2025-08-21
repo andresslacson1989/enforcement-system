@@ -33,7 +33,7 @@ class FormClass
                 $query->whereIn('name', $roleNames);
             })->where('detachment_id', $user->detachment_id)->get();
             $detachment = $user->detachment;
-            $dc = User::find($detachment->commander);
+            $dc = User::find($detachment->assigned_officer);
 
             if (! $user->can('view '.$form_name)) {
                 return view('content.pages.pages-misc-error');

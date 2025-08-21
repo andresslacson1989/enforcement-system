@@ -159,9 +159,9 @@
           </div>
         </li>
         <li class="dropdown-notifications-list scrollable-container">
-          <ul class="list-group list-group-flush" id="notification-list">
+          <ul class="list-group list-group-flush pt-0" id="notification-list">
             @foreach(NotificationHelper::getLatestNotifications() as $notification)
-              <li class="list-group-item list-group-item-action dropdown-notifications-item">
+              <a href="{{ $notification->link }}" class="list-group-item list-group-item-action dropdown-notifications-item notification-link border-0" data-notification-id="{{ $notification->id }}">
                 <div class="d-flex">
                   <div class="flex-shrink-0 me-3">
                     <div class="avatar">
@@ -174,13 +174,12 @@
                     <small class="text-body-secondary">{{ $notification->created_at->diffForHumans() }}</small>
                   </div>
                   <div class="flex-shrink-0 dropdown-notifications-actions">
-                    <a href="javascript:void(0)" class="dropdown-notifications-read"><span
-                        class="badge badge-dot"></span></a>
-                    <a href="javascript:void(0)" class="dropdown-notifications-archive"><span
-                        class="icon-base ti tabler-x"></span></a>
+                    @if(!$notification->read_at)
+                      <span class="badge badge-dot"></span> <br>
+                    @endif
                   </div>
                 </div>
-              </li>
+              </a>
             @endforeach
           </ul>
         </li>
@@ -205,7 +204,7 @@
       <ul class="dropdown-menu dropdown-menu-end">
         <li>
           <a class="dropdown-item mt-0"
-             href="{{ Route::has('profile.show') ? route('profile.show') : url('pages/profile-user') }}" data-notification-id="">
+             href="{{ Route::has('profile.show') ? route('profile.show') : url('pages/profile-user') }}">
             <div class="d-flex align-items-center">
               <div class="flex-shrink-0 me-2">
                 <div class="avatar avatar-online">

@@ -10,8 +10,6 @@ class Notification extends Model
 {
     use HasFactory;
 
-    public mixed $user_id;
-
     /**
      * The attributes that are mass assignable.
      *
@@ -21,7 +19,7 @@ class Notification extends Model
         'user_id',
         'title',
         'body',
-        'read_at',
+        'link',
     ];
 
     /**

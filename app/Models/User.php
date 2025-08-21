@@ -12,6 +12,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
@@ -20,7 +21,6 @@ class User extends Authenticatable
 
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory;
-
     use HasProfilePhoto;
     use HasRoles;
     use Notifiable;
@@ -118,4 +118,29 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Get the user's primary role.
+     */
+    public function primaryRole()
+    {
+        return $this->belongsTo(Role::class, 'primary_role_id');
+    }
+
+  /**
+   * Set the user's primary role.
+   * Ensures the user actually has the role before setting it as primary.
+   */
+  public function setPrimaryRole(string|int $role)
+  {
+    $roleId = is_numeric($role) ? $role : Role::findByName($role)->id;
+
+    if ($this->hasRole($roleId)) {
+      $this->primary_role_id = $roleId;
+      $this->save();
+    } else {
+      // Optionally, throw an exception or handle the error
+      throw new \Exception('User does not have this role to set as primary.');
+    }
+  }
 }
