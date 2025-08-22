@@ -20,11 +20,11 @@ class DatabaseSeeder extends Seeder
    */
   public function run(): void
   {
-    User::factory(10)->create();
+    User::factory(1000)->create();
 
     $this->call([
       PermissionsAndRolesSeeder::class,
-      DetachmentSeeder::class,
+      //DetachmentSeeder::class,
     ]);
 
     $unassigned_users = User::whereDoesntHave('roles')->get();

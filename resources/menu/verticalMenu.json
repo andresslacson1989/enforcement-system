@@ -24,10 +24,10 @@
       ]
     },
     {
-      "url": "/activity-board",
-      "icon": "menu-icon icon-base ti tabler-layout-kanban",
-      "name": "Activity Board",
-      "slug": "activity-board"
+      "url": "/activity-logs",
+      "icon": "menu-icon icon-base ti tabler-logs",
+      "name": "Activity logs",
+      "slug": "activity-logs"
     },
     {
       "url": "/detachments",

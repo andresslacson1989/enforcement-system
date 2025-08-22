@@ -6,6 +6,7 @@ use App\Http\Controllers\language\LanguageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\pages\Access;
 use App\Http\Controllers\pages\ActivityBoard;
+use App\Http\Controllers\pages\ActivityLogController;
 use App\Http\Controllers\pages\DetachmentController;
 use App\Http\Controllers\pages\FirstMonthPerformanceEvaluationFormController;
 use App\Http\Controllers\pages\HomePage;
@@ -13,7 +14,6 @@ use App\Http\Controllers\pages\MiscError;
 use App\Http\Controllers\pages\Page2;
 use App\Http\Controllers\pages\RequirementTransmittalFormController;
 use App\Http\Controllers\pages\UsersController;
-use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 // locale
@@ -48,9 +48,6 @@ Route::middleware(['auth:web'])->group(function () {
     Route::post('/form/update-permission', [Access::class, 'form_update_permissions']);
     Route::post('/table/permissions', [Access::class, 'permissions']);
 
-    // Activity Board
-    Route::get('/activity-board', [ActivityBoard::class, 'activities'])->name('activity-board');
-
     // Form Routes
     Route::get('/form/new/{form}', [ActivityBoard::class, 'formNew']);
     Route::get('/form/view/{form}/{id}', [ActivityBoard::class, 'formView']);
@@ -77,5 +74,6 @@ Route::middleware(['auth:web'])->group(function () {
     // This single route will handle marking any notification as read
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->middleware('auth:sanctum');
 
-
+    // Logging Route
+    Route::get('/activity-logs', [ActivityLogController::class, 'logs'])->name('activity-logs');
 });

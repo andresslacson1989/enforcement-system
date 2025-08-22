@@ -19,7 +19,8 @@
                   name="user_id[]"
                   data-width="100%"
                   data-live-search="true"
-                  title="Choose a user to add..."
+                  data-style="btn-default"
+                  title="Choose personnel to add"
                   required
                   multiple
                 >

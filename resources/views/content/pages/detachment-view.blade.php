@@ -126,7 +126,7 @@
             <div class="row g-3">
               <div class="col-md-6">
                 <label class="form-label text-muted">Assigned Officer</label>
-                <div id="assigned_officer_display" class="fs-6 display-field" data-officer-id="{{ $detachment->assigned_officer }}">{{ User::find($detachment->assigned_officer)->name }}</div>
+                <div id="assigned_officer_display" class="fs-6 display-field" data-officer-id="{{ $detachment->assigned_officer ?? ''}}">{{ User::find($detachment->assigned_officer)->name ?? 'N/A' }}</div>
               </div>
             </div>
           </div>
@@ -253,7 +253,7 @@
                     </td>
                   </tr>
                 @empty
-                  <tr><td colspan="6" class="dt-empty text-center">No matching records found</td></tr>
+
                 @endforelse
                 @forelse ($detachment->users as $person)
                   @if($detachment->assigned_officer == $person->id)

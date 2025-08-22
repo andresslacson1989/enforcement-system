@@ -13,11 +13,6 @@ use Spatie\Permission\Models\Role;
 
 class ActivityBoard
 {
-  //
-  public function activities()
-  {
-    return view('content.pages.activitiy-board');
-  }
 
   public function formNew($form)
   {

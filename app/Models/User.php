@@ -131,16 +131,14 @@ class User extends Authenticatable
    * Set the user's primary role.
    * Ensures the user actually has the role before setting it as primary.
    */
-  public function setPrimaryRole(string|int $role)
+  public function  setPrimaryRole(string|int $role)
   {
     $roleId = is_numeric($role) ? $role : Role::findByName($role)->id;
 
     if ($this->hasRole($roleId)) {
       $this->primary_role_id = $roleId;
       $this->save();
-    } else {
-      // Optionally, throw an exception or handle the error
-      throw new \Exception('User does not have this role to set as primary.');
     }
+    return $this;
   }
 }

@@ -16,6 +16,10 @@ class PermissionsAndRolesSeeder extends Seeder
     public function run(): void
     {
         // Create Permission
+
+        // Logs Permission
+        $view_logs = Permission::create(['name' => 'view logs', 'group' => 'Logs']);
+
         // Staff Permissions
         $add_employee = Permission::create(['name' => 'add employee', 'group' => 'Employee']);
         $delete_employee = Permission::create(['name' => 'delete employee', 'group' => 'Employee']);
@@ -183,6 +187,7 @@ class PermissionsAndRolesSeeder extends Seeder
         $edit_detachment = Permission::create(['name' => 'edit detachment', 'group' => 'Detachment']);
         $delete_detachment = Permission::create(['name' => 'delete detachment', 'group' => 'Detachment']);
         $view_detachment = Permission::create(['name' => 'view detachment', 'group' => 'Detachment']);
+        $view_detachment_profile = Permission::create(['name' => 'view detachment profile', 'group' => 'Detachment']);
         $approve_detachment = Permission::create(['name' => 'approve detachment', 'group' => 'Detachment']);
 
         // Create Roles
@@ -215,6 +220,8 @@ class PermissionsAndRolesSeeder extends Seeder
 
         // Give Permissions
         $pres_perm = [
+            'view logs',
+
             'update processed form',
             'delete processed form',
 
@@ -223,9 +230,12 @@ class PermissionsAndRolesSeeder extends Seeder
 
             'view detachment',
             'approve detachment',
+            'view detachment profile',
         ];
 
         $vice_pres_perm = [
+            'view logs',
+
             'update processed form',
             'delete processed form',
 
@@ -234,9 +244,12 @@ class PermissionsAndRolesSeeder extends Seeder
 
             'view detachment',
             'approve detachment',
+            'view detachment profile',
         ];
 
         $gen_manager_perm = [
+            'view logs',
+
             'update processed form',
             'delete processed form',
 
@@ -245,6 +258,7 @@ class PermissionsAndRolesSeeder extends Seeder
 
             'view detachment',
             'approve detachment',
+            'view detachment profile',
         ];
 
         $accounting_perm = [
@@ -263,6 +277,7 @@ class PermissionsAndRolesSeeder extends Seeder
 
             'add detachment',
             'view detachment',
+            'view detachment profile',
         ];
 
         $hr_specialist_perm = [
@@ -275,6 +290,7 @@ class PermissionsAndRolesSeeder extends Seeder
 
             'add detachment',
             'view detachment',
+            'view detachment profile',
         ];
 
         $operation_manager_perm = [
@@ -290,7 +306,7 @@ class PermissionsAndRolesSeeder extends Seeder
             'fill first month performance evaluation form',
             'edit first month performance evaluation form',
 
-            'view detachment',
+            'view detachment profile',
         ];
 
         $detachment_commander_perm = [
@@ -298,7 +314,7 @@ class PermissionsAndRolesSeeder extends Seeder
             'fill first month performance evaluation form',
             'edit first month performance evaluation form',
 
-            'view detachment',
+            'view detachment profile',
         ];
 
         $officer_in_charge_perm = [
@@ -306,7 +322,7 @@ class PermissionsAndRolesSeeder extends Seeder
             'fill first month performance evaluation form',
             'edit first month performance evaluation form',
 
-            'view detachment',
+            'view detachment profile',
         ];
 
         $security_in_charge_perm = [
@@ -314,7 +330,7 @@ class PermissionsAndRolesSeeder extends Seeder
             'fill first month performance evaluation form',
             'edit first month performance evaluation form',
 
-            'view detachment',
+            'view detachment profile',
         ];
 
         $cluster_head_guard_perm = [
