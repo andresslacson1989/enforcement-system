@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class StoreFirstMonthPerformanceEvaluationForm extends FormRequest
 {
@@ -12,7 +13,13 @@ class StoreFirstMonthPerformanceEvaluationForm extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        $user = Auth::user();
+
+        if ($user->isAssignedOfficer()) {
+            return true;
+        }
+
+        return $user->can(config('permit.fill first month performance evaluation form.name'));
     }
 
     /**
@@ -22,40 +29,46 @@ class StoreFirstMonthPerformanceEvaluationForm extends FormRequest
      */
     public function rules(): array
     {
-      return [
-        // Employee and General Info
-        'employee' => 'required|exists:users,id',
-        'employee_number' => 'nullable|string|max:255',
-        'job_title' => 'nullable|string|max:255',
-        'deployment' => 'required|string|max:255',
-        'supervisor' => 'required|string|max:255',
+        // --- 1. Define the base rules that apply to BOTH store and update. ---
+        // These are the fields that can be changed during an edit, like ratings and comments.
+        $rules = [
+            'overall_standing' => 'required|in:poor,fair,good,excellent',
+            'knowledge_understanding_a' => 'required|in:poor,fair,good,excellent',
+            'knowledge_understanding_b' => 'required|in:poor,fair,good,excellent',
+            'attendance_a' => 'required|in:poor,fair,good,excellent',
+            'attendance_b' => 'required|in:poor,fair,good,excellent',
+            'observation_a' => 'required|in:poor,fair,good,excellent',
+            'observation_b' => 'required|in:poor,fair,good,excellent',
+            'communication_a' => 'required|in:poor,fair,good,excellent',
+            'communication_b' => 'required|in:poor,fair,good,excellent',
+            'professionalism_a' => 'required|in:poor,fair,good,excellent',
+            'professionalism_b' => 'required|in:poor,fair,good,excellent',
+            'strength_1' => 'nullable|string|max:255',
+            'strength_2' => 'nullable|string|max:255',
+            'strength_3' => 'nullable|string|max:255',
+            'improvement_1' => 'nullable|string|max:255',
+            'improvement_2' => 'nullable|string|max:255',
+            'improvement_3' => 'nullable|string|max:255',
+            'supervisor_comment' => 'nullable|string',
+            'security_comment' => 'nullable|string',
+        ];
 
-        // Performance Criteria (Radio Buttons)
-        'knowledge_understanding_a' => 'nullable|string|in:poor,fair,good,excellent',
-        'knowledge_understanding_b' => 'nullable|string|in:poor,fair,good,excellent',
-        'attendance_a' => 'nullable|string|in:poor,fair,good,excellent',
-        'attendance_b' => 'nullable|string|in:poor,fair,good,excellent',
-        'observation_a' => 'nullable|string|in:poor,fair,good,excellent',
-        'observation_b' => 'nullable|string|in:poor,fair,good,excellent',
-        'communication_a' => 'nullable|string|in:poor,fair,good,excellent',
-        'communication_b' => 'nullable|string|in:poor,fair,good,excellent',
-        'professionalism_a' => 'nullable|string|in:poor,fair,good,excellent',
-        'professionalism_b' => 'nullable|string|in:poor,fair,good,excellent',
+        // --- 2. Add rules that ONLY apply when CREATING a new record (store). ---
+        if ($this->isMethod('POST')) {
 
-        // Areas of Strength and Improvement
-        'strength_1' => 'nullable|string|max:255',
-        'strength_2' => 'nullable|string|max:255',
-        'strength_3' => 'nullable|string|max:255',
-        'improvement_1' => 'nullable|string|max:255',
-        'improvement_2' => 'nullable|string|max:255',
-        'improvement_3' => 'nullable|string|max:255',
+            // This merges the employee-related rules into our main rules array only on POST requests.
+            $rules = array_merge($rules, [
+                'employee_id' => 'required|exists:users,id',
+                'employee_number' => 'nullable|string|max:255',
+                'job_title' => 'nullable|string|max:255',
+                // It's better to validate that the deployment ID exists in the detachments table.
+                'detachment_id' => 'required|exists:detachments,id',
+                'submitted_by' => 'required|exists:users,id',
+            ]);
+        }
 
-        // Overall Standing
-        'overall_standing' => 'required|string|in:poor,fair,good,excellent',
+        // --- 3. The 'update' (PUT/PATCH) request will now only use the base rules. ---
 
-        // Comments
-        'supervisor_comment' => 'nullable|string',
-        'security_comment' => 'nullable|string',
-      ];
+        return $rules;
     }
 }

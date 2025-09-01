@@ -1,185 +1,184 @@
 @php
-  $configData = Helper::appClasses();
+    $configData = Helper::appClasses();
 @endphp
 
 @extends('layouts/layoutMaster')
 
-@section('title', 'Roles')
+@section('title', 'Modals - UI elements')
+
 <!-- Vendor Styles -->
 @section('vendor-style')
-  @vite([
-  'resources/assets/vendor/libs/bootstrap-select/bootstrap-select.scss',
-  'resources/assets/vendor/libs/animate-css/animate.scss"',
-  'resources/assets/vendor/libs/sweetalert2/sweetalert2.scss',
-  'resources/assets/vendor/libs/datatables-bs5/datatables.bootstrap5.scss',
-  'resources/assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.scss',
-  'resources/assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.scss',
-  'resources/assets/vendor/libs/datatables-rowgroup-bs5/rowgroup.bootstrap5.scss',
-  ])
+    @vite(['resources/assets/vendor/libs/select2/select2.scss',
+'resources/assets/vendor/libs/@form-validation/form-validation.scss',
+'resources/assets/vendor/libs/bs-stepper/bs-stepper.scss'])
 @endsection
-
-<!-- Page Styles -->
-{{--@section('page-style')--}}
-{{--  @vite([--}}
-{{--  //'resources/assets/vendor/scss/pages/wizard-ex-checkout.scss'--}}
-{{--  ])--}}
-{{--@endsection--}}
 
 <!-- Vendor Scripts -->
 @section('vendor-script')
-  @vite([
-  'resources/assets/vendor/libs/jquery/jquery.js',
-  'resources/assets/vendor/libs/bootstrap-select/bootstrap-select.js',
-  'resources/assets/vendor/libs/sweetalert2/sweetalert2.js',
-  'resources/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js',
-  'resources/assets/vendor/libs/moment/moment.js', 'resources/assets/vendor/libs/flatpickr/flatpickr.js',
+    @vite(['resources/assets/vendor/libs/cleave-zen/cleave-zen.js',
+'resources/assets/vendor/libs/select2/select2.js',
+ 'resources/assets/vendor/libs/bs-stepper/bs-stepper.js',
   'resources/assets/vendor/libs/@form-validation/popular.js',
   'resources/assets/vendor/libs/@form-validation/bootstrap5.js',
-  'resources/assets/vendor/libs/@form-validation/auto-focus.js'
-  ])
-
+   'resources/assets/vendor/libs/@form-validation/auto-focus.js'])
 @endsection
 
 <!-- Page Scripts -->
 @section('page-script')
-  @vite([
-  'resources/assets/js/test.js',
-  'resources/assets/js/extended-ui-sweetalert2.js',
-  ])
-
+    @vite(['resources/assets/js/pages-pricing.js',
+'resources/assets/js/modal-add-new-cc.js',
+ 'resources/assets/js/modal-add-new-address.js',
+ 'resources/assets/js/modal-create-app.js',
+ 'resources/assets/js/modal-edit-user.js',
+ 'resources/assets/js/modal-enable-otp.js',
+ 'resources/assets/js/modal-share-project.js',
+ 'resources/assets/js/modal-two-factor-auth.js'])
 @endsection
 
 @section('content')
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item">
-        <span class="fw-bold">Access</span>
-      </li>
-      <li class="breadcrumb-item active">Permissions</li>
-    </ol>
-  </nav>
-  @hasrole('root')
-  @php
-    // get roles, first role
-     echo auth()->user()->getRoleNames()[0]
-  @endphp
-  @endhasrole
-  <style>
-    body {
-      font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-top: 50px;
-      background-color: #f0f2f5;
-    }
-    .container {
-      background-color: #ffffff;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      width: 100%;
-      max-width: 500px;
-      margin-bottom: 30px;
-    }
-    h1 {
-      color: #333;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-    input[type="text"] {
-      padding: 12px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      font-size: 16px;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    button {
-      padding: 12px 20px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: background-color 0.3s ease;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-    #notification-container {
-      width: 100%;
-      max-width: 500px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .notification-item {
-      background-color: #e9f7ef; /* Light green for success */
-      border: 1px solid #d4edda;
-      color: #155724;
-      padding: 15px;
-      border-radius: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      animation: fadeIn 0.5s ease-out;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-      display: none; /* Hidden by default, will fade in with jQuery */
-    }
-    .notification-item p {
-      margin: 0;
-      flex-grow: 1;
-      font-size: 15px;
-    }
-    .notification-item .timestamp {
-      font-size: 12px;
-      color: #6c757d;
-      margin-left: 15px;
-    }
-    .close-notification {
-      background: none;
-      border: none;
-      font-size: 20px;
-      color: #155724;
-      cursor: pointer;
-      margin-left: 10px;
-      padding: 0 5px;
-    }
-    .close-notification:hover {
-      color: #0d3617;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
+    <div class="row mb-6">
+        <!--  Pricing -->
+        <div class="col-12 col-sm-6 col-lg-4 mb-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="mb-4 text-heading icon-base ti tabler-currency-dollar icon-32px"></i>
+                    <h5>Pricing</h5>
+                    <p>Elegant pricing options modal popup example, easy to use in any page.</p>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#pricingModal">Show</button>
+                </div>
+            </div>
+        </div>
+        <!--/  Pricing -->
 
-  <div class="row">
-    <div class="container">
-    <div class="col-12">
-      <h1>Send Real-time Notification</h1>
-      <form id="notification-form" action="{{ route('send-test-message') }}" method="POST">
-        @csrf
-        <input type="text" id="notification-input" name="message" placeholder="Type your notification message...">
-        <button type="button" id="send">Send Notification</button>
-      </form>
+        <!--  Add New Credit Card -->
+        <div class="col-12 col-sm-6 col-lg-4 mb-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="mb-4 text-heading icon-base ti tabler-credit-card icon-32px"></i>
+                    <h5>Add New Credit Card</h5>
+                    <p>Quickly collect the credit card details, built in input mask and form validation support.</p>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addNewCCModal">Show</button>
+                </div>
+            </div>
+        </div>
+        <!--/  Add New Credit Card -->
+
+        <!--  Add New Address -->
+        <div class="col-12 col-sm-6 col-lg-4 mb-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="mb-4 text-heading icon-base ti tabler-home icon-32px"></i>
+                    <h5>Add New Address</h5>
+                    <p>Ready to use form to collect user address data with validation and custom input support.</p>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addNewAddress">Show</button>
+                </div>
+            </div>
+        </div>
+        <!--/  Add New Address -->
+
+        <!--  Refer & Earn -->
+        <div class="col-12 col-sm-6 col-lg-4 mb-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="mb-4 text-heading icon-base ti tabler-gift icon-32px"></i>
+                    <h5>Refer & Earn</h5>
+                    <p>Use Refer & Earn modal to encourage your exiting customers refer their friends & colleague.</p>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#referAndEarn">Show</button>
+                </div>
+            </div>
+        </div>
+        <!--/  Refer & Earn -->
+
+        <!--  Edit User -->
+        <div class="col-12 col-sm-6 col-lg-4 mb-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="mb-4 text-heading icon-base ti tabler-user icon-32px"></i>
+                    <h5>Edit User</h5>
+                    <p>Easily update the user data on the go, built in form validation and custom controls.</p>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editUser">Show</button>
+                </div>
+            </div>
+        </div>
+        <!--/  Edit User -->
+
+        <!--  Enable OTP -->
+        <div class="col-12 col-sm-6 col-lg-4 mb-md-0 mb-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="mb-4 text-heading icon-base ti tabler-user icon-32px"></i>
+                    <h5>Enable OTP</h5>
+                    <p>Use this modal to enhance your application security by enabling authentication with OTP.</p>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#enableOTP">Show</button>
+                </div>
+            </div>
+        </div>
+        <!--/  Enable OTP -->
+
+        <!--  Share Project -->
+        <div class="col-12 col-sm-6 col-lg-4 mb-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="mb-4 text-heading icon-base ti tabler-file-text icon-32px"></i>
+                    <h5>Share Project</h5>
+                    <p>Elegant Share Project options modal popup example, easy to use in any page</p>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#shareProject">Show</button>
+                </div>
+            </div>
+        </div>
+        <!--/  Share Project -->
+
+        <!--  Create App -->
+        <div class="col-12 col-sm-6 col-lg-4 mb-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="mb-4 text-heading icon-base ti tabler-box icon-32px"></i>
+                    <h5>Create App</h5>
+                    <p>Provide application data with this form to create your app, easy to use in page.</p>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createApp">Show</button>
+                </div>
+            </div>
+        </div>
+        <!--/  Create App -->
+
+        <!--  Two Factor Auth -->
+        <div class="col-12 col-sm-6 col-lg-4 mb-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="mb-4 text-heading icon-base ti tabler-lock icon-32px"></i>
+                    <h5>Two Factor Auth</h5>
+                    <p>Enhance your application security by enabling two factor authentication.</p>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#twoFactorAuth">Show</button>
+                </div>
+            </div>
+        </div>
+        <!--/  Two Factor Auth -->
+
+        <!--  Payment providers -->
+        <div class="col-12 col-sm-6 col-lg-4 mb-6 mb-sm-0">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="mb-4 text-heading icon-base ti tabler-brand-mastercard icon-32px"></i>
+                    <h5>Payment providers</h5>
+                    <p>Elegant payment options modal popup example, easy to use in any page.</p>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#paymentProvider">Show</button>
+                </div>
+            </div>
+        </div>
+        <!--/  Payment providers -->
+
+        <!--  Payment methods -->
+        <div class="col-12 col-sm-6 col-lg-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="mb-4 text-heading icon-base ti tabler-credit-card icon-32px"></i>
+                    <h5>Add Payment Method</h5>
+                    <p>Elegant payment methods modal popup example, easy to use in any page.</p>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#paymentMethods">Show</button>
+                </div>
+            </div>
+        </div>
+        <!--/  Payment methods -->
     </div>
-
-      <div id="notification-container">
-        <!-- Notifications will appear here -->
-      </div>
-    </div>
-  </div>
-
-
+    
 @endsection
-
-
-

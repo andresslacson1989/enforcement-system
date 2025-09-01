@@ -1,7 +1,7 @@
 {{-- ## EDIT USER MODAL ## --}}
 <div class="modal fade" id="edit_profile_modal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl"> {{-- Increased modal size to modal-xl --}}
-        <form id="edit_profile_form" action="/staffs/store" method="POST">
+        <form id="edit_profile_form" action="/staffs/store" method="PUT">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="modal_title">Add</h5>
@@ -60,7 +60,7 @@
                                 <option value="preventive_suspension">Preventive Suspension</option>
                             </select>
                         </div>
-                        @can(config('permit.change personnel role'))
+                        @can(config("permit.change personnel role.name"))
                             <div class="col-md-3 mb-3">
                                 <label for="role" class="form-label">Role (Position)</label>
                                 <select class="select2 form-select w-100"
@@ -71,7 +71,6 @@
                                         <option value="{{ $role->name }}">{{ ucwords($role->name) }}</option>
                                     @endforeach
                                 </select>
-                                <span class="text-danger error-text role_error"></span>
                             </div>
                         @endcan
                     </div>

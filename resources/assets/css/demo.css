@@ -8,8 +8,8 @@
 }
 
 .app-brand-logo.demo svg {
-  width: 34px;
-  height: 24px;
+  width: 35px;
+  height: 45px;
 }
 
 .app-brand-text.demo {
@@ -21,9 +21,11 @@
 .layout-navbar-fixed .layout-wrapper:not(.layout-without-menu) .layout-page {
   padding-top: 64px !important;
 }
+
 .layout-navbar-fixed .layout-wrapper:not(.layout-horizontal):not(.layout-without-menu) .layout-page {
   padding-top: 72px !important;
 }
+
 /* Navbar page z-index issue solution */
 .content-wrapper .navbar {
   z-index: auto;
@@ -46,6 +48,7 @@
   margin-top: 1rem !important;
   margin-bottom: 0 !important;
 }
+
 .demo-vertical-spacing.demo-only-element > :first-child {
   margin-top: 0 !important;
 }
@@ -54,6 +57,7 @@
   margin-top: 1.875rem !important;
   margin-bottom: 0 !important;
 }
+
 .demo-vertical-spacing-lg.demo-only-element > :first-child {
   margin-top: 0 !important;
 }
@@ -62,6 +66,7 @@
   margin-top: 5rem !important;
   margin-bottom: 0 !important;
 }
+
 .demo-vertical-spacing-xl.demo-only-element > :first-child {
   margin-top: 0 !important;
 }
@@ -72,6 +77,7 @@
     width: 254px;
     position: relative;
   }
+
   #dropdown-variation-demo .btn-group .text-truncate::after {
     position: absolute;
     top: 45%;
@@ -96,9 +102,11 @@
   flex-direction: column;
   margin-top: 1rem;
 }
+
 .layout-demo-placeholder img {
   width: 900px;
 }
+
 .layout-demo-info {
   text-align: center;
   margin-top: 1rem;

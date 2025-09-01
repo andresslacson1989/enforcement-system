@@ -4,6 +4,10 @@
 
 'use strict';
 
+// Import the autocomplete library and its theme
+import { autocomplete } from '@algolia/autocomplete-js';
+import '@algolia/autocomplete-theme-classic';
+
 window.isRtl = window.Helpers.isRtl();
 window.isDarkStyle = window.Helpers.isDarkStyle();
 let menu,

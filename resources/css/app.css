@@ -1,0 +1,19 @@
+body:has(.select2.select2-container--open) {
+    overflow-x: hidden !important
+
+}
+
+body:has(.select2-detachment.select2-container--open) {
+    overflow-x: hidden !important
+
+}
+
+body:has(.select2-personnel.select2-container--open) {
+    overflow-x: hidden !important
+
+}
+
+body:has(.select2-modal.select2-container--open) {
+    overflow-x: hidden !important
+
+}

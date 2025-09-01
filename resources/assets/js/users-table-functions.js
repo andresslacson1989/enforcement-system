@@ -1,52 +1,54 @@
-// In: resources/assets/js/pages-staffs.js
-$(function () {
-  'use strict';
+// Listen for the custom event 'datatable:ready'
+$(document).on('datatable:ready', function (e, dt_instance) {
+  // Initialize Flatpickr for the birth_date input in the modal
+  // We target the class '.flatpickr-date' within the modal's context.
+  $('#users_modal .flatpickr-date').flatpickr({
+    monthSelectorType: 'static',
+    static: true
+  });
+
+  let select2Modal = $('.select2-modal');
+  select2Modal.select2({
+    dropdownParent: $('#users_modal .modal-body'),
+    placeholder: 'Choose an option'
+  });
 
   const users_modal = $('#users_modal');
   const users_form = $('#users_form');
   const body = $('body');
-
+  let dt_users; // Declare a local variable to hold the DataTable instance
+  dt_users = dt_instance; // Get the DataTable instance from the event data
   // Handle Filters
   $('#role_filter, #status_filter').on('change', () => dt_users.ajax.reload());
 
   // Prepare Modal for ADD action
-  $('button[data-bs-target="#staff_modal"]').on('click', function () {
-    users_form[0].reset();
-    users_form.find('.is-invalid').removeClass('is-invalid');
-    users_form.find('.error-text').text('');
-    users_form.find('input[name="_method"]').remove();
-    $('.selectpicker').selectpicker('val', ''); // Clear selectpickers
-    $('#modal_title').text('Add');
-    $('#modal_button').text('Add');
-    users_form.attr('action', '/staffs/store');
+  $('button[data-bs-target="#users_modal"]').on('click', function () {
+    resetModal('Add User', 'Add', '/staffs/store');
   });
 
   // Prepare Modal for EDIT action
   body.on('click', '.edit-user', function () {
     const userId = $(this).data('user-id');
-
-    // Fetch user data using the new standard 'show' method
+    resetModal('Edit User', 'Save Changes', `/staffs/update/${userId}`);
+    // Fetch user data...
     $.get(`/staffs/${userId}`, function (data) {
-      users_form.find('input[name="_method"]').remove(); // Clear previous method spoofing
-
-      // Configure modal for editing
-      $('#modal_title').text('Edit');
-      $('#modal_button').text('Save Changes');
-      users_form.attr('action', `/staffs/update/${userId}`);
       users_form.append('<input type="hidden" name="_method" value="PUT">');
-
-      // Populate fields
+      // Populate fields...
       for (const key in data) {
-        if (key === 'primary_role' && data[key]) {
-          $('#role').selectpicker('val', data[key].name);
-        } else {
-          $(`#${key}`).val(data[key]);
+        const field = $(`[name="${key}"]`);
+        if (field.length) {
+          const type = field.attr('type');
+          if (type === 'checkbox') {
+            field.prop('checked', !!data[key]); // Use .prop() for booleans
+          } else if (type === 'radio') {
+            $(`[name="${key}"][value="${data[key]}"]`).prop('checked', true);
+          } else {
+            field.val(data[key]).trigger('change'); // For text, select, etc.
+          }
         }
       }
-      // Refresh selectpickers after setting value
-      $('#gender, #status').selectpicker('refresh');
-
-      users_modal.modal('show');
+      Swal.close();
+      $('#users_modal').modal('show');
     }).fail(() => Swal.fire('Error!', 'Could not retrieve user data.', 'error'));
   });
 
@@ -54,29 +56,72 @@ $(function () {
   users_form.on('submit', function (e) {
     e.preventDefault();
     const form = $(this);
+    const submitButton = $(e.originalEvent.submitter);
+    const submitAction = submitButton.val(); // 'personal', 'address', 'all', etc.
+
+    let dataToSubmit;
+    let successMessage;
+
+    // Determine which data to serialize based on the button clicked
+    if (submitAction === 'all') {
+      dataToSubmit = form.serialize();
+      successMessage = 'All changes have been saved successfully!';
+    } else {
+      // Find the tab pane associated with the button and serialize its inputs
+      const tabPane = submitButton.closest('.tab-pane');
+      dataToSubmit = tabPane.find(':input').serialize();
+      // We also need to manually add the _method and _token for partial updates
+      dataToSubmit += '&' + form.find('input[name="_method"], input[name="_token"]').serialize();
+      successMessage = `${submitButton.text().replace('Save ', '')} updated successfully!`;
+    }
+
     $.ajax({
       url: form.attr('action'),
       method: 'POST', // Always POST
-      data: form.serialize(),
+      data: dataToSubmit,
       beforeSend: () => {
+        // Clear all previous errors
         form.find('.error-text').text('');
         form.find('.is-invalid').removeClass('is-invalid');
+        // Disable the clicked button
+        submitButton.prop('disabled', true).addClass('disabled');
       },
-      success: response => {
+      success: data => {
         users_modal.modal('hide');
+        Swal.fire({
+          title: 'Success!',
+          text: successMessage,
+          icon: data.icon,
+          showConfirmButton: false,
+          timer: 1500
+        });
         dt_users.ajax.reload();
-        Swal.fire({ icon: 'success', title: response.text || 'Success!', showConfirmButton: false, timer: 1500 });
       },
       error: jqXHR => {
         if (jqXHR.status === 422) {
           const errors = jqXHR.responseJSON.errors;
+          let firstErrorField = null;
           for (const key in errors) {
-            $(`#${key}`).addClass('is-invalid').siblings('.error-text').text(errors[key][0]);
+            const field = $(`[name="${key}"]`);
+            field.addClass('is-invalid').siblings('.error-text').text(errors[key][0]);
+            if (!firstErrorField) {
+              firstErrorField = field;
+            }
+
+            Swal.fire({
+              title: 'Error!',
+              icon: data.icon,
+              showConfirmButton: false,
+              timer: 1500
+            });
           }
+          // Optional: Focus the first field with an error
+          if (firstErrorField) firstErrorField.focus();
         } else {
           Swal.fire({ icon: 'error', title: 'Request Failed', text: 'An error occurred on the server.' });
         }
-      }
+      },
+      complete: () => submitButton.prop('disabled', false).removeClass('disabled')
     });
   });
 
@@ -93,6 +138,15 @@ $(function () {
       buttonsStyling: false
     }).then(function (result) {
       if (result.isConfirmed) {
+        Swal.fire({
+          title: 'Please Wait!',
+          text: 'Processing your request...',
+          allowOutsideClick: false,
+          showConfirmButton: false, // This hides the "OK" button
+          willOpen: () => {
+            Swal.showLoading(); // 2. Show the spinner
+          }
+        });
         $.ajax({
           url: `/staffs/delete/${userId}`,
           method: 'POST', // Use POST with method spoofing
@@ -101,8 +155,51 @@ $(function () {
             _token: $('input[name="_token"]').val()
           },
           success: function (response) {
-            dt_users.ajax.reload();
             Swal.fire('Deleted!', response.text, 'success');
+            dt_users.ajax.reload();
+          },
+          error: function () {
+            Swal.fire('Error!', 'Could not delete the user.', 'error');
+          }
+        });
+      }
+    });
+  });
+
+  // ## Remove User Logic ##
+  body.on('click', '.remove-user', function () {
+    const userId = $(this).data('user-id');
+    const detachment_name = $(this).data('detachment-name');
+
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'Remove this personnel from ' + detachment_name + '.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, remove it!',
+      customClass: { confirmButton: 'btn btn-primary me-3', cancelButton: 'btn btn-label-secondary' },
+      buttonsStyling: false
+    }).then(function (result) {
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: 'Please Wait!',
+          text: 'Processing your request...',
+          allowOutsideClick: false,
+          showConfirmButton: false, // This hides the "OK" button
+          willOpen: () => {
+            Swal.showLoading(); // 2. Show the spinner
+          }
+        });
+        $.ajax({
+          url: `/staffs/remove/${userId}`,
+          method: 'POST', // Use POST with method spoofing
+          data: {
+            _method: 'PATCH',
+            _token: $('input[name="_token"]').val()
+          },
+          success: function (response) {
+            Swal.fire('Removed!', response.text, 'success');
+            dt_users.ajax.reload();
           },
           error: function () {
             Swal.fire('Error!', 'Could not delete the user.', 'error');
@@ -165,6 +262,15 @@ $(function () {
       }
     }).then(result => {
       if (result.isConfirmed) {
+        Swal.fire({
+          title: 'Please Wait!',
+          text: 'Processing your request...',
+          allowOutsideClick: false,
+          showConfirmButton: false, // This hides the "OK" button
+          willOpen: () => {
+            Swal.showLoading(); // 2. Show the spinner
+          }
+        });
         // 4. Make the AJAX call with all the required data
         $.ajax({
           url: '/staffs/suspend/',
@@ -200,6 +306,15 @@ $(function () {
       buttonsStyling: false
     }).then(function (result) {
       if (result.isConfirmed) {
+        Swal.fire({
+          title: 'Please Wait!',
+          text: 'Processing your request...',
+          allowOutsideClick: false,
+          showConfirmButton: false, // This hides the "OK" button
+          willOpen: () => {
+            Swal.showLoading(); // 2. Show the spinner
+          }
+        });
         $.ajax({
           url: `/staffs/unsuspend/`,
           method: 'POST',
@@ -255,7 +370,15 @@ $(function () {
         if (result.isConfirmed) {
           const newRoleId = result.value;
           const csrfToken = $('meta[name="csrf-token"]').attr('content');
-
+          Swal.fire({
+            title: 'Please Wait!',
+            text: 'Processing your request...',
+            allowOutsideClick: false,
+            showConfirmButton: false, // This hides the "OK" button
+            willOpen: () => {
+              Swal.showLoading(); // 2. Show the spinner
+            }
+          });
           // 5. Handle the submission with AJAX
           $.ajax({
             url: `/personnel/update-role/${userId}`,
@@ -267,7 +390,6 @@ $(function () {
             },
             success: function (response) {
               // On success, just reload the table - no page refresh!
-              dt_users.ajax.reload();
               Swal.fire({
                 icon: 'success',
                 title: 'Success!',
@@ -275,6 +397,7 @@ $(function () {
                 showConfirmButton: false,
                 timer: 1500
               });
+              dt_users.ajax.reload();
             },
             error: function (jqXHR) {
               const errorText = jqXHR.responseJSON?.message || 'Could not update the role.';
@@ -287,4 +410,16 @@ $(function () {
       Swal.fire({ title: 'Error!', text: 'Could not load roles.', icon: 'error' });
     });
   });
+
+  function resetModal(title, buttonText, action) {
+    users_form[0].reset();
+    users_form.find('.is-invalid').removeClass('is-invalid');
+    users_form.find('.error-text').text('');
+    users_form.find('input[name="_method"]').remove();
+    select2Modal.val('').trigger('change'); // Clear select2
+
+    $('#modal_title').text(title);
+    $('#modal_button').text(buttonText);
+    users_form.attr('action', action);
+  }
 });

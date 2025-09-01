@@ -1,109 +1,174 @@
+@php use App\Models\Detachment;use App\Models\RequirementTransmittalForm;use App\Models\User; @endphp
 @extends('layouts/layoutMaster')
 
 @section('title', 'Activity Board')
 
+<!-- Vendor Styles -->
 @section('vendor-style')
-  @vite(['resources/assets/vendor/libs/jkanban/jkanban.scss', 'resources/assets/vendor/libs/select2/select2.scss',
-  'resources/assets/vendor/libs/flatpickr/flatpickr.scss', 'resources/assets/vendor/libs/quill/typography.scss',
-  'resources/assets/vendor/libs/quill/katex.scss', 'resources/assets/vendor/libs/quill/editor.scss'])
+    @vite([
+    'resources/assets/vendor/libs/select2/select2.scss',
+    'resources/assets/vendor/libs/sweetalert2/sweetalert2.scss',
+    'resources/assets/vendor/libs/flatpickr/flatpickr.scss',
+    ])
 @endsection
 
-@section('page-style')
-  @vite('resources/assets/vendor/scss/pages/app-kanban.scss')
-@endsection
-
+<!-- Vendor Scripts -->
 @section('vendor-script')
-  @vite(['resources/assets/vendor/libs/moment/moment.js', 'resources/assets/vendor/libs/flatpickr/flatpickr.js',
-  'resources/assets/vendor/libs/select2/select2.js', 'resources/assets/vendor/libs/jkanban/jkanban.js',
-  'resources/assets/vendor/libs/quill/katex.js', 'resources/assets/vendor/libs/quill/quill.js'])
+    @vite([
+    'resources/assets/vendor/libs/jquery/jquery.js',
+    'resources/assets/vendor/libs/select2/select2.js',
+    'resources/assets/vendor/libs/sweetalert2/sweetalert2.js',
+    'resources/assets/vendor/libs/moment/moment.js',
+    'resources/assets/vendor/libs/flatpickr/flatpickr.js',
+    'resources/assets/vendor/libs/@form-validation/popular.js',
+    'resources/assets/vendor/libs/@form-validation/bootstrap5.js',
+    'resources/assets/vendor/libs/@form-validation/auto-focus.js'
+    ])
 @endsection
 
 @section('page-script')
-  @vite('resources/assets/js/app-kanban.js')
+    @vite('resources/assets/js/pages-activity-logs.js')
 @endsection
 
 @section('content')
-  <div class="container-fluid">
-    <h1 class="h3 mb-4 text-gray-800">Application Activity Logs</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active">Activity Logs</li>
+        </ol>
+    </nav>
+    <hr>
+    <div class="container-fluid">
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                Filters
+            </div>
+            <div class="card-body">
+                <form method="GET" action="{{ route('activity-logs') }}">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label for="search">Search</label>
+                            <input type="text" name="search" class="form-control" placeholder="Search message or user..." value="{{ request('search') }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="model">Model</label>
+                            <select name="model" class="selectpicker w-100" data-style="default">
+                                <option value="">All Models</option>
+                                @foreach($filterableModels as $model)
+                                    <option value="{{ $model }}" {{ request('model') == $model ? 'selected' : '' }}>{{ $model }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="start_date">Start Date</label>
+                            <input type="date" name="start_date" class="form-control" value="{{ request('start_date') }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="end_date">End Date</label>
+                            <input type="date" name="end_date" class="form-control" value="{{ request('end_date') }}">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary">Filter</button>
+                            <a href="{{ route('activity-logs') }}" class="btn btn-secondary ms-2">Clear</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
 
-    <!-- Filter Card -->
-    <div class="card shadow mb-4">
-      <div class="card-header">
-        Filters
-      </div>
-      <div class="card-body">
-        <form method="GET" action="{{ route('activity-logs') }}">
-          <div class="row">
-            <div class="col-md-3">
-              <label for="search">Search</label>
-              <input type="text" name="search" class="form-control" placeholder="Search message or user..." value="{{ request('search') }}">
+        <!-- Logs Table -->
+        <div class="card shadow mb-4">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="text-center">
+                        <tr>
+                            <th>Date</th>
+                            <th>User</th>
+                            <th>Action</th>
+                            <th>Message</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @forelse($logs as $log)
+                            <tr>
+                                <td>{{ $log->created_at->format('F d, Y H:i') }}</td>
+                                <td class="text-center">{{ $log->user->name }}</td>
+                                <td class="text-center">
+                                    @if($log->action == 'created')
+                                        <span class="badge bg-label-success">{{ strtoupper($log->action) }}</span>
+
+                                    @elseif($log->action == 'updated')
+                                        <span class="badge bg-label-primary">{{ strtoupper($log->action) }}</span>
+
+                                    @elseif($log->action == 'deleted')
+                                        <span class="badge bg-label-danger">{{ strtoupper($log->action) }}</span>
+
+                                    @else
+                                        <span class="badge bg-label-info">{{ strtoupper($log->action) }}</span>
+                                    @endif
+                                </td>
+                                <td class="text-nowrap">
+                                    @php
+                                        // Split the message by the first newline character
+                                        $messageParts = explode("<br>", $log->message, 2);
+                                        $summary = $messageParts[0];
+                                        $details = $messageParts[1] ?? null;
+                                    @endphp
+
+                                    {{-- Display the summary --}}
+                                    {!! $summary !!}
+
+                                    {{-- If there are details, show a button to view them --}}
+                                    @if($details)
+                                        <div class="row">
+                                            <div class="col-12 mt-1 ms-0 ps-0">
+                                                <button type="button"
+                                                        class="btn btn-info btn-sm ms-2"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#logDetailsModal"
+                                                        data-details="{{ $log->message }}">
+                                                    More Details
+                                                </button>
+                                            </div>
+                                        </div>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="text-center">No logs found.</td>
+                            </tr>
+                        @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination -->
+                <div class="row mt-4">
+                    <div class="col">
+                        {{ $logs->appends(request()->query())->links() }}
+                    </div>
+                </div>
             </div>
-            <div class="col-md-3">
-              <label for="model">Model</label>
-              <select name="model" class="form-control">
-                <option value="">All Models</option>
-                @foreach($filterableModels as $model)
-                  <option value="{{ $model }}" {{ request('model') == $model ? 'selected' : '' }}>{{ $model }}</option>
-                @endforeach
-              </select>
+        </div>
+    </div>
+    {{-- Add this code once at the bottom of your Blade file --}}
+    <div class="modal fade" id="logDetailsModal" tabindex="-1" aria-labelledby="logDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="logDetailsModalLabel">Full Log Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {{-- Use a <pre> tag to preserve formatting and line breaks --}}
+                    <div id="log-details-content" style="white-space: pre-wrap; word-wrap: break-word;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
             </div>
-            <div class="col-md-2">
-              <label for="start_date">Start Date</label>
-              <input type="date" name="start_date" class="form-control" value="{{ request('start_date') }}">
-            </div>
-            <div class="col-md-2">
-              <label for="end_date">End Date</label>
-              <input type="date" name="end_date" class="form-control" value="{{ request('end_date') }}">
-            </div>
-            <div class="col-md-2 d-flex align-items-end">
-              <button type="submit" class="btn btn-primary">Filter</button>
-              <a href="{{ route('activity-logs') }}" class="btn btn-secondary ms-2">Clear</a>
-            </div>
-          </div>
-        </form>
-      </div>
+        </div>
     </div>
 
-    <!-- Logs Table -->
-    <div class="card shadow mb-4">
-      <div class="card-body">
-        <div class="table-responsive">
-          <table class="table table-bordered">
-            <thead>
-            <tr>
-              <th>Date</th>
-              <th>User</th>
-              <th>Action</th>
-              <th>Message</th>
-            </tr>
-            </thead>
-            <tbody>
-            @forelse($logs as $log)
-              <tr>
-                <td>{{ $log->created_at->format('Y-m-d H:i:s') }}</td>
-                <td>{{ $log->user->name }}</td>
-                <td class="text-nowrap">
-                  <span class="badge bg-info">{{ $log->action }}</span> on
-                  <span class="badge bg-secondary">{{ class_basename($log->loggable_type) }} #{{ $log->loggable_id }}</span>
-                </td>
-                <td>{!! $log->message !!}</td>
-              </tr>
-            @empty
-              <tr>
-                <td colspan="4" class="text-center">No logs found.</td>
-              </tr>
-            @endforelse
-            </tbody>
-          </table>
-        </div>
-        <!-- Pagination -->
-        <div class="row mt-4">
-          <div class="col">
-            {{ $logs->appends(request()->query())->links() }}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 @endsection
 

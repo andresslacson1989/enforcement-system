@@ -1,205 +1,177 @@
 <?php
 
 namespace App\Http\Controllers\pages;
+
 use App\Http\Classes\PermissionsClass;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class Access extends Controller
 {
-
-  public function roles()
-  {
-    $permissions = (new PermissionsClass())->getPermission();
-
-    $roles = Role::where('name', '!=', 'root')->get();
-    return view('content.pages.roles')
-      ->with('permissions', $permissions)
-      ->with('roles', $roles);
-  }
-
-
-  public function form_roles(Request $request)
-  {
-    //validation
-    $request->validate([
-      'name' => 'required',
-      'permissions' => 'required|array',
-      'description' => 'required'
-    ]);
-
-    $name = $request->name;
-    $permissions = $request->permissions;
-    $description = $request->description;
-
-    //create roles
-    $create = Role::create(['name' => $name]);
-    if ($create->givePermissionTo($permissions)) {
-      $create->description = $description;
-      $create->save();
-      return response()->json(['message' => 'Success', 'text' => "Role Created", 'icon' => 'success']);
-    }
-
-    return response()->json(['message' => 'Failed', 'text' => "Invalid inputs", 'icon' => 'error']);
-
-
-  }
-  public function form_update_roles(Request $request)
-  {
-    //validation
-    $request->validate([
-      'role_id' => 'required|integer',
-      'role_permissions' => 'required|array',
-      'role_description' => 'required'
-    ]);
-
-    $id = $request->role_id;
-    $permissions = $request->role_permissions;
-    $description = $request->role_description;
-
-    //create roles
-    $role = Role::findById($id);
-    if ($role->syncPermissions($permissions)) {
-      $role->description = $description;
-      $role->save();
-      return response()->json(['message' => 'Success', 'text' => "Role Updated", 'icon' => 'success']);
-    }
-
-    return response()->json(['message' => 'Failed', 'text' => "Invalid inputs", 'icon' => 'error']);
-
-  }
-
-  public function table_roles(Request $request)
-  {
-    if ($request->ajax()) {
-      // Build your Eloquent query.
-      // DataTables will handle sorting, searching, and pagination based on its parameters.
-      $roles = Role::all();
-      foreach ($roles as $item) {
-        if ($item->name == 'root') {
-          continue;
+    public function index()
+    {
+        if (! auth()->user()->can(config('permit.view roles menu.name'))) {
+            return view('content.pages.pages-misc-error');
         }
-        $role = Role::findById($item->id);
-        $permissions = $role->permissions;
+        $permissions = (new PermissionsClass)->getPermission();
 
-      }
-      $perm = [];
-      foreach ($permissions as $permission) {
-        $perm[] = $permission->name;
-      }
+        $roles = Role::withCount(['users', 'permissions'])
+            ->where('name', '!=', 'root')
+            ->orderBy('id', 'asc')
+            ->get();
 
-      // You can add more conditions to your query here, for example:
-      // $data = User::where('status', 'active')->select(['id', 'name', 'email', 'created_at']);
-      // If you're using Spatie permissions and want to show roles:
-      // $data = User::with('roles')->select(['id', 'name', 'email', 'created_at']);
-
-
-      $draw = $request->get('draw');
-      $start = $request->get("start");
-      $rowPerPage = $request->get("length"); // Rows display per page
-
-      $columnIndex_arr = $request->get('order');
-      $columnName_arr = $request->get('columns');
-      $order_arr = $request->get('order');
-
-      $search_arr = $request->get('search');
-
-      $columnIndex = $columnIndex_arr[0]['column']; // Column index
-      $columnName = $columnName_arr[$columnIndex]['data']; // Column name
-      $columnSortOrder = $order_arr[0]['dir']; // asc or desc
-      $searchValue = $request->searchFilter ?? ''; //$search_arr['value']; // Search value
-      $totalRecords = $roles->count();
-
-      $typeFilter = $request->typeFilter;
-      $staffFilter = $request->staff;
-
-      $totalRecordsWithFilter = $roles->count();
-      $active_pin = 0;
-      $inactive_pin = 0;
-      $total_pins = $roles->count();
-
-      foreach ($roles as $item) {
-        $data[] = [
-          "id" => $item->id,
-          "name" => $item->name,
-          "permissions" => $perm ?? '',
-          "actions" => 'buttons'
-        ];
-      }
-
-      $response = array(
-        "draw" => (int)$draw,
-        "recordsTotal" => $totalRecords,
-        "recordsFiltered" => $totalRecordsWithFilter,
-        "data" => $data,
-        "current_data" => [
-          'selected' => ucfirst($typeFilter),
-          'active_pin' => $active_pin,
-          'inactive_pin' => $inactive_pin,
-          'total' => $total_pins
-        ]
-      );
-      return json_encode($response, JSON_THROW_ON_ERROR | false);
+        return view('content.pages.roles')
+            ->with('permissions', $permissions)
+            ->with('roles', $roles);
     }
-  }
 
-  public function see_permissions(Request $request)
-  {
-      $user = auth()->user();
-      $request->validate([
-          'id' => 'required|integer',
+    public function form_roles(Request $request)
+    {
+        // UPDATED VALIDATION: Added unique rule for the role name.
+        $request->validate([
+            'name' => 'required|string|max:255|unique:roles,name',
+            'permissions' => 'sometimes|array', // 'sometimes' allows empty permission sets
+            'description' => 'required|string|max:255',
         ]);
-      if($user->can('view_permission')){
-        $role = Role::findById($request->id);
-        $permissions = $role->permissions;
-        return json_encode($permissions, JSON_PRETTY_PRINT, JSON_THROW_ON_ERROR | false);
-      }
-      return json_encode(['status' => 'error', 'message' => 'unauthorized'], JSON_THROW_ON_ERROR | false);
-  }
 
-  public function permissions()
-  {
-    $permissions = (new PermissionsClass())->getPermission();
-    return view('content.pages.permissions')
-      ->with('permissions', $permissions);
-  }
-  public function form_permissions(Request $request)
-  {
-    $request->validate([
-      'permission_group' => 'required',
-      'permission_name' => 'required',
-    ]);
+        $role = Role::create([
+            'name' => $request->name,
+            'description' => $request->description,
+        ]);
 
-    $name = $request->permission_name;
-    $group = $request->permission_group;
+        if ($request->has('permissions')) {
+            $role->givePermissionTo($request->permissions);
+        }
 
-    if ( Permission::create(['name' => $name, 'group' => $group])) {
-      return response()->json(['message' => 'Success', 'text' => "Role Created", 'icon' => 'success']);
+        return response()->json(['message' => 'Success', 'text' => 'Role Created', 'icon' => 'success']);
     }
 
-    return response()->json(['message' => 'Failed', 'text' => "Invalid inputs", 'icon' => 'error']);
-  }
+    public function form_update_roles(Request $request)
+    {
+        // UPDATED VALIDATION:
+        // 1. Also validates the 'name' field.
+        // 2. Uses Rule::unique to ignore the current role's name when checking for duplicates.
+        $request->validate([
+            'role_id' => 'required|integer|exists:roles,id',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('roles', 'name')->ignore($request->role_id),
+            ],
+            'role_permissions' => 'sometimes|array',
+            'role_description' => 'required|string|max:255',
+        ]);
 
-  public function form_update_permissions(Request $request)
-  {
-    $request->validate([
-      'update_permission_name' => 'required',
-      'update_permission_group' => 'required',
-    ]);
+        $role = Role::findById($request->role_id);
 
-    $permission_name = $request->update_permission_name;
-    $permission_group = $request->update_permission_group;
+        // THE PRIMARY FIX: Check if the role exists before using it.
+        if (! $role) {
+            return response()->json(['message' => 'Failed', 'text' => 'Role not found.', 'icon' => 'error'], 404);
+        }
 
-    $permission = Permission::findByName($permission_name);
-    $permission->group = $permission_group;
-    if ($permission->save()) {
-      return response()->json(['message' => 'Success', 'text' => "Permission Updated", 'icon' => 'success']);
+        // Update name and description
+        $role->name = $request->name;
+        $role->description = $request->role_description;
+        $role->save();
+
+        // Sync permissions
+        $permissions = $request->role_permissions ?? []; // Default to empty array if no permissions are sent
+        $role->syncPermissions($permissions);
+
+        return response()->json(['message' => 'Success', 'text' => 'Role Updated', 'icon' => 'success']);
     }
 
-    return response()->json(['message' => 'Failed', 'text' => "Invalid inputs", 'icon' => 'error']);
+    public function table_roles(Request $request)
+    {
+        if ($request->ajax()) {
+            // Build your Eloquent query.
+            // DataTables will handle sorting, searching, and pagination based on its parameters.
+            $permissions = [];
+            $roles = Role::all();
+            foreach ($roles as $item) {
+                if ($item->name == 'root') {
+                    continue;
+                }
 
-  }
+                // Get permissions for the CURRENT role in the loop
+                $rolePermissions = $item->permissions->pluck('name')->toArray();
 
+                $data[] = [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    // Use the permissions specific to this role
+                    'permissions' => $rolePermissions,
+                    'actions' => 'buttons',
+                ];
+            }
+
+            // You can add more conditions to your query here, for example:
+            // $data = User::where('status', 'active')->select(['id', 'name', 'email', 'created_at']);
+            // If you're using Spatie permissions and want to show roles:
+            // $data = User::with('roles')->select(['id', 'name', 'email', 'created_at']);
+
+            $draw = $request->get('draw');
+            $start = $request->get('start');
+            $rowPerPage = $request->get('length'); // Rows display per page
+
+            $columnIndex_arr = $request->get('order');
+            $columnName_arr = $request->get('columns');
+            $order_arr = $request->get('order');
+
+            $search_arr = $request->get('search');
+
+            $columnIndex = $columnIndex_arr[0]['column']; // Column index
+            $columnName = $columnName_arr[$columnIndex]['data']; // Column name
+            $columnSortOrder = $order_arr[0]['dir']; // asc or desc
+            $searchValue = $request->searchFilter ?? ''; // $search_arr['value']; // Search value
+            $totalRecords = $roles->count();
+
+            $typeFilter = $request->typeFilter;
+            $staffFilter = $request->staff;
+
+            $totalRecordsWithFilter = $roles->count();
+            $active_pin = 0;
+            $inactive_pin = 0;
+            $total_pins = $roles->count();
+
+            $response = [
+                'draw' => (int) $draw,
+                'recordsTotal' => $totalRecords,
+                'recordsFiltered' => $totalRecordsWithFilter,
+                'data' => $data,
+                'current_data' => [
+                    'selected' => ucfirst($typeFilter),
+                    'active_pin' => $active_pin,
+                    'inactive_pin' => $inactive_pin,
+                    'total' => $total_pins,
+                ],
+            ];
+
+            return json_encode($response, JSON_THROW_ON_ERROR | false);
+        }
+
+        return response('unauthorized', 401);
+    }
+
+    public function updateRole(Request $request, $id)
+    {
+        if (! auth()->user()->can(config('permit.change personnel role.name'))) {
+            return response('Unauthorized.', 401);
+        }
+
+        $role = Role::findById($request->role_id);
+        $personnel = User::find($id);
+
+        if ($personnel->syncRoles([$role->id])) {
+            $personnel->setPrimaryRole($role->id);
+
+            return response()->json(['message' => 'Success', 'text' => 'Role Updated', 'icon' => 'success']);
+        }
+
+        return response()->json(['message' => 'Failed', 'text' => 'Invalid inputs', 'icon' => 'error']);
+    }
 }

@@ -2,33 +2,46 @@
 
 namespace App\Providers;
 
+use App\Listeners\UpdatePrimaryRoleOnRoleSync;
 use App\Models\Detachment;
+use App\Models\FirstMonthPerformanceEvaluationForm;
+use App\Models\RequirementTransmittalForm;
 use App\Models\User;
 use App\Observers\DetachmentObserver;
+use App\Observers\FirsMonthPerformanceEvaluationFormObserver;
+use App\Observers\RequirementTransmittalFormObserver;
 use App\Observers\UserObserver;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+use Spatie\Permission\Events\RoleAttached;
 
 class EventServiceProvider extends ServiceProvider
 {
+    protected $listen = [
+        // Add this entry
+        RoleAttached::class => [
+            UpdatePrimaryRoleOnRoleSync::class,
+        ],
+    ];
 
-  /**
-   * Register services.
-   */
-  public function register(): void
-  {
-    //
-  }
+    /**
+     * Register services.
+     */
+    public function register(): void
+    {
+        //
+    }
 
-  /**
-   * Bootstrap services.
-   */
-  public function boot(): void
-  {
-    parent::boot();
+    /**
+     * Bootstrap services.
+     */
+    public function boot(): void
+    {
+        parent::boot();
 
-    // --- MANUALLY REGISTER THE OBSERVER ---
-    // Manually register your observers here
-    User::observe(UserObserver::class);
-    Detachment::observe(DetachmentObserver::class);
-  }
+        // Manually register observers
+        User::observe(UserObserver::class);
+        Detachment::observe(DetachmentObserver::class);
+        RequirementTransmittalform::observe(RequirementTransmittalFormObserver::class);
+        FirstMonthPerformanceEvaluationForm::observe(FirsMonthPerformanceEvaluationFormObserver::class);
+    }
 }

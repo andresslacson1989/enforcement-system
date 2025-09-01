@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Submission;
 use App\Models\User;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -15,13 +16,13 @@ class StoreRequirementTransmittalFormRequest extends FormRequest
     public function authorize(): bool
     {
         // Spatie: Ensure the user has the necessary permission to submit forms
-        return auth()->user()->can('fill requirement transmittal form');
+        return auth()->user()->can(config('permit.fill requirement transmittal form.name'));
     }
 
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -34,6 +35,7 @@ class StoreRequirementTransmittalFormRequest extends FormRequest
             'middle_name' => 'required|string|max:100',
             'last_name' => 'required|string|max:100',
             'suffix' => 'nullable|string|max:100',
+            'gender' => 'nullable|string|in:male,female',
             'street' => 'required|string|max:100',
             'city' => 'required|string|max:100',
             'province' => 'required|string|max:100',
@@ -42,7 +44,7 @@ class StoreRequirementTransmittalFormRequest extends FormRequest
                 'required',
                 'string',
                 'regex:/^([0-9\s\-\+\(\)]*)$/',
-                Rule::unique('users', 'employee_number')->ignore($employee_id),
+                Rule::unique('users', 'phone_number')->ignore($employee_id),
             ],
             'email' => [
                 'required',
@@ -54,7 +56,7 @@ class StoreRequirementTransmittalFormRequest extends FormRequest
                 'string',
                 Rule::unique('users', 'employee_number')->ignore($employee_id),
             ],
-            'deployment' => 'required|integer|exists:detachments,id', // Make sure the department exists
+            'detachment_id' => 'required|integer|exists:detachments,id', // Make sure the department exists
 
             // Validation rules for checkboxes - all are nullable booleans
             'original_application_form_and_recent_picture' => ['nullable', 'boolean'],

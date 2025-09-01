@@ -1,66 +1,76 @@
 {
-  "menu": [
-    {
-      "url": "/",
-      "name": "Home",
-      "icon": "menu-icon icon-base ti tabler-smart-home",
-      "slug": "pages-home"
-    },
-    {
-      "name": "Access",
-      "icon": "menu-icon tf-icons ti tabler-password-user",
-      "slug": "access",
-      "submenu": [
+    "menu": [
         {
-          "url": "/roles",
-          "name": "Roles",
-          "slug": "access-pages-roles"
+            "menuHeader": "Main"
         },
         {
-          "url": "/permissions",
-          "name": "Permissions",
-          "slug": "access-pages-permissions"
+            "url": "/user/my-profile",
+            "name": "My Profile",
+            "icon": "menu-icon icon-base ti tabler-user",
+            "slug": "profile",
+            "permission": "view my profile menu"
+        },
+        {
+            "url": "/form-library",
+            "name": "Form Library",
+            "icon": "menu-icon icon-base ti tabler-library",
+            "slug": "form-library",
+            "permission": "view form library menu"
+        },
+        {
+            "url": "/detachments/profile",
+            "name": "My Detachment",
+            "icon": "menu-icon icon-base ti tabler-building-warehouse",
+            "slug": "my-detachment",
+            "permission": "view detachment profile menu"
+        },
+        {
+            "menuHeader": "Directories"
+        },
+        {
+            "url": "/staffs",
+            "icon": "menu-icon icon-base ti tabler-user-hexagon",
+            "name": "Staffs",
+            "slug": "staffs",
+            "permission": "view staffs menu"
+        },
+        {
+            "url": "/personnel",
+            "icon": "menu-icon icon-base ti tabler-shield",
+            "name": "Personnel",
+            "slug": "personnel",
+            "permission": "view personnel menu"
+        },
+        {
+            "url": "/detachments",
+            "icon": "menu-icon icon-base ti tabler-building-community",
+            "name": "Detachments",
+            "slug": "detachments",
+            "permission": "view detachments menu"
+        },
+        {
+            "menuHeader": "Management"
+        },
+        {
+            "name": "Access",
+            "icon": "menu-icon tf-icons ti tabler-password-user",
+            "slug": "access",
+            "permission": "view access menu",
+            "submenu": [
+                {
+                    "url": "/roles",
+                    "name": "Roles",
+                    "slug": "access-pages-roles",
+                    "permission": "view roles menu"
+                }
+            ]
+        },
+        {
+            "url": "/activity-logs",
+            "icon": "menu-icon icon-base ti tabler-logs",
+            "name": "Activity logs",
+            "slug": "activity-logs",
+            "permission": "view activity logs menu"
         }
-      ]
-    },
-    {
-      "url": "/activity-logs",
-      "icon": "menu-icon icon-base ti tabler-logs",
-      "name": "Activity logs",
-      "slug": "activity-logs"
-    },
-    {
-      "url": "/detachments",
-      "icon": "menu-icon icon-base ti tabler-building-community",
-      "name": "Detachments",
-      "slug": "detachments"
-    },
-    {
-      "url": "/page-2",
-      "icon": "menu-icon icon-base ti tabler-file",
-      "name": "Page 2",
-      "slug": "pages-page-2"
-    },
-    {
-      "url": "/pages/misc-error",
-      "name": "Error",
-      "icon": "menu-icon icon-base ti tabler-alert-triangle",
-      "slug": "pages-misc-error",
-      "target": "_blank"
-    },
-    {
-      "url": "/auth/login-basic",
-      "name": "Login",
-      "icon": "menu-icon icon-base ti tabler-login",
-      "slug": "auth-login-basic",
-      "target": "_blank"
-    },
-    {
-      "url": "/auth/register-basic",
-      "name": "Register",
-      "icon": "menu-icon icon-base ti tabler-user",
-      "slug": "auth-register-basic",
-      "target": "_blank"
-    }
-  ]
+    ]
 }

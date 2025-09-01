@@ -1,228 +1,197 @@
-/**
- * app-academy-course Script
- */
-
 'use strict';
+document.addEventListener('DOMContentLoaded', function () {
+  const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+  tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl);
+  });
 
-//Roles DataTable
-// Initialize DataTables
-// var table = $('#roles_table').DataTable({
-//   processing: true, // Show processing indicator
-//   serverSide: true, // Enable server-side processing
-//   ajax: "/table/roles", // The AJAX endpoint defined in routes/web.php
-//   type: 'POST',
-//   columns: [
-//     // These 'data' properties must match the keys in your JSON response from the controller
-//     { data: 'id', name: 'id' },
-//     { data: 'name', name: 'name' },
-//     { data: 'permissions', name: 'permissions' },
-//     { data: 'actions', name: 'actions', orderable: false, searchable: false } // Custom 'actions' column
-//   ],
-//
-// });
+  // --- Panel Elements ---
+  const rolesListContainer = document.getElementById('roles-list');
+  const initialStatePanel = document.getElementById('initial-state');
+  const editingStatePanel = document.getElementById('editing-state');
 
-$(function () {
-  $('.selectpicker').selectpicker();
+  // --- Form Elements ---
+  const roleForm = document.getElementById('roleForm');
+  const formTitle = document.getElementById('form-title');
+  const roleIdInput = document.getElementById('role_id');
+  const roleNameInput = document.getElementById('role_name');
+  const roleDescriptionInput = document.getElementById('role_description');
+  const selectAllCheckbox = document.getElementById('selectAll');
+  const permissionCheckboxes = document.querySelectorAll('.permission-checkbox');
 
-  // $(".select2").select2({
-  //   placeholder: 'Select an option', // Your desired placeholder text
-  // });
+  // --- Buttons ---
+  const addNewRoleBtn = document.getElementById('addNewRoleBtn');
 
-  //Roles Form
-  $('#roles_form').on('submit', function (e) {
+  /**
+   * Shows the editing panel and hides the initial placeholder.
+   */
+  const showEditingPanel = () => {
+    initialStatePanel.classList.add('d-none');
+    editingStatePanel.classList.remove('d-none');
+  };
+
+  /**
+   * Resets the form to its default state and deselects any active role.
+   */
+  const resetForm = () => {
+    roleForm.reset();
+    permissionCheckboxes.forEach(cb => (cb.checked = false));
+    selectAllCheckbox.checked = false;
+    roleIdInput.value = '';
+    // Remove active class from all roles
+    document.querySelectorAll('.role-item.active').forEach(item => item.classList.remove('active'));
+  };
+
+  // --- Event Listener for Role Selection ---
+  rolesListContainer.addEventListener('click', function (e) {
     e.preventDefault();
-    const form = $(this);
-    const method = form.attr('method');
-    const formData = form.serialize();
-    console.log(formData);
-    const url = form.attr('action');
+    const roleItem = e.target.closest('.role-item');
+    if (!roleItem) return;
 
-    $.ajaxSetup({
-      headers: {
-        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-      }
+    resetForm(); // Reset form before populating
+
+    // Set active class on the clicked role
+    roleItem.classList.add('active');
+
+    // Populate the form with data from the clicked role's data attributes
+    formTitle.textContent = 'Edit Role';
+    roleIdInput.value = roleItem.dataset.roleId;
+    roleNameInput.value = roleItem.dataset.roleName;
+    roleDescriptionInput.value = roleItem.dataset.roleDescription;
+
+    const rolePermissions = JSON.parse(roleItem.dataset.rolePermissions);
+    permissionCheckboxes.forEach(checkbox => {
+      checkbox.checked = rolePermissions.includes(checkbox.value);
     });
 
-    $.ajax({
-      url: url,
-      method: method,
-      data: formData,
-      dataType: 'json',
-      success: function (data) {
-        if (data.message === 'Success') {
-          Swal.fire({
-            title: data.message,
-            icon: 'success',
-            customClass: {
-              confirmButton: 'btn btn-primary'
-            },
-            buttonsStyling: false
-          }).then(function () {
-            location.reload();
-          });
-        } else {
-          Swal.fire({
-            title: data.message,
-            icon: 'error',
-            customClass: {
-              confirmButton: 'btn btn-primary'
-            },
-            buttonsStyling: false
-          });
-        }
-      },
-      error: function (xhr, status, error) {
-        console.log(xhr, error);
-        Swal.fire({
-          title: 'Error',
-          text: 'Invalid input details',
-          icon: 'error',
-          customClass: {
-            confirmButton: 'btn btn-primary'
-          },
-          buttonsStyling: false
-        });
-      }
+    // Update the "Select All" checkbox state
+    selectAllCheckbox.checked = rolePermissions.length === permissionCheckboxes.length;
+
+    showEditingPanel();
+  });
+
+  // --- Event Listener for "Add New Role" Button ---
+  addNewRoleBtn.addEventListener('click', function () {
+    resetForm();
+    formTitle.textContent = 'Add a New Role';
+    showEditingPanel();
+    roleNameInput.focus();
+  });
+
+  // --- Checkbox Logic ---
+  selectAllCheckbox.addEventListener('change', function () {
+    permissionCheckboxes.forEach(cb => (cb.checked = this.checked));
+  });
+
+  permissionCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', () => {
+      const allChecked = Array.from(permissionCheckboxes).every(cb => cb.checked);
+      selectAllCheckbox.checked = allChecked;
     });
   });
 
-  //Update Role Permissions Form
-  $('#roles_permission_form').on('submit', function (e) {
+  // --- Form Submission Logic (using modern Fetch API) ---
+  roleForm.addEventListener('submit', async function (e) {
     e.preventDefault();
-    const form = $(this);
-    const method = form.attr('method');
-    const formData = form.serialize();
-    const url = form.attr('action');
 
-    $.ajaxSetup({
-      headers: {
-        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-      }
-    });
-
-    $.ajax({
-      url: url,
-      method: method,
-      data: formData,
-      dataType: 'json',
-      success: function (data) {
-        if (data.message === 'Success') {
-          Swal.fire({
-            title: data.message,
-            text: data.text,
-            icon: 'success',
-            customClass: {
-              confirmButton: 'btn btn-primary'
-            },
-            buttonsStyling: false
-          }).then(function () {
-            location.reload();
-          });
-        } else {
-          Swal.fire({
-            title: data.message,
-            icon: 'error',
-            customClass: {
-              confirmButton: 'btn btn-primary'
-            },
-            buttonsStyling: false
-          });
-        }
-      },
-      error: function (xhr, status, error) {
-        console.log(xhr, error);
-        Swal.fire({
-          title: 'Error',
-          text: 'Invalid input details',
-          icon: 'error',
-          customClass: {
-            confirmButton: 'btn btn-primary'
-          },
-          buttonsStyling: false
-        });
-      }
-    });
-  });
-
-  //See Permissions
-  $('.see_permissions').on('click', function (e) {
-    e.preventDefault();
-    const form = $(this);
+    const isEdit = !!roleIdInput.value;
+    const url = isEdit ? `/form/update-roles` : '/form/roles';
+    // Note: For a true RESTful approach, the method for update should be 'PUT' or 'PATCH'.
+    // We are using 'POST' here to match your original AJAX setup.
     const method = 'POST';
-    const url = '/see-permissions';
-    const id = form.attr('role_id');
-    const name = form.attr('name');
-    const description = form.attr('role_description');
 
-    //append role_id to modal
-    $("#role_id").val(id);
-
-    $.ajaxSetup({
-      headers: {
-        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    // Show loading indicator
+    Swal.fire({
+      title: 'Please Wait!',
+      text: 'Processing your request...',
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      willOpen: () => {
+        Swal.showLoading();
       }
     });
 
-    $.ajax({
-      url: url,
-      method: method,
-      data: {
-        id
-      },
-      dataType: 'json',
-      success: function (data) {
-        $('#permission_modal').modal('toggle');
-        //Append Role Name
-        $('#role_name').html(name);
+    // Prepare form data
+    const formData = new FormData(this);
+    const data = {};
 
-        //append description
-        $("#role_description").val(description)
+    // Convert FormData to a plain object
+    formData.forEach((value, key) => {
+      // This logic handles the 'permissions[]' array correctly
+      if (key.endsWith('[]')) {
+        const arrayKey = key.slice(0, -2);
+        if (!data[arrayKey]) {
+          data[arrayKey] = [];
+        }
+        data[arrayKey].push(value);
+      } else {
+        data[key] = value;
+      }
+    });
 
-        //uncheck all checkboxes
-        $('input[type="checkbox"]').prop('checked', false);
+    // **IMPORTANT**: This part remaps keys to match your backend expectations for updates.
+    if (isEdit) {
+      data.role_description = data.description;
+      data.role_permissions = data.permissions;
+      delete data.description;
+      delete data.permissions;
+    }
 
-        //collapse all accordions
-        $('.accordion .collapse.show').collapse('hide');
-        // Use $.each() to loop through the array
-        $.each(data, function (index, item) {
-          $('input[type="checkbox"]').each(function () {
-            const checkboxValue = $(this).val();
-            if (item.name === checkboxValue) {
-              $(this).prop('checked', true);
-            }
-          });
-        });
-      },
-      error: function (xhr, status, error) {
-        console.log(xhr, error);
+    try {
+      const response = await fetch(url, {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+          Accept: 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        // If response is not ok, create an error object to be caught by the catch block
+        const error = new Error('HTTP status ' + response.status);
+        error.response = result;
+        error.status = response.status;
+        throw error;
+      }
+
+      // Handle success
+      if (result.message === 'Success') {
         Swal.fire({
-          title: 'Error',
-          text: xhr.statusText,
+          icon: 'success',
+          title: result.text || (isEdit ? 'Role Updated!' : 'Role Created!'),
+          showConfirmButton: false,
+          timer: 1500
+        }).then(() => {
+          location.reload();
+        });
+      } else {
+        Swal.fire({
           icon: 'error',
-          customClass: {
-            confirmButton: 'btn btn-primary'
-          },
-          buttonsStyling: false
+          title: 'Error',
+          text: result.text || 'An unknown error occurred.'
         });
       }
-    });
+    } catch (error) {
+      // Handle network errors and failed HTTP statuses
+      let errorMsg = 'Could not connect to the server.';
+
+      // Specifically handle 422 Validation Errors from Laravel
+      if (error.status === 422) {
+        const errors = error.response.errors;
+        errorMsg = Object.values(errors)
+          .map(e => e[0])
+          .join('<br>');
+      }
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Submission Failed',
+        html: errorMsg
+      });
+    }
   });
 });
-  //max length
-  const textareaMaxLength = document.getElementById('description').getAttribute('maxlength');
-  const textareaInfo = document.getElementById('textarea-maxlength-info');
-  const textareaElement = document.getElementById('description');
-  window.Helpers.maxLengthCount(textareaElement, textareaInfo, textareaMaxLength);
-  textareaElement.addEventListener('input', function () {
-    window.Helpers.maxLengthCount(textareaElement, textareaInfo, textareaMaxLength);
-  });
-
-  const textareaMaxLength2 = document.getElementById('role_description').getAttribute('maxlength');
-  const textareaInfo2 = document.getElementById('textarea-maxlength-info2');
-  const textareaElement2 = document.getElementById('role_description');
-
-  window.Helpers.maxLengthCount(textareaElement2, textareaInfo2, textareaMaxLength2);
-
-  textareaElement2.addEventListener('input', function () {
-    window.Helpers.maxLengthCount(textareaElement2, textareaInfo2, textareaMaxLength2);
-  });

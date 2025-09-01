@@ -1,46 +1,34 @@
-/**
- * app-academy-course Script
- */
-
-'use strict';
-
 $(function () {
-  const searchInput = document.getElementById('formSearch');
-  const formCards = document.querySelectorAll('#forms-grid .col');
-  const categoryLinks = document.querySelectorAll('.list-group-item-action');
-
-  // Search functionality
-  searchInput.addEventListener('keyup', function () {
-    const searchTerm = searchInput.value.toLowerCase();
-    formCards.forEach(card => {
-      const title = card.querySelector('.card-title').textContent.toLowerCase();
-      const description = card.querySelector('.card-text').textContent.toLowerCase();
-      if (title.includes(searchTerm) || description.includes(searchTerm)) {
-        card.style.display = 'block';
-      } else {
-        card.style.display = 'none';
-      }
-    });
+  'use strict';
+  $('.select2').select2();
+  $('.select2-modal').select2({
+    dropdownParent: $('#users_modal .modal-body')
   });
 
-  // Category filter functionality
-  categoryLinks.forEach(link => {
-    link.addEventListener('click', function (e) {
-      e.preventDefault();
+  const users_table = $('#users_table');
+  let dt_users;
 
-      // Manage active state
-      categoryLinks.forEach(l => l.classList.remove('active'));
-      this.classList.add('active');
-
-      const selectedCategory = this.getAttribute('data-category');
-
-      formCards.forEach(card => {
-        if (selectedCategory === 'all' || card.getAttribute('data-category') === selectedCategory) {
-          card.style.display = 'block';
-        } else {
-          card.style.display = 'none';
+  // Initialize DataTables
+  if (users_table.length) {
+    dt_users = users_table.DataTable({
+      ajax: {
+        url: '/personnel/table',
+        data: function (d) {
+          d.role_filter = $('#role_filter').val();
+          d.status_filter = $('#status_filter').val();
         }
-      });
+      },
+      processing: true,
+      serverSide: true,
+      columns: [
+        { data: 'name', name: 'name' },
+        { data: 'role', name: 'role' },
+        { data: 'detachment', name: 'detachment' },
+        { data: 'status', name: 'status' },
+        { data: 'action', orderable: false, searchable: false }
+      ],
+      language: { searchPlaceholder: 'Search Personnel...' }
     });
-  });
+    $(document).trigger('datatable:ready', [dt_users]);
+  }
 });

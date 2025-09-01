@@ -13,11 +13,13 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+            $table->softDeletes();
             $table->string('name');
             $table->string('first_name');
             $table->string('middle_name');
             $table->string('last_name');
             $table->string('suffix')->nullable();
+            $table->enum('gender', ['male', 'female']);
             $table->string('employee_number')->unique()->default('123');
             $table->string('street')->nullable();
             $table->string('city')->nullable();
@@ -29,6 +31,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('status')->default('hired');
+
             /* Employment Status:
                 Hired: Currently employed and deployed.
                 Re-hired: Previously employed, now re-employed.
@@ -62,6 +65,11 @@ return new class extends Migration
             1. Operations Manager: Overall management.
             2. Security Guard: Single security personnel on duty.
              */
+
+            $table->string('sss_number')->nullable();
+            $table->string('philhealth_number')->nullable();
+            $table->string('pagibig_number')->nullable();
+            $table->date('birthdate')->nullable();
 
             $table->rememberToken();
             $table->foreignId('current_team_id')->nullable();

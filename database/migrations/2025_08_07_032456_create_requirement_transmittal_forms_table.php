@@ -15,17 +15,17 @@ return new class extends Migration
             $table->id();
             $table->string('name')->default('Requirement Transmittal Form');
             $table->foreignId('submitted_by')->constrained('users')->onDelete('cascade');
+            $table->foreignId('detachment_id')->nullable()->constrained('detachments')->onDelete('set null');
 
             // Remarks
             $table->boolean('complete_requirements')->default(false);
             $table->boolean('qualified_for_loan')->default(false);
-            $table->string('status')->default('filed');
+            $table->string('status')->default('submitted');
             $table->boolean('printed')->default(false);
             $table->boolean('times_printed')->default(false);
             $table->dateTime('date_last_printed')->nullable();
             $table->foreignId('last_printed_by')->nullable()->constrained('users')->onDelete('set null');
 
-            $table->string('employee_name')->nullable();
             $table->foreignId('employee_id')->nullable()->constrained('users')->onDelete('set null'); // employee id is the user id in the database
             $table->string('employee_number')->nullable(); // employee number is the number given by the company
             $table->string('deployment')->nullable();

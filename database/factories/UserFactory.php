@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Detachment;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -26,11 +27,16 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $first_name = $this->faker->firstName();
+        $middle_name = $this->faker->lastName();
+        $last_name = $this->faker->lastName();
+        $name = $first_name.' '.$middle_name.' '.$last_name;
+
         return [
-            'name' => fake()->name(),
-            'first_name' => fake()->name(),
-            'middle_name' => fake()->name(),
-            'last_name' => fake()->name(),
+            'name' => $name,
+            'first_name' => $first_name,
+            'middle_name' => $middle_name,
+            'last_name' => $last_name,
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
@@ -40,6 +46,14 @@ class UserFactory extends Factory
             'profile_photo_path' => null,
             'current_team_id' => null,
             'employee_number' => uniqid(),
+            //   'detachment_id' => Detachment::inRandomOrder()->first()->id,
+            'gender' => 'male',
+            'phone_number' => fake()->phoneNumber(),
+            'street' => fake()->streetName(),
+            'city' => fake()->city(),
+            'province' => fake()->city(),
+            'zip_code' => fake()->postcode(),
+            'telegram_chat_id' => fake()->userName(),
         ];
     }
 

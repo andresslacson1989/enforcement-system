@@ -1,10 +1,20 @@
-/**
- * app-academy-course Script
- */
-
-'use strict';
-
 $(function () {
+  'use strict';
+
+  $('.select2').select2({
+    placeholder: 'Choose an option'
+  });
+  $('.select2-personnel').select2({
+    dropdownParent: $('#add_personnel_modal'),
+    placeholder: 'Choose an option'
+  });
+  $('.select2-edit-detachment').select2({
+    dropdownParent: $('#edit_detachment_modal'),
+    placeholder: 'Choose an option'
+  });
+
+  const users_table = $('#users_table');
+
   // --- MODAL LOGIC ---
   $('#edit_detachment_modal').on('shown.bs.modal', function () {
     // Find the first visible input, textarea, or select element and focus it
@@ -13,7 +23,6 @@ $(function () {
 
   // When the Edit button is clicked, populate the modal with current data from the page
   $('#edit_button').on('click', function () {
-
     // Get data from the display fields and populate the form
     $('#edit_detachment_form #name').val($('#name_display').text().trim());
     $('#edit_detachment_form #category').val($('#category_display').text().trim());
@@ -37,8 +46,10 @@ $(function () {
     $('#edit_detachment_form #ecola').val($('#ecola_display').text().trim().replace(/,/g, ''));
     $('#edit_detachment_form #retirement_pay').val($('#retirement_pay_display').text().trim());
     $('#edit_detachment_form #thirteenth_month_pay').val($('#thirteenth_month_pay_display').text().trim());
-    $('#edit_detachment_form #assigned_officer').selectpicker( 'val',  $('#assigned_officer_display').attr('data-officer-id'));
-
+    $('#edit_detachment_form #assigned_officer').selectpicker(
+      'val',
+      $('#assigned_officer_display').attr('data-officer-id')
+    );
   });
 
   // Edit Detachment submission via AJAX
@@ -48,7 +59,15 @@ $(function () {
     const url = form.attr('action');
     const method = form.attr('method');
     const formData = $(this).serialize(); // Serialize form data for submission
-
+    Swal.fire({
+      title: 'Please Wait!',
+      text: 'Processing your request...',
+      allowOutsideClick: false,
+      showConfirmButton: false, // This hides the "OK" button
+      willOpen: () => {
+        Swal.showLoading(); // 2. Show the spinner
+      }
+    });
     // --- DATA SAVING ---
     $.ajax({
       url: url, // Example URL
@@ -66,7 +85,6 @@ $(function () {
           }).then(() => {
             window.location.reload();
           });
-
         } else {
           Swal.fire({
             title: data.message,
@@ -81,13 +99,12 @@ $(function () {
 
         // Hide the modal
         $('#edit_detachment_modal').modal('hide');
-
       },
       error: function (xhr, status, error) {
         console.log(xhr, error);
         Swal.fire({
-          title: 'Error',
-          text: xhr.statusText,
+          title: error,
+          text: xhr.responseJSON.message,
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-primary'
@@ -109,13 +126,21 @@ $(function () {
 
     // Disable button to prevent multiple clicks
     submitButton.prop('disabled', true).text('Adding...');
-
+    Swal.fire({
+      title: 'Please Wait!',
+      text: 'Processing your request...',
+      allowOutsideClick: false,
+      showConfirmButton: false, // This hides the "OK" button
+      willOpen: () => {
+        Swal.showLoading(); // 2. Show the spinner
+      }
+    });
     $.ajax({
       url: url,
       type: method,
       data: formData,
       dataType: 'json',
-      success: function(data) {
+      success: function (data) {
         Swal.fire({
           title: data.message,
           text: data.text,
@@ -133,7 +158,7 @@ $(function () {
         console.log(xhr, error);
         Swal.fire({
           title: error,
-          text: xhr.responseJSON.error,
+          text: xhr.responseJSON.message,
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-primary'
@@ -141,7 +166,7 @@ $(function () {
           buttonsStyling: false
         });
       },
-      complete: function() {
+      complete: function () {
         // Re-enable the button and reset its text
         submitButton.prop('disabled', false).text('Add to Roster');
       }
@@ -211,10 +236,32 @@ $(function () {
             submitButton.text('Submit');
           }
         });
-
       }
     });
-
-
   });
+
+  // Initialize DataTables
+  if (users_table.length) {
+    const detachment_id = users_table.data('detachment-id');
+    window.dt_users = users_table.DataTable({
+      ajax: {
+        url: '/personnel/detachment-personnel-table',
+        data: function (d) {
+          d.role_filter = $('#role_filter').val();
+          d.status_filter = $('#status_filter').val();
+          d.detachment_id = detachment_id;
+        }
+      },
+      processing: true,
+      serverSide: true,
+      columns: [
+        { data: 'name', name: 'name' },
+        { data: 'role', name: 'role' },
+        { data: 'status', name: 'status' },
+        { data: 'action', orderable: false, searchable: false }
+      ],
+      language: { searchPlaceholder: 'Search Detachment...' }
+    });
+    $(document).trigger('datatable:ready', [dt_users]);
+  }
 });

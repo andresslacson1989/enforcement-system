@@ -5,14 +5,14 @@ use App\Http\Controllers\authentications\RegisterBasic;
 use App\Http\Controllers\language\LanguageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\pages\Access;
-use App\Http\Controllers\pages\ActivityBoard;
 use App\Http\Controllers\pages\ActivityLogController;
 use App\Http\Controllers\pages\DetachmentController;
 use App\Http\Controllers\pages\FirstMonthPerformanceEvaluationFormController;
-use App\Http\Controllers\pages\HomePage;
+use App\Http\Controllers\pages\FormController;
+use App\Http\Controllers\pages\FormLibrary;
 use App\Http\Controllers\pages\MiscError;
-use App\Http\Controllers\pages\Page2;
 use App\Http\Controllers\pages\RequirementTransmittalFormController;
+use App\Http\Controllers\pages\RoleController;
 use App\Http\Controllers\pages\UsersController;
 use Illuminate\Support\Facades\Route;
 
@@ -25,48 +25,76 @@ Route::get('/auth/login-basic', [LoginBasic::class, 'index'])->name('auth-login-
 Route::get('/auth/register-basic', [RegisterBasic::class, 'index'])->name('auth-register-basic');
 
 Route::middleware(['auth:web'])->group(function () {
-    // Main Page Route
-    Route::get('/', [HomePage::class, 'index'])->name('pages-home');
-    Route::get('/page-2', [Page2::class, 'index'])->name('pages-page-2');
 
-    Route::get('users', [UsersController::class, 'index'])->name('users-index');
-    Route::get('user/{id}', [UsersController::class, 'usersData'])->name('users-index');
-    Route::patch('user/{id}', [UsersController::class, 'update']);
+    // Logging Route
+    Route::get('/activity-logs', [ActivityLogController::class, 'logs'])->name('activity-logs');
+
+    // Form Library Routes
+    Route::get('/', [FormLibrary::class, 'index'])->name('form-library');
+    Route::get('/form-library', [FormLibrary::class, 'index'])->name('form-library');
+
+    // Users Routes
+    Route::get('/users', [UsersController::class, 'index'])->name('users-index');
+    Route::get('/user/my-profile', [UsersController::class, 'profile'])->name('profile');
+    Route::get('/user/profile/{id}', [UsersController::class, 'profile']);
+    Route::get('/user/{id}', [UsersController::class, 'show'])->name('users-index');
+    Route::patch('/user/{id}', [UsersController::class, 'update']);
+    Route::delete('/user/{id}', [UsersController::class, 'delete']);
+
+    // In routes/web.php, inside the auth middleware group
+    Route::get('/profile/complete-profile', [UsersController::class, 'showCompletionForm'])->name('profile.completion.form');
+    Route::post('/profile/complete-profile', [UsersController::class, 'completeProfile'])->name('profile.completion.submit');
+
+    // Staff Routes
+    Route::get('/staffs', [UsersController::class, 'staffs_index'])->name('staffs');
+    Route::post('/staffs/store', [UsersController::class, 'store']);
+    Route::get('/staffs/table', [UsersController::class, 'staffsTable']);
+    Route::get('/staffs/{id}', [UsersController::class, 'show']);
+
+    Route::put('/staffs/update/{id}', [UsersController::class, 'update']);
+    Route::delete('/staffs/delete/{id}', [UsersController::class, 'delete']);
+    Route::patch('/staffs/remove/{id}', [UsersController::class, 'remove']);
+    Route::post('/staffs/suspend/', [UsersController::class, 'suspend']);
+    Route::post('/staffs/unsuspend/', [UsersController::class, 'unsuspend']);
+
+    // Personnel Routes
+    Route::get('/personnel', [UsersController::class, 'personnel_index'])->name('personnel');
+    Route::get('/personnel/table', [UsersController::class, 'personnelTable']);
+    Route::get('/personnel/detachment-personnel-table', [UsersController::class, 'detachmentPersonnelTable']);
+    Route::patch('/personnel/update-role/{id}', [Access::class, 'updateRole']);
 
     // Access Routes
     // Roles
-    Route::get('/roles', [Access::class, 'roles'])->name('access-pages-roles');
+    Route::get('/roles', [Access::class, 'index'])->name('access-pages-roles');
     Route::post('/form/roles', [Access::class, 'form_roles']);
     Route::post('/form/update-roles', [Access::class, 'form_update_roles']);
-    Route::post('/table/roles', [Access::class, 'table_roles']);
-    Route::post('/see-permissions', [Access::class, 'see_permissions']);
-    Route::get('/see-permissions', [Access::class, 'see_permissions']);
 
-    // Permissions
-    Route::get('/permissions', [Access::class, 'permissions'])->name('access-pages-permissions');
-    Route::post('/form/permissions', [Access::class, 'form_permissions']);
-    Route::post('/form/update-permission', [Access::class, 'form_update_permissions']);
-    Route::post('/table/permissions', [Access::class, 'permissions']);
+    // Form Universal Routes
+    Route::get('/form/create/{formSlug}', [FormController::class, 'create'])->name('forms.create');
+    Route::get('/form/view/{formSlug}/{id}', [FormController::class, 'view'])->name('forms.view');
 
-    // Form Routes
-    Route::get('/form/new/{form}', [ActivityBoard::class, 'formNew']);
-    Route::get('/form/view/{form}/{id}', [ActivityBoard::class, 'formView']);
+    // Form Controller Universal route for storing forms
+    Route::post('/forms/store/{formSlug}', [FormController::class, 'store'])->name('forms.store');
+    Route::put('/forms/update/{formSlug}/{id}', [FormController::class, 'update'])->name('forms.update');
+    Route::get('/forms/print/{formSlug}/{id}', [FormController::class, 'print'])->name('forms.print');
+
+    // report a form print
+    Route::put('/forms/print-report/{fromType}/{id}', [FormController::class, 'printReport']);
 
     // Requirement Transmittal Form
-    Route::post('/form/requirement-transmittal-form/store', [RequirementTransmittalFormController::class, 'store']);
-    Route::put('/form/requirement-transmittal-form/{form}/{id}', [RequirementTransmittalFormController::class, 'update']);
-    Route::patch('/form/requirement-transmittal-form/approve', [RequirementTransmittalFormController::class, 'approve']);
-    Route::get('/form/requirement-transmittal-form/print/{id}', [RequirementTransmittalFormController::class, 'print']);
-    Route::post('/form/print-report/{id}', [RequirementTransmittalFormController::class, 'printReport']);
+    Route::patch('/form/remarks/requirement-transmittal-form/', [RequirementTransmittalFormController::class, 'remarks']);
+    Route::get('/form/print/requirement-transmittal-form/{id}', [RequirementTransmittalFormController::class, 'print']);
 
     // First Month Performance Evaluation Form
-    Route::post('/form/first-month-performance-evaluation-form/store/', [FirstMonthPerformanceEvaluationFormController::class, 'store']);
+    Route::patch('/form/approve/first-month-performance-evaluation-form/{id}', [FirstMonthPerformanceEvaluationFormController::class, 'approve']);
+    Route::patch('/form/print/first-month-performance-evaluation-form/{id}', [FirstMonthPerformanceEvaluationFormController::class, 'print']);
 
     // Detachments Route
-    Route::get('/detachments', [DetachmentController::class, 'detachments'])->name('detachments');
+    Route::get('/detachments', [DetachmentController::class, 'index'])->name('detachments');
     Route::post('/detachments/store', [DetachmentController::class, 'store']);
     Route::post('/detachments/add-personnel', [DetachmentController::class, 'addPersonnel']);
-    Route::get('/detachments/view/{id}', [DetachmentController::class, 'view']);
+    Route::get('/detachments/view/{id}', [DetachmentController::class, 'view'])->name('detachment-profile');
+    Route::get('/detachments/profile', [DetachmentController::class, 'profile'])->name('my-detachment');
     Route::put('/detachments/update/{id}', [DetachmentController::class, 'update']);
     Route::patch('/detachments/approve/{id}', [DetachmentController::class, 'approve']);
     Route::get('/detachments/table', [DetachmentController::class, 'detachmentTable']);
@@ -74,6 +102,13 @@ Route::middleware(['auth:web'])->group(function () {
     // This single route will handle marking any notification as read
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->middleware('auth:sanctum');
 
-    // Logging Route
-    Route::get('/activity-logs', [ActivityLogController::class, 'logs'])->name('activity-logs');
+    // Roles Route
+
+    Route::get('/get-roles/{category}', [RoleController::class, 'getRoles'])->name('get-roles');
+
+    // Test
+    Route::get('/test', function () {
+        return phpinfo();
+    });
+
 });
