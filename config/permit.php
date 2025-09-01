@@ -135,6 +135,10 @@ return [
         'name' => 'suspend personnel',
         'description' => 'Allows user to suspend security personnel.',
     ],
+    'edit profile' => [
+        'name' => 'view own personnel profile',
+        'description' => 'Allows user to edit their own profile info.',
+    ],
     'view own personnel profile' => [
         'name' => 'view own personnel profile',
         'description' => 'Allows user to view their own detailed profile page.',

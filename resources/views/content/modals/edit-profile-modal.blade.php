@@ -32,12 +32,12 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label class="form-label">Employee Number</label>
                             <input type="text" class="form-control" id="employee_number" name="employee_number">
                             <span class="text-danger error-text employee_number_error"></span>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label class="form-label">Gender</label>
                             <select class="select2 form-select w-100" d
                                     id="gender" name="gender">
@@ -46,7 +46,7 @@
                                 <option value="female">Female</option>
                             </select>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label class="form-label">Status</label>
                             <select class="select2 form-select w-100"
                                     id="status"
@@ -60,19 +60,6 @@
                                 <option value="preventive_suspension">Preventive Suspension</option>
                             </select>
                         </div>
-                        @can(config("permit.change personnel role.name"))
-                            <div class="col-md-3 mb-3">
-                                <label for="role" class="form-label">Role (Position)</label>
-                                <select class="select2 form-select w-100"
-                                        name="role"
-                                        id="role">
-                                    <option value="" disabled selected>Select a Role</option>
-                                    @foreach ($roles as $role)
-                                        <option value="{{ $role->name }}">{{ ucwords($role->name) }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        @endcan
                     </div>
 
                     {{-- Address Information --}}
@@ -108,18 +95,18 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Phone Number</label>
-                            <input type="text" class="form-control" id="phone_number" name="phone_number">
+                            <input type="text" class="form-control" id="phone_number" name="phone_number" autocomplete="phone-number">
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">New Password (Optional)</label>
-                            <input type="text" class="form-control" name="password" placeholder="Leave blank to use default password" autocomplete="off">
+                            <input type="password" class="form-control" name="password" placeholder="Leave blank to use default password" autocomplete="new-password">
                             <span class="text-danger error-text password_error"></span>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Confirm New Password</label>
-                            <input type="text" class="form-control" name="password_confirmation" autocomplete="off">
+                            <input type="password" class="form-control" name="password_confirmation" autocomplete="new-password">
                         </div>
                     </div>
                     <div class="row mt-5">

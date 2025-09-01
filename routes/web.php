@@ -13,6 +13,7 @@ use App\Http\Controllers\pages\FormLibrary;
 use App\Http\Controllers\pages\MiscError;
 use App\Http\Controllers\pages\RequirementTransmittalFormController;
 use App\Http\Controllers\pages\RoleController;
+use App\Http\Controllers\pages\SearchController;
 use App\Http\Controllers\pages\UsersController;
 use Illuminate\Support\Facades\Route;
 
@@ -25,6 +26,9 @@ Route::get('/auth/login-basic', [LoginBasic::class, 'index'])->name('auth-login-
 Route::get('/auth/register-basic', [RegisterBasic::class, 'index'])->name('auth-register-basic');
 
 Route::middleware(['auth:web'])->group(function () {
+
+    // Search routes
+    Route::get('/search-routes', [SearchController::class, 'searchRoutes'])->name('search-routes');
 
     // Logging Route
     Route::get('/activity-logs', [ActivityLogController::class, 'logs'])->name('activity-logs');

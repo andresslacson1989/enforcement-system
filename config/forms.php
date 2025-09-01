@@ -29,14 +29,14 @@ return [
         'first-month-performance-evaluation-form' => [
             'model' => FirstMonthPerformanceEvaluationForm::class,
             'request' => StoreFirstMonthPerformanceEvaluationForm::class,
-            'handler' => FirstMonthPerformanceEvaluationFormHandler::class, // You would create this file next
+            'handler' => FirstMonthPerformanceEvaluationFormHandler::class,
             'name' => 'First Month Performance Evaluation Form',
             'more_than_one_form' => false,
         ],
         'third-month-performance-evaluation-form' => [
             'model' => ThirdMonthPerformanceEvaluationForm::class,
             'request' => StoreThirdMonthPerformanceEvaluationForm::class,
-            'handler' => ThirdMonthPerformanceEvaluationFormHandler::class, // You would create this file next
+            'handler' => ThirdMonthPerformanceEvaluationFormHandler::class,
             'name' => 'Third Month Performance Evaluation Form',
             'more_than_one_form' => false,
         ],

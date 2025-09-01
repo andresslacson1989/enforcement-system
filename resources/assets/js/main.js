@@ -1,15 +1,16 @@
 /**
  * Main
  */
-
 'use strict';
+
+// Import Bootstrap's JS
+import * as bootstrap from 'bootstrap';
+window.bootstrap = bootstrap; // Make it global for other scripts that might need it
 
 // Import the autocomplete library and its theme
 import { autocomplete } from '@algolia/autocomplete-js';
 import '@algolia/autocomplete-theme-classic';
 
-window.isRtl = window.Helpers.isRtl();
-window.isDarkStyle = window.Helpers.isDarkStyle();
 let menu,
   animate,
   isHorizontalLayout = false;
@@ -60,6 +61,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.body.style.pointerEvents = 'system';
     setInterval(() => {
+      asdf;
       if (document.body.style.pointerEvents === 'none') {
         document.body.style.pointerEvents = 'system';
       }
@@ -276,12 +278,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }, 1500);
 
-  // NotificationSent
+  // Notification
   // ------------
   const notificationMarkAsReadAll = document.querySelector('.dropdown-notifications-all');
   const notificationMarkAsReadList = document.querySelectorAll('.dropdown-notifications-read');
 
-  // NotificationSent: Mark as all as read
+  // Notification: Mark as all as read
   if (notificationMarkAsReadAll) {
     notificationMarkAsReadAll.addEventListener('click', event => {
       notificationMarkAsReadList.forEach(item => {
@@ -289,7 +291,7 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     });
   }
-  // NotificationSent: Mark as read/unread onclick of dot
+  // Notification: Mark as read/unread onclick of dot
   if (notificationMarkAsReadList) {
     notificationMarkAsReadList.forEach(item => {
       item.addEventListener('click', event => {
@@ -298,7 +300,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // NotificationSent: Mark as read/unread onclick of dot
+  // Notification: Mark as read/unread onclick of dot
   const notificationArchiveMessageList = document.querySelectorAll('.dropdown-notifications-archive');
   notificationArchiveMessageList.forEach(item => {
     item.addEventListener('click', event => {
@@ -433,38 +435,22 @@ const SearchConfig = {
   }
 };
 
-// Search state and data
-let data = {};
-let currentFocusIndex = -1;
-
 // Utils
 function isMacOS() {
   return /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);
 }
 
-// Load search data
-function loadSearchData() {
-  const searchJson = $('#layout-menu').hasClass('menu-horizontal') ? 'search-horizontal.json' : 'search-vertical.json';
-
-  fetch(assetsPath + 'json/' + searchJson)
-    .then(response => {
-      if (!response.ok) throw new Error('Failed to fetch data');
-      return response.json();
-    })
-    .then(json => {
-      data = json;
-      initializeAutocomplete();
-    })
-    .catch(error => console.error('Error loading JSON:', error));
-}
-
 // Initialize autocomplete
-function initializeAutocomplete() {
-  const searchElement = document.getElementById('autocomplete');
+export function initializeAutocomplete() {
+  // Find the correct search element, whether it's for the vertical or horizontal menu
+  const searchElement =
+    document.getElementById('autocomplete-vertical') || document.getElementById('autocomplete-horizontal');
   if (!searchElement) return;
 
   return autocomplete({
     ...SearchConfig,
+    detachedMediaQuery: 'all', // Force detached mode
+    container: searchElement, // Pass the actual DOM element
     openOnFocus: true,
     onStateChange({ state, setQuery }) {
       // When autocomplete is opened
@@ -500,38 +486,8 @@ function initializeAutocomplete() {
     render(args, root) {
       const { render, html, children, state } = args;
 
-      // Initial Suggestions
-      if (!state.query) {
-        const initialSuggestions = html`
-          <div class="p-5 p-lg-12">
-            <div class="row g-4">
-              ${Object.entries(data.suggestions || {}).map(
-                ([section, items]) => html`
-                  <div class="col-md-6 suggestion-section">
-                    <p class="search-headings mb-2">${section}</p>
-                    <div class="suggestion-items">
-                      ${items.map(
-                        item => html`
-                          <a href="${baseUrl}${item.url}" class="suggestion-item d-flex align-items-center">
-                            <i class="icon-base ti ${item.icon}"></i>
-                            <span>${item.name}</span>
-                          </a>
-                        `
-                      )}
-                    </div>
-                  </div>
-                `
-              )}
-            </div>
-          </div>
-        `;
-
-        render(initialSuggestions, root);
-        return;
-      }
-
       // No items
-      if (!args.sections.length) {
+      if (state.query && !args.sections.length) {
         render(
           html`
             <div class="search-no-results-wrapper">
@@ -561,129 +517,58 @@ function initializeAutocomplete() {
       render(children, root);
       window.autoCompletePS?.update();
     },
-    getSources() {
-      const sources = [];
-
-      // Add navigation sources if available
-      if (data.navigation) {
-        // Add other navigation sources first
-        const navigationSources = Object.keys(data.navigation)
-          .filter(section => section !== 'files' && section !== 'members')
-          .map(section => ({
-            sourceId: `nav-${section}`,
-            getItems({ query }) {
-              const items = data.navigation[section];
-              if (!query) return items;
-              return items.filter(item => item.name.toLowerCase().includes(query.toLowerCase()));
-            },
-            getItemUrl({ item }) {
-              return baseUrl + item.url;
-            },
-            templates: {
-              header({ items, html }) {
-                if (items.length === 0) return null;
-                return html`<span class="search-headings">${section}</span>`;
-              },
-              item({ item, html }) {
-                return html`
-                  <a href="${baseUrl}${item.url}" class="d-flex justify-content-between align-items-center">
-                    <span class="item-wrapper"><i class="icon-base ti ${item.icon}"></i>${item.name}</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24">
-                      <g
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="1.8"
-                        color="currentColor">
-                        <path d="M11 6h4.5a4.5 4.5 0 1 1 0 9H4" />
-                        <path d="M7 12s-3 2.21-3 3s3 3 3 3" />
-                      </g>
-                    </svg>
-                  </a>
-                `;
-              }
-            }
-          }));
-        sources.push(...navigationSources);
-
-        // Add Files source second
-        if (data.navigation.files) {
-          sources.push({
-            sourceId: 'files',
-            getItems({ query }) {
-              const items = data.navigation.files;
-              if (!query) return items;
-              return items.filter(item => item.name.toLowerCase().includes(query.toLowerCase()));
-            },
-            getItemUrl({ item }) {
-              return baseUrl + item.url;
-            },
-            templates: {
-              header({ items, html }) {
-                if (items.length === 0) return null;
-                return html`<span class="search-headings">Files</span>`;
-              },
-              item({ item, html }) {
-                return html`
-                  <a href="${baseUrl}${item.url}" class="d-flex align-items-center position-relative px-4 py-2">
-                    <div class="file-preview me-2">
-                      <img src="${assetsPath}${item.src}" alt="${item.name}" class="rounded" width="42" />
-                    </div>
-                    <div class="flex-grow-1">
-                      <h6 class="mb-0">${item.name}</h6>
-                      <small class="text-body-secondary">${item.subtitle}</small>
-                    </div>
-                    ${item.meta
-                      ? html`
-                          <div class="position-absolute end-0 me-4">
-                            <span class="text-body-secondary small">${item.meta}</span>
-                          </div>
-                        `
-                      : ''}
-                  </a>
-                `;
-              }
-            }
-          });
-        }
-
-        // Add Members source last
-        if (data.navigation.members) {
-          sources.push({
-            sourceId: 'members',
-            getItems({ query }) {
-              const items = data.navigation.members;
-              if (!query) return items;
-              return items.filter(item => item.name.toLowerCase().includes(query.toLowerCase()));
-            },
-            getItemUrl({ item }) {
-              return baseUrl + item.url;
-            },
-            templates: {
-              header({ items, html }) {
-                if (items.length === 0) return null;
-                return html`<span class="search-headings">Members</span>`;
-              },
-              item({ item, html }) {
-                return html`
-                  <a href="${baseUrl}${item.url}" class="d-flex align-items-center py-2 px-4">
-                    <div class="avatar me-2">
-                      <img src="${assetsPath}${item.src}" alt="${item.name}" class="rounded-circle" width="32" />
-                    </div>
-                    <div class="flex-grow-1">
-                      <h6 class="mb-0">${item.name}</h6>
-                      <small class="text-body-secondary">${item.subtitle}</small>
-                    </div>
-                  </a>
-                `;
-              }
-            }
-          });
-        }
+    getSources({ query }) {
+      if (!query) {
+        return [];
       }
 
-      return sources;
+      return fetch(`/search-routes`)
+        .then(res => res.json())
+        .then(data => {
+          const allRoutes = data.navigation.routes || [];
+          const items = allRoutes.filter(item => item.name.toLowerCase().includes(query.toLowerCase()));
+
+          if (items.length === 0) {
+            return [];
+          }
+
+          return [
+            {
+              sourceId: 'routes',
+              getItems() {
+                return items;
+              },
+              getItemUrl({ item }) {
+                return `${baseUrl}${item.url.startsWith('') ? '' : 'd'}${item.url}`;
+              },
+              templates: {
+                header({ html }) {
+                  return html`<span class="search-headings">Routes</span>`;
+                },
+                item({ item, html }) {
+                  console.log(`${item.url}`);
+                  return html`
+                    <a href="${item.url}" class="d-flex justify-content-between align-items-center">
+                      <span class="item-wrapper"><i class="icon-base ti ${item.icon}"></i>${item.name}</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24">
+                        <g
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="1.8"
+                          color="currentColor">
+                          <path d="M11 6h4.5a4.5 4.5 0 1 1 0 9H4" />
+                          <path d="M7 12s-3 2.21-3 3s3 3 3 3" />
+                        </g>
+                      </svg>
+                    </a>
+                  `;
+                }
+              }
+            }
+          ];
+        });
     }
   });
 }
@@ -695,8 +580,3 @@ document.addEventListener('keydown', event => {
     document.querySelector('.aa-DetachedSearchButton').click();
   }
 });
-
-// Load search data on page load
-if (document.documentElement.querySelector('#autocomplete')) {
-  loadSearchData();
-}

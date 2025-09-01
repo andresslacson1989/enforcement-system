@@ -1,0 +1,106 @@
+{
+    "navigation": {
+        "forms": [
+            {
+                "name": "Dashboard Analytics",
+                "icon": "tabler-smart-home",
+                "url": ""
+            },
+            {
+                "name": "Dashboard CRM",
+                "icon": "tabler-smart-home",
+                "url": "dashboards/crm"
+            }
+        ]
+    },
+    "suggestions": {
+        "Forms": [
+            {
+                "name": "Analytics",
+                "icon": "tabler-smart-home",
+                "url": ""
+            },
+            {
+                "name": "CRM",
+                "icon": "tabler-vector-bezier-circle",
+                "url": "dashboard/crm"
+            },
+            {
+                "name": "eCommerce",
+                "icon": "tabler-smart-home",
+                "url": "app/ecommerce/dashboard"
+            },
+            {
+                "name": "User List",
+                "icon": "tabler-list-numbers",
+                "url": "app/user/list"
+            }
+        ],
+        "Apps & Pages": [
+            {
+                "name": "Calendar",
+                "icon": "tabler-calendar",
+                "url": "app/calendar"
+            },
+            {
+                "name": "Invoice List",
+                "icon": "tabler-list-numbers",
+                "url": "app/invoice/list"
+            },
+            {
+                "name": "Account Settings",
+                "icon": "tabler-user",
+                "url": "pages/account-settings-account"
+            },
+            {
+                "name": "Dialog Examples",
+                "icon": "tabler-square",
+                "url": "modal-examples"
+            }
+        ],
+        "User Interface": [
+            {
+                "name": "Typography",
+                "icon": "tabler-typography",
+                "url": "ui/typography"
+            },
+            {
+                "name": "Advanced Cards",
+                "icon": "tabler-id",
+                "url": "cards-advance"
+            },
+            {
+                "name": "Tabler",
+                "icon": "tabler-pencil",
+                "url": "icons-tabler"
+            },
+            {
+                "name": "Widget Cards",
+                "icon": "tabler-id",
+                "url": "cards/advance"
+            }
+        ],
+        "Forms & Charts": [
+            {
+                "name": "Form Layouts",
+                "icon": "tabler-file",
+                "url": "form/layouts-vertical"
+            },
+            {
+                "name": "Form Validation",
+                "icon": "tabler-checkbox",
+                "url": "form/validation"
+            },
+            {
+                "name": "Form Wizard",
+                "icon": "tabler-text-wrap-disabled",
+                "url": "form/wizard-numbered"
+            },
+            {
+                "name": "E-Charts",
+                "icon": "tabler-chart-line",
+                "url": "charts/apex"
+            }
+        ]
+    }
+}

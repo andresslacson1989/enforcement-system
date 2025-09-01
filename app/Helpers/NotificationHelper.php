@@ -47,7 +47,7 @@ class NotificationHelper
             if ($employee) {
                 $usersToNotifyIds[] = $employee->id;
             }
-        } elseif ($formSlug === 'first-month-performance-evaluation') {
+        } elseif ($formSlug === 'first-month-performance-evaluation' || $formSlug === 'third-month-performance-evaluation' || $formSlug === 'sixth-month-performance-evaluation') {
             if ($submitted_by->detachment_id == $validatedData['deployment'] && $submitted_by->isAssignedOfficer()) {
                 $usersToNotifyIds = $this->getIds(['hr manager', 'hr specialist', 'operation manager']);
             } else {
@@ -61,6 +61,8 @@ class NotificationHelper
                     return [];
                 }
             }
+        } elseif ($formSlug === 'id-application-form') {
+            $usersToNotifyIds = $this->getIds(['hr manager', 'hr specialist']);
         }
 
         return $usersToNotifyIds;

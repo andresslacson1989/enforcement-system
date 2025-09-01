@@ -1,15 +1,12 @@
 import './bootstrap';
+import * as theme from '../assets/js/main.js'; // Import the theme's main JavaScript file
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
 
 /*
   Add custom scripts here
 */
-import.meta.glob([
-  '../assets/img/**',
-  // '../assets/json/**',
-  '../assets/vendor/fonts/**'
-]);
+import.meta.glob(['../assets/img/**', '../assets/json/**', '../assets/vendor/fonts/**']);
 
 // Make jQuery available globally
 //window.Pusher = Pusher;
@@ -122,4 +119,12 @@ $(document).on('click', '.notification-link', function (event) {
       // Also uncomment this line to navigate even if the API call fails
       window.location.href = originalUrl;
     });
+});
+
+// Initialize theme scripts on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+  // Check if the search element exists and initialize autocomplete
+  if (document.querySelector('#autocomplete-vertical, #autocomplete-horizontal')) {
+    theme.initializeAutocomplete();
+  }
 });
