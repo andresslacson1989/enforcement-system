@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -46,46 +47,48 @@ use Illuminate\Database\Eloquent\Relations\MorphOne;
  * @property-read \App\Models\Submission|null $submission
  * @property-read \App\Models\User|null $submittedBy
  * @property-read \App\Models\User|null $user
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereAttendanceA($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereAttendanceB($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereCommunicationA($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereCommunicationB($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereDateLastPrinted($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereDetachmentId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereEmployeeId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereEmployeeNumber($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereImprovement1($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereImprovement2($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereImprovement3($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereJobTitle($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereKnowledgeUnderstandingA($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereKnowledgeUnderstandingB($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereLastPrintedBy($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereMeetingDate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereObservationA($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereObservationB($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereOverallStanding($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm wherePrinted($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereProfessionalismA($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereProfessionalismB($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereSecurityComment($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereStatus($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereStrength1($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereStrength2($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereStrength3($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereSubmittedBy($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereSupervisorComment($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereTimesPrinted($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FirstMonthPerformanceEvaluationForm whereUpdatedAt($value)
+ *
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm newModelQuery()
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm newQuery()
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm query()
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereAttendanceA($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereAttendanceB($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereCommunicationA($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereCommunicationB($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereCreatedAt($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereDateLastPrinted($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereDetachmentId($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereEmployeeId($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereEmployeeNumber($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereId($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereImprovement1($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereImprovement2($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereImprovement3($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereJobTitle($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereKnowledgeUnderstandingA($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereKnowledgeUnderstandingB($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereLastPrintedBy($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereMeetingDate($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereName($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereObservationA($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereObservationB($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereOverallStanding($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm wherePrinted($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereProfessionalismA($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereProfessionalismB($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereSecurityComment($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereStatus($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereStrength1($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereStrength2($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereStrength3($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereSubmittedBy($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereSupervisorComment($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereTimesPrinted($value)
+ * @method static Builder<static>|FirstMonthPerformanceEvaluationForm whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
-class FirstMonthPerformanceEvaluationForm extends Model
+class FirstMonthPerformanceEvaluationForm extends BaseFormModel
 {
     use HasFactory;
 
@@ -131,7 +134,7 @@ class FirstMonthPerformanceEvaluationForm extends Model
     /**
      * Get the user that owns the form.
      */
-    public function user(): BelongsTo
+    public function employee(): BelongsTo
     {
         return $this->belongsTo(User::class, 'employee_id');
     }

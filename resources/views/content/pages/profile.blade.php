@@ -19,11 +19,13 @@
 @endsection
 
 <!-- Page Styles -->
-{{--@section('page-style')--}}
-{{--  @vite([--}}
-{{--  //'resources/assets/vendor/scss/pages/wizard-ex-checkout.scss'--}}
-{{--  ])--}}
-{{--@endsection--}}
+@section('page-style')
+    <style>
+        .profile-details i {
+            width: 1.2rem; /* Align icons nicely */
+        }
+    </style>
+@endsection
 
 <!-- Vendor Scripts -->
 @section('vendor-script')
@@ -44,11 +46,16 @@
 @section('page-script')
     @vite([
     'resources/assets/js/pages-profile.js',
-    'resources/assets/js/users-table-functions.js',
+   'resources/assets/js/users-table-functions.js',
     ])
 @endsection
 
 @section('content')
+    <style>
+        .profile-details i {
+            width: 1.2rem; /* Align icons nicely */
+        }
+    </style>
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><span class="fw-bold">Main</span></li>
@@ -64,32 +71,44 @@
                     <div class="card text-center profile-card shadow-sm">
                         <div class="card-header"></div>
                         <div class="card-body">
-                            <img src="{{ $user->profile_photo_url }}" alt="Profile Picture" class="profile-pic">
-
+                            <div class="profile-pic-container position-relative d-inline-block">
+                                <img src="{{ $user->profile_photo_url }}" alt="Profile Picture" class="img img-thumbnail rounded-3 w-px-160" id="profile-pic-img">
+                                @if(Auth::user()->can(config("permit.edit any personnel profile.name")))
+                                    <button class="btn btn-icon btn-label-gray position-absolute bottom-0 end-0" id="change-photo-btn" data-bs-toggle="tooltip" data-user-id="{{ $user->id }}" title="Change Photo">
+                                        <i class="ti icon-lg tabler-camera"></i>
+                                    </button>
+                                @endif
+                            </div>
+                            <input type="file" id="profile-photo-input" name="photo" class="d-none" accept="image/png, image/jpeg, image/jpg">
                             <h4 class="card-title mt-3"> {{ $user->name ?? '' }} </h4>
                             <p class="text-muted mb-1">Employee No.: #{{ $user->employee_number?? '' }} </p>
-
                             <h5>
                                 <span class="badge bg-primary"> {{ ucwords(Role::findById($user->primary_role_id)->name ?? '') }} </span>
                                 <span class="badge bg-success"> {{ ucwords($user->status ?? '') }} </span>
                             </h5>
-
                             <hr>
-
-                            <div class="text-start">
-                                <p><strong><i class="fas fa-envelope me-2"></i>Email:</strong> {{ $user->email ?? '' }} </p>
-                                <p><strong><i class="fas fa-phone me-2"></i>Phone:</strong> {{ $user->phone_number ?? '' }} </p>
-                                <p><strong><i class="fas fa-phone me-2"></i>Street:</strong> {{ $user->street ?? '' }} </p>
-                                <p><strong><i class="fas fa-phone me-2"></i>City:</strong> {{ $user->city ?? '' }} </p>
-                                <p><strong><i class="fas fa-phone me-2"></i>Province:</strong> {{ $user->province ?? '' }} </p>
-                                <p><strong><i class="fas fa-phone me-2"></i>Zip Code:</strong> {{ $user->zip_code ?? '' }} </p>
-                                <p><strong><i class="fas fa-phone me-2"></i>Gender:</strong> {{ ucfirst($user->gender ?? '')  }} </p>
+                            <div class="text-start profile-details">
+                                <p><i class="ti tabler-mail me-2"></i><strong>Email:</strong> {{ $user->email ?? 'N/A' }}</p>
+                                <p><i class="ti tabler-phone me-2"></i><strong>Phone:</strong> {{ $user->phone_number ?? 'N/A' }}</p>
+                                <p><i class="ti tabler-brand-telegram me-2"></i><strong>Telegram:</strong> {{ $user->telegram_chat_id ?? 'N/A' }}</p>
                                 <hr>
-                                <p><strong><i class="fas fa-phone me-2"></i>Telegram:</strong> {{ $user->telegram_chat_id  ?? '' }} </p>
+                                <p><i class="ti tabler-calendar me-2"></i><strong>Birthdate:</strong> {{ $user->birthdate ? $user->birthdate->format('M d, Y') : 'N/A' }}</p>
+                                <p><i class="ti tabler-gender-male me-2"></i><strong>Gender:</strong> {{ ucfirst($user->gender ?? 'N/A') }}</p>
+                                <hr>
+                                <p><i class="ti tabler-map-pin me-2"></i><strong>Address:</strong><br>
+                                    <span class="ms-4">{{ $user->street ?? 'N/A' }}, {{ $user->city ?? '' }}</span><br>
+                                    <span class="ms-4">{{ $user->province ?? '' }}, {{ $user->zip_code ?? '' }}</span>
+                                </p>
+                                <hr>
+                                <h6 class="text-muted">Government IDs</h6>
+                                <p><i class="ti tabler-id me-2"></i><strong>SSS:</strong> {{ $user->sss_number ?? 'N/A' }}</p>
+                                <p><i class="ti tabler-id me-2"></i><strong>PhilHealth:</strong> {{ $user->philhealth_number ?? 'N/A' }}</p>
+                                <p><i class="ti tabler-id me-2"></i><strong>Pag-IBIG:</strong> {{ $user->pagibig_number ?? 'N/A' }}</p>
                             </div>
-                            @can(config("permit.edit personnel.name"))
+                            {{-- A user can edit their own profile, or an admin with permission can edit any profile --}}
+                            @if(Auth::id() == $user->id || Auth::user()->can(config("permit.edit own personnel profile.name")))
                                 <a href="#" class="btn btn-dark mt-3 w-100 edit-user" data-user-id="{{ $user->id }}">Edit Profile</a>
-                            @endcan
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -189,6 +208,3 @@
         @include('content.modals.edit-profile-modal')
     @endcan
 @endsection
-
-
-

@@ -4,14 +4,16 @@ namespace App\Traits;
 
 use App\Models\ActivityLog;
 use App\Models\Detachment;
-use App\Models\FirstMonthPerformanceEvaluationForm;
-use App\Models\RequirementTransmittalForm;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Permission\Models\Role;
 
 trait Loggable
 {
+    private const USER_ID_ATTRIBUTES = ['approved_by', 'submitted_by', 'last_printed_by', 'suspended_by', 'assigned_officer', 'user_id'];
+
+    private const DETACHMENT_ID_ATTRIBUTES = ['detachment_id', 'deployment'];
+
     /**
      * Log the creation of a model.
      */
@@ -22,9 +24,9 @@ trait Loggable
         $formattedModelName = trim(preg_replace('/([a-z])([A-Z])/', '$1 $2', $modelName));
 
         $data = '';
-        foreach ($model->toArray() as $attribute => $value) {
+        foreach ($model->getAttributes() as $attribute => $value) {
 
-            $value = $this->attribute($attribute, $value);
+            $value = $this->getName($attribute, $value);
             $data .= ucwords(str_replace('_', ' ', $attribute)).': <span class="fw-bold">'.$value.'</span><br>';
         }
 
@@ -54,8 +56,8 @@ trait Loggable
                 continue;
             }
 
-            $newValue = $this->attribute($attribute, $newValue);
-            $oldValue = $this->attribute($attribute, $model->getOriginal($attribute));
+            $newValue = $this->getName($attribute, $newValue);
+            $oldValue = $this->getName($attribute, $model->getOriginal($attribute));
 
             if ($oldValue == '' || ! $oldValue) {
                 $oldValue = 'N/A';
@@ -87,13 +89,12 @@ trait Loggable
         $actor = auth()->user()?->name ?? 'System';
         $modelName = class_basename($model);
         $formattedModelName = trim(preg_replace('/([a-z])([A-Z])/', '$1 $2', $modelName));
-        // Extract the name to a variable to avoid complex expression in string
-        $recordName = $model->name ?? '';
+        $recordName = $this->name($model);
 
         $this->logActivity(
             $model,
             'deleted',
-            "<h6>{$actor} deleted <span class='text-primary'>[{$formattedModelName}]</span> #{$model->id} '{$recordName}'</h6>"
+            "<h6>{$actor} deleted <span class='text-primary'>[{$formattedModelName}]</span> #{$model->id} {$recordName}</h6>"
         );
     }
 
@@ -114,22 +115,22 @@ trait Loggable
     /**
      * Helper function to determine Model and attach corresponding name instead of just giving the id
      */
-    private function name($model)
+    private function name(Model $model): string
     {
 
-        if ($model instanceof User || $model instanceof Detachment) {
-            return $model->name;
+        // For forms that are about a specific employee (standardized to 'employee')
+        if (method_exists($model, 'employee') && $model->employee) {
+            return "for <a href='".route('user-profile', $model->employee->id)."'>{$model->employee->name}</a>";
         }
 
-        if ($model instanceof RequirementTransmittalForm) {
-            // Use the employee_name field for this form
-            return 'For '.$model->employee_name;
+        // For models with a 'name' property like User, Detachment, Role
+        if (isset($model->name)) {
+            // Add quotes for clarity in the log message
+            return "'{$model->name}'";
         }
 
-        if ($model instanceof FirstMonthPerformanceEvaluationForm) {
-
-            // For this form, we can reference the employee ID
-            // or load the relationship if we want the name
+        // Fallback for any models that might still use the 'user' relationship name
+        if (method_exists($model, 'user') && $model->user) {
             return 'For '.$model->user->name;
         }
 
@@ -139,24 +140,27 @@ trait Loggable
     /**
      * Helper function to give name to ids
      */
-    private function attribute($attribute, $newValue)
+    private function getName($attribute, $newValue)
     {
         // Return early if the value is null or empty
         if (is_null($newValue) || $newValue === '') {
             return 'N/A';
         }
 
+        // For future performance improvements, consider collecting all IDs
+        // from the model's attributes/dirty attributes first, then querying
+        // the related models in bulk to avoid N+1 query issues.
+
         if ($attribute === 'primary_role_id') {
-            // Use null-safe operator and provide a fallback
-            $newValue = ucwords(Role::findById($newValue)?->name ?? "Invalid Role [#{$newValue}]");
+            return ucwords(Role::find($newValue)?->name ?? "Invalid Role [#{$newValue}]");
+        }
 
-        } elseif (in_array($attribute, ['approved_by', 'submitted_by', 'last_printed_by', 'suspended_by', 'assigned_officer', 'user_id'])) {
-            // Use null-safe operator and provide a fallback
-            $newValue = User::find($newValue)?->name."[#{$newValue}]" ?? "Deleted User [#{$newValue}]";
+        if (in_array($attribute, self::USER_ID_ATTRIBUTES)) {
+            return User::find($newValue)?->name . "[#{$newValue}]" ?? "Deleted User [#{$newValue}]";
+        }
 
-        } elseif (in_array($attribute, ['detachment_id', 'deployment'])) {
-            // Use null-safe operator and provide a fallback
-            $newValue = Detachment::find($newValue)?->name."[#{$newValue}]" ?? "Deleted Detachment [#{$newValue}]";
+        if (in_array($attribute, self::DETACHMENT_ID_ATTRIBUTES)) {
+            return Detachment::find($newValue)?->name . "[#{$newValue}]" ?? "Deleted Detachment [#{$newValue}]";
         }
 
         return $newValue;

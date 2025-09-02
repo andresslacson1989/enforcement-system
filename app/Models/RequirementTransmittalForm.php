@@ -175,9 +175,9 @@ use Illuminate\Database\Eloquent\Relations\MorphOne;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|RequirementTransmittalForm whereTimesPrinted($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|RequirementTransmittalForm whereUpdatedAt($value)
  * @mixin \Eloquent
- */
-class RequirementTransmittalForm extends Model
+ */class RequirementTransmittalForm extends BaseFormModel
 {
+    use \Illuminate\Database\Eloquent\Factories\HasFactory;
     protected $fillable = [
         'submitted_by',
         'employee_id',
@@ -338,7 +338,7 @@ class RequirementTransmittalForm extends Model
     /**
      * Get the user that owns the form.
      */
-    public function user(): BelongsTo
+    public function employee(): BelongsTo
     {
         return $this->belongsTo(User::class, 'employee_id');
     }

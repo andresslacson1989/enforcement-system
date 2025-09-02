@@ -1,7 +1,7 @@
 @php use App\Models\User; @endphp
 @extends('layouts/layoutMaster')
 
-@section('title', 'Activity Board')
+@section('title', 'Recruitment Transmittal Form')
 
 <!-- Vendor Styles -->
 @section('vendor-style')

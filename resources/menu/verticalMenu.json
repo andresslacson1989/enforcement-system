@@ -4,21 +4,21 @@
             "menuHeader": "Main"
         },
         {
-            "url": "/user/my-profile",
+            "url": "user/my-profile",
             "name": "My Profile",
             "icon": "menu-icon icon-base ti tabler-user",
-            "slug": "profile",
+            "slug": "my-profile",
             "permission": "view my profile menu"
         },
         {
-            "url": "/form-library",
+            "url": "form-library",
             "name": "Form Library",
             "icon": "menu-icon icon-base ti tabler-library",
             "slug": "form-library",
             "permission": "view form library menu"
         },
         {
-            "url": "/detachments/profile",
+            "url": "detachments/profile",
             "name": "My Detachment",
             "icon": "menu-icon icon-base ti tabler-building-warehouse",
             "slug": "my-detachment",
@@ -28,21 +28,21 @@
             "menuHeader": "Directories"
         },
         {
-            "url": "/staffs",
+            "url": "staffs",
             "icon": "menu-icon icon-base ti tabler-user-hexagon",
             "name": "Staffs",
             "slug": "staffs",
             "permission": "view staffs menu"
         },
         {
-            "url": "/personnel",
+            "url": "personnel",
             "icon": "menu-icon icon-base ti tabler-shield",
             "name": "Personnel",
             "slug": "personnel",
             "permission": "view personnel menu"
         },
         {
-            "url": "/detachments",
+            "url": "detachments",
             "icon": "menu-icon icon-base ti tabler-building-community",
             "name": "Detachments",
             "slug": "detachments",
@@ -66,7 +66,7 @@
             ]
         },
         {
-            "url": "/activity-logs",
+            "url": "activity-logs",
             "icon": "menu-icon icon-base ti tabler-logs",
             "name": "Activity logs",
             "slug": "activity-logs",

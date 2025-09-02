@@ -311,11 +311,11 @@ document.addEventListener('DOMContentLoaded', function () {
   // Init helpers & misc
   // --------------------
 
-  // Init BS Tooltip
+  /*  // Init BS Tooltip
   const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
   tooltipTriggerList.map(function (tooltipTriggerEl) {
     return new bootstrap.Tooltip(tooltipTriggerEl);
-  });
+  });*/
 
   // Accordion active class
   const accordionActiveFunction = function (e) {
@@ -539,16 +539,15 @@ export function initializeAutocomplete() {
                 return items;
               },
               getItemUrl({ item }) {
-                return `${baseUrl}${item.url.startsWith('') ? '' : 'd'}${item.url}`;
+                return `${baseUrl}${item.url}`;
               },
               templates: {
                 header({ html }) {
-                  return html`<span class="search-headings">Routes</span>`;
+                  return html`<span class="search-headings">Found ${items.length} results</span>`;
                 },
                 item({ item, html }) {
-                  console.log(`${item.url}`);
                   return html`
-                    <a href="${item.url}" class="d-flex justify-content-between align-items-center">
+                    <a href="${baseUrl}${item.url}" class="d-flex justify-content-between align-items-center">
                       <span class="item-wrapper"><i class="icon-base ti ${item.icon}"></i>${item.name}</span>
                       <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24">
                         <g

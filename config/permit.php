@@ -135,8 +135,12 @@ return [
         'name' => 'suspend personnel',
         'description' => 'Allows user to suspend security personnel.',
     ],
-    'edit profile' => [
-        'name' => 'view own personnel profile',
+    'edit own personnel profile' => [
+        'name' => 'edit own personnel profile',
+        'description' => 'Allows user to edit their own profile info.',
+    ],
+    'edit any personnel profile' => [
+        'name' => 'edit own personnel profile',
         'description' => 'Allows user to edit their own profile info.',
     ],
     'view own personnel profile' => [
@@ -158,6 +162,10 @@ return [
     'view own detachment personnel profile' => [
         'name' => 'view own detachment personnel profile',
         'description' => 'Allows user to view the profile of personnel within their own detachment.',
+    ],
+    'add personnel to detachment' => [
+        'name' => 'add personnel to detachment',
+        'description' => 'Allows user to assign personnel to a detachment.',
     ],
 
     // Roles
@@ -204,10 +212,6 @@ return [
     'view any detachment profile' => [
         'name' => 'view any detachment profile',
         'description' => 'Allows user to view the profile of any detachment.',
-    ],
-    'add personnel to detachment' => [
-        'name' => 'add personnel to detachment',
-        'description' => 'Allows user to assign personnel to a detachment.',
     ],
     'approve detachment' => [
         'name' => 'approve detachment',

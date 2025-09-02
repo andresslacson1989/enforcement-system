@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\File;
 
 class SearchController extends Controller
 {
-    public function searchRoutes()
+    public function search()
     {
         $user = Auth::user();
 
@@ -50,7 +50,7 @@ class SearchController extends Controller
             if ($user->can(config('permit.'.$permissionName.'.name'))) {
                 $searchable[] = [
                     'name' => $form['name'],
-                    'url' => 'form/create/'.$slug,
+                    'url' => '/form/create/'.$slug, // Prepend a slash for consistency
                     'icon' => 'ti tabler-forms',
                 ];
             }

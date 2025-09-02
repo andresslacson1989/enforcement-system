@@ -6,9 +6,11 @@
 <!-- Vendor Styles -->
 @section('vendor-style')
     @vite([
-    'resources/assets/vendor/libs/select2/select2.scss',
-    'resources/assets/vendor/libs/sweetalert2/sweetalert2.scss',
-    'resources/assets/vendor/libs/flatpickr/flatpickr.scss',
+     'resources/assets/vendor/libs/select2/select2.scss',
+     'resources/assets/vendor/libs/datatables-bs5/datatables.bootstrap5.scss',
+     'resources/assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.scss',
+     'resources/assets/vendor/libs/sweetalert2/sweetalert2.scss',
+     'resources/assets/vendor/libs/flatpickr/flatpickr.scss',
     ])
 @endsection
 
@@ -16,13 +18,11 @@
 @section('vendor-script')
     @vite([
     'resources/assets/vendor/libs/jquery/jquery.js',
-    'resources/assets/vendor/libs/select2/select2.js',
-    'resources/assets/vendor/libs/sweetalert2/sweetalert2.js',
-    'resources/assets/vendor/libs/moment/moment.js',
-    'resources/assets/vendor/libs/flatpickr/flatpickr.js',
-    'resources/assets/vendor/libs/@form-validation/popular.js',
-    'resources/assets/vendor/libs/@form-validation/bootstrap5.js',
-    'resources/assets/vendor/libs/@form-validation/auto-focus.js'
+     'resources/assets/vendor/libs/select2/select2.js',
+     'resources/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js',
+     'resources/assets/vendor/libs/sweetalert2/sweetalert2.js',
+     'resources/assets/vendor/libs/moment/moment.js',
+     'resources/assets/vendor/libs/flatpickr/flatpickr.js',
     ])
 @endsection
 
@@ -43,7 +43,7 @@
                 Filters
             </div>
             <div class="card-body">
-                <form method="GET" action="{{ route('activity-logs') }}">
+                <form id="activity-log-filters">
                     <div class="row">
                         <div class="col-md-3">
                             <label for="search">Search</label>
@@ -51,7 +51,7 @@
                         </div>
                         <div class="col-md-3">
                             <label for="model">Model</label>
-                            <select name="model" class="selectpicker w-100" data-style="default">
+                            <select name="model" class="select2 form-control" data-style="default">
                                 <option value="">All Models</option>
                                 @foreach($filterableModels as $model)
                                     <option value="{{ $model }}" {{ request('model') == $model ? 'selected' : '' }}>{{ $model }}</option>
@@ -68,7 +68,7 @@
                         </div>
                         <div class="col-md-2 d-flex align-items-end">
                             <button type="submit" class="btn btn-primary">Filter</button>
-                            <a href="{{ route('activity-logs') }}" class="btn btn-secondary ms-2">Clear</a>
+                            <button type="button" class="btn btn-secondary ms-2" id="clear-filters-btn">Clear</button>
                         </div>
                     </div>
                 </form>
@@ -79,13 +79,14 @@
         <div class="card shadow mb-4">
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-bordered">
+                    <table class="table table-bordered" id="activity-logs-table">
                         <thead class="text-center">
                         <tr>
                             <th>Date</th>
                             <th>User</th>
                             <th>Action</th>
                             <th>Message</th>
+                            <th>Model</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -133,6 +134,9 @@
                                         </div>
                                     @endif
                                 </td>
+                                <td>
+                                    {{ class_basename($log->loggable_type) }}
+                                </td>
                             </tr>
                         @empty
                             <tr>
@@ -141,12 +145,6 @@
                         @endforelse
                         </tbody>
                     </table>
-                </div>
-                <!-- Pagination -->
-                <div class="row mt-4">
-                    <div class="col">
-                        {{ $logs->appends(request()->query())->links() }}
-                    </div>
                 </div>
             </div>
         </div>
@@ -171,4 +169,3 @@
     </div>
 
 @endsection
-

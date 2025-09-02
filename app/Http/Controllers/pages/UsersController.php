@@ -47,7 +47,6 @@ class UsersController
             ->with('detachment', $personnel->detachment)
             ->with('forms', $forms)
             ->with('roles', $roles);
-
     }
 
     /**
@@ -55,6 +54,7 @@ class UsersController
      */
     public function show($id) // This is our standard method for fetching user JSON
     {
+
         $user = User::with(['detachment'])->find($id);
 
         if ($user) {
@@ -432,22 +432,22 @@ class UsersController
               : '';
 
             $data_arr[] = [
-                'name' => '<div class="d-flex justify-content-start align-items-center">
-                    <div class="avatar-wrapper">
-                        <div class="avatar avatar-sm me-3">
-                            <a href="/user/profile/'.$user->id.'" class="text-body text-truncate">
-                             <img src="'.$user->profile_photo_url.'" alt="Avatar" class="rounded-circle">
-                             </a>
-                        </div>
-                    </div>
-                    <div class="d-flex flex-column">
-                        <a href="/user/profile/'.$user->id.'" class="text-body text-truncate">
-                            <span class="fw-medium">'.$user->name.'</span>
-                        </a>
-                        <small class="text-muted">#'.$user->employee_number.'</small>
-                        <small class="text-muted">'.$user->phone_number.'</small>
-                    </div>
-                </div>',
+                'name' => '<a href="/user/profile/'.$user->id.'" class="list-group-item list-group-item-action d-flex align-items-center">
+                            <img src="'.$user->profile_photo_url.'" alt="User Image" class="rounded-circle me-4 w-px-50">
+                            <div class="w-100">
+                              <div class="d-flex justify-content-between">
+                                <div class="user-info">
+                                  <h6 class="mb-1">'.$user->name.'</h6>
+                                  <small class="text-muted">'.$user->phone_number.'</small> <br>
+                                  <small class="text-muted">#'.$user->employee_number.'</small>
+                                  <div class="user-status">
+                                    <span class="badge badge-dot bg-success"></span>
+                                    <small>Online</small>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </a>',
                 'role' => '<span class="badge '.$roleColor.'">'.$roleName.'</span>',
                 'detachment' => $user->detachment ? $user->detachment->name : '<span class="text-muted">Unassigned</span>',
                 'status' => '<span class="badge '.$statusColor.'">'.ucwords(str_replace('_', ' ', $user->status)).'</span>',
@@ -458,20 +458,14 @@ class UsersController
                     </a>
                     <div class="dropdown-menu dropdown-menu-end m-0">
                         <a href="/user/profile/'.$user->id.'" class="dropdown-item"><i class="icon-base ti tabler-user-circle me-1"></i>View Profile</a>
-
                         <a href="javascript:;" class="dropdown-item edit-user" data-user-id="'.$user->id.'"><i class="icon-base ti tabler-edit me-1"></i>Edit</a>
-
                         <div class="dropdown-divider"></div>
-
-
                         <a href="javascript:;" class="dropdown-item change-role-btn"
                            data-user-name="'.$user->name.'"
                            data-current-role-id="'.$user->primary_role_id.'">
                            <i class="icon-base ti tabler-user-cog me-1"></i>Change Role
                         </a>
-
                         '.$suspendAction.'
-
                         <div class="dropdown-divider"></div>
                         '.$removeAction.'
                         <a href="javascript:;" class="dropdown-item text-danger delete-user" data-user-id="'.$user->id.'"><i class="icon-base ti tabler-trash me-1"></i>Delete</a>
@@ -513,5 +507,24 @@ class UsersController
             'redirect_url' => route('form-library'),
             'text' => 'Profile completed successfully! Welcome.',
         ]);
+    }
+
+    /**
+     * Update the user's profile photo.
+     *
+     * @return JsonResponse
+     */
+    public function updateProfilePhoto(Request $request)
+    {
+        $request->validate([
+            'photo' => ['required', 'mimes:jpg,jpeg,png', 'max:2048'],
+        ]);
+
+        $user = User::find($request->user_id);
+
+        // This method comes from the HasProfilePhoto trait and handles everything.
+        $user->updateProfilePhoto($request->file('photo'));
+
+        return response()->json(['profile_photo_url' => $user->profile_photo_url]);
     }
 }

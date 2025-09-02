@@ -6,9 +6,9 @@ use App\Interfaces\FormHandlerInterface;
 use App\Models\Detachment;
 use App\Models\Submission;
 use App\Models\User;
-use Spatie\Permission\Models\Role;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
+use Spatie\Permission\Models\Role;
 
 class RequirementTransmittalFormHandler implements FormHandlerInterface
 {
@@ -63,7 +63,8 @@ class RequirementTransmittalFormHandler implements FormHandlerInterface
             ->with('submitted_by', $submissionRecord->submittedBy)
             ->with('detachments', $detachments)
             ->with('employee', $employee)
-            ->with('form_name', $this->form_name);
+            ->with('form_name', $this->form_name)
+            ->with('user', $user);
     }
 
     public function print(int $id): View

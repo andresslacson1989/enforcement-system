@@ -103,22 +103,28 @@ $(document).on('datatable:ready', function (e, dt_instance) {
           let firstErrorField = null;
           for (const key in errors) {
             const field = $(`[name="${key}"]`);
-            field.addClass('is-invalid').siblings('.error-text').text(errors[key][0]);
+            field.addClass('is-invalid');
+            // Use .closest() to find the parent container and then find the error-text div. This is more robust.
+            field.closest('.col-md-6, .col-12').find('.error-text').text(errors[key][0]);
             if (!firstErrorField) {
               firstErrorField = field;
             }
-
-            Swal.fire({
-              title: 'Error!',
-              icon: data.icon,
-              showConfirmButton: false,
-              timer: 1500
-            });
           }
-          // Optional: Focus the first field with an error
-          if (firstErrorField) firstErrorField.focus();
+          // If an error field is found, switch to its tab and then focus it.
+          if (firstErrorField) {
+            const tabPane = firstErrorField.closest('.tab-pane');
+            if (tabPane.length) {
+              const tabId = tabPane.attr('id');
+              // Use Bootstrap's API to programmatically show the correct tab
+              const tabTrigger = new bootstrap.Tab($(`button[data-bs-target="#${tabId}"]`)[0]);
+              tabTrigger.show();
+            }
+            // Focus the field after the tab is shown
+            firstErrorField.focus();
+          }
         } else {
-          Swal.fire({ icon: 'error', title: 'Request Failed', text: 'An error occurred on the server.' });
+          // Only show a generic error for non-validation issues (e.g., server errors)
+          Swal.fire({ icon: 'error', title: 'Request Failed', text: jqXHR.responseJSON?.message || 'An unknown error occurred.' });
         }
       },
       complete: () => submitButton.prop('disabled', false).removeClass('disabled')

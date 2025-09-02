@@ -1,12 +1,6 @@
 'use strict';
 
 $(function () {
-  $('.select2').select2({
-    dropdownParent: $('#edit_profile_modal .modal-body')
-  });
-
-  $('#forms_table').DataTable({});
-
   // Get the hash from the current URL (e.g., '#notifications')
   var hash = window.location.hash;
 
@@ -20,67 +14,75 @@ $(function () {
     }
   }
 
-  const users_modal = $('#edit_profile_modal');
-  const users_form = $('#edit_profile_form');
-  const body = $('body');
+  // --- Profile Photo Upload Logic ---
+  const changePhotoButton = $('#change-photo-btn');
+  const photoInput = $('#profile-photo-input');
+  const profilePicImg = $('#profile-pic-img');
 
-  // Prepare Modal for EDIT action
-  body.on('click', '.edit-user', function () {
-    const userId = $(this).data('user-id');
-
-    // Fetch user data using the new standard 'show' method
-    $.get(`/staffs/${userId}`, function (data) {
-      users_form.find('input[name="_method"]').remove(); // Clear previous method spoofing
-
-      // Configure modal for editing
-      users_form.attr('action', `/staffs/update/${userId}`);
-      users_form.append('<input type="hidden" name="_method" value="PUT">');
-
-      // Populate fields
-      for (const key in data) {
-        $(`#${key}`).val(data[key]).trigger('change');
-      }
-
-      users_modal.modal('show');
-    }).fail(() => Swal.fire('Error!', 'Could not retrieve user data.', 'error'));
-  });
-
-  // Unified Form Submission (for both Add and Edit)
-  users_form.on('submit', function (e) {
-    Swal.fire({
-      title: 'Please Wait!',
-      text: 'Processing your request...',
-      allowOutsideClick: false,
-      showConfirmButton: false, // This hides the "OK" button
-      willOpen: () => {
-        Swal.showLoading(); // 2. Show the spinner
-      }
+  if (changePhotoButton.length) {
+    // 1. Trigger the hidden file input when the camera button is clicked
+    changePhotoButton.on('click', function () {
+      photoInput.click();
     });
-    e.preventDefault();
-    const form = $(this);
-    $.ajax({
-      url: form.attr('action'),
-      method: 'POST', // Always POST
-      data: form.serialize(),
-      beforeSend: () => {
-        form.find('.error-text').text('');
-        form.find('.is-invalid').removeClass('is-invalid');
-      },
-      success: response => {
-        users_modal.modal('hide');
-        Swal.fire({ icon: 'success', title: response.text || 'Success!', showConfirmButton: false, timer: 1500 });
-        dt_users.ajax.reload();
-      },
-      error: jqXHR => {
-        if (jqXHR.status === 422) {
-          const errors = jqXHR.responseJSON.errors;
-          for (const key in errors) {
-            $(`#${key}`).addClass('is-invalid').siblings('.error-text').text(errors[key][0]);
-          }
-        } else {
-          Swal.fire({ icon: 'error', title: 'Request Failed', text: 'An error occurred on the server.' });
+
+    // 2. Handle the file selection and upload
+    photoInput.on('change', function () {
+      const file = this.files[0];
+      if (!file) {
+        return;
+      }
+
+      // 3. Use FormData to prepare the file for upload
+      const formData = new FormData();
+      formData.append('photo', file);
+      // We also need to add the CSRF token for Laravel to accept the POST request
+      formData.append('_token', $('meta[name="csrf-token"]').attr('content'));
+      formData.append('user_id', changePhotoButton.data('user-id'));
+      // Show a loading state with SweetAlert
+      Swal.fire({
+        title: 'Uploading...',
+        text: 'Please wait while your new profile picture is being uploaded.',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
         }
-      }
+      });
+
+      // 4. Send the file to the server using jQuery AJAX
+      $.ajax({
+        url: '/user/profile-photo/',
+        method: 'POST',
+        data: formData,
+        processData: false, // Important for FormData
+        contentType: false, // Important for FormData
+        success: function (response) {
+          // 5. On success, update the image source and show a success message
+          profilePicImg.attr('src', response.profile_photo_url);
+          // Also update the navbar profile picture if it exists
+          //  $('.navbar-dropdown .avatar img').attr('src', response.profile_photo_url);
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: 'Profile picture updated successfully.'
+          });
+        },
+        error: function (xhr) {
+          // 6. On error, display the validation message or a generic error
+          const errorMessage = xhr.responseJSON?.message || 'An unexpected error occurred.';
+          Swal.fire({
+            icon: 'error',
+            title: 'Upload Failed',
+            text: errorMessage
+          });
+        }
+      });
     });
-  });
+  }
+
+  // --- Initialize DataTables ---
+  $('#forms_table').DataTable({});
+
+  // --- Trigger ready event for other scripts ---
+  $(document).trigger('datatable:ready');
 });

@@ -4,16 +4,12 @@ namespace App\Observers;
 
 use App\Actions\Detachments\AssignOfficerAction;
 use App\Models\Detachment;
-use App\Traits\Loggable;
-use Illuminate\Support\Facades\Log;
 
 class DetachmentObserver
 {
-    use Loggable;
-
     public function created(Detachment $detachment): void
     {
-        $this->logCreation($detachment);
+        //
     }
 
     /**
@@ -22,9 +18,6 @@ class DetachmentObserver
      */
     public function updating(Detachment $detachment): void
     {
-        // Log the changes that are about to happen.
-        $this->logUpdate($detachment);
-
         // If the 'assigned_officer' field is being changed, execute our Action.
         if ($detachment->isDirty('assigned_officer')) {
             (new AssignOfficerAction)->execute($detachment, $detachment->assigned_officer);
@@ -56,6 +49,6 @@ class DetachmentObserver
 
     public function deleted(Detachment $detachment): void
     {
-        $this->logDeletion($detachment);
+        //
     }
 }

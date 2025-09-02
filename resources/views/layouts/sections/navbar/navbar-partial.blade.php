@@ -97,36 +97,42 @@
                 </div>
                 <div class="dropdown-shortcuts-list scrollable-container">
                     <div class="row row-bordered overflow-visible g-0">
-                        <div class="dropdown-shortcuts-item col">
-              <span class="dropdown-shortcuts-icon rounded-circle mb-3">
-                <i class="icon-base ti tabler-calendar icon-26px text-heading"></i>
-              </span>
-                            <a href="{{ url('app/calendar') }}" class="stretched-link">Calendar</a>
-                            <small>Appointments</small>
-                        </div>
-                        <div class="dropdown-shortcuts-item col">
-              <span class="dropdown-shortcuts-icon rounded-circle mb-3">
-                <i class="icon-base ti tabler-file-dollar icon-26px text-heading"></i>
-              </span>
-                            <a href="{{ url('app/invoice/list') }}" class="stretched-link">Invoice App</a>
-                            <small>Manage Accounts</small>
-                        </div>
-                    </div>
-                    <div class="row row-bordered overflow-visible g-0">
-                        <div class="dropdown-shortcuts-item col">
-              <span class="dropdown-shortcuts-icon rounded-circle mb-3">
-                <i class="icon-base ti tabler-user icon-26px text-heading"></i>
-              </span>
-                            <a href="{{ url('app/user/list') }}" class="stretched-link">User App</a>
-                            <small>Manage Users</small>
-                        </div>
-                        <div class="dropdown-shortcuts-item col">
-              <span class="dropdown-shortcuts-icon rounded-circle mb-3">
-                <i class="icon-base ti tabler-users icon-26px text-heading"></i>
-              </span>
-                            <a href="{{ url('app/access-roles') }}" class="stretched-link">Role Management</a>
-                            <small>Permission</small>
-                        </div>
+                        @can(config("permit.view form library menu.name"))
+                            <div class="dropdown-shortcuts-item col">
+                              <span class="dropdown-shortcuts-icon rounded-circle mb-3">
+                                <i class="icon-base ti tabler-library icon-26px text-heading"></i>
+                              </span>
+                                <a href="{{ route('form-library') }}" class="stretched-link">Form Library</a>
+                                <small>Appointments</small>
+                            </div>
+                        @endcan
+                        @can(config("permit.view detachments menu.name"))
+                            <div class="dropdown-shortcuts-item col">
+                              <span class="dropdown-shortcuts-icon rounded-circle mb-3">
+                                <i class="icon-base ti tabler-building-community icon-26px text-heading"></i>
+                              </span>
+                                <a href="{{ route('detachments') }}" class="stretched-link">Detachments</a>
+                                <small>Manage Accounts</small>
+                            </div>
+                        @endcan
+                        @can(config("permit.view staffs menu.name"))
+                            <div class="dropdown-shortcuts-item col">
+                              <span class="dropdown-shortcuts-icon rounded-circle mb-3">
+                                <i class="icon-base ti tabler-user-hexagon icon-26px text-heading"></i>
+                              </span>
+                                <a href="{{ route('staffs') }}" class="stretched-link">Staffs</a>
+                                <small>Manage Users</small>
+                            </div>
+                        @endcan
+                        @can(config("permit.view personnel menu.name"))
+                            <div class="dropdown-shortcuts-item col">
+                              <span class="dropdown-shortcuts-icon rounded-circle mb-3">
+                                <i class="icon-base ti tabler-shield icon-26px text-heading"></i>
+                              </span>
+                                <a href="{{ route('personnel') }}" class="stretched-link">Personnel</a>
+                                <small>Permission</small>
+                            </div>
+                        @endcan
                     </div>
                 </div>
             </div>

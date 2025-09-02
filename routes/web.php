@@ -28,7 +28,7 @@ Route::get('/auth/register-basic', [RegisterBasic::class, 'index'])->name('auth-
 Route::middleware(['auth:web'])->group(function () {
 
     // Search routes
-    Route::get('/search-routes', [SearchController::class, 'searchRoutes'])->name('search-routes');
+    Route::get('/search-routes', [SearchController::class, 'search'])->name('search-routes');
 
     // Logging Route
     Route::get('/activity-logs', [ActivityLogController::class, 'logs'])->name('activity-logs');
@@ -37,19 +37,20 @@ Route::middleware(['auth:web'])->group(function () {
     Route::get('/', [FormLibrary::class, 'index'])->name('form-library');
     Route::get('/form-library', [FormLibrary::class, 'index'])->name('form-library');
 
-    // Users Routes
+    // Users Routes used by My Profile Page
     Route::get('/users', [UsersController::class, 'index'])->name('users-index');
-    Route::get('/user/my-profile', [UsersController::class, 'profile'])->name('profile');
-    Route::get('/user/profile/{id}', [UsersController::class, 'profile']);
-    Route::get('/user/{id}', [UsersController::class, 'show'])->name('users-index');
-    Route::patch('/user/{id}', [UsersController::class, 'update']);
-    Route::delete('/user/{id}', [UsersController::class, 'delete']);
+    Route::get('/user/my-profile', [UsersController::class, 'profile'])->name('my-profile');
+    Route::get('/user/profile/{id}', [UsersController::class, 'profile'])->name('user-profile');
+    Route::get('/user/{id}', [UsersController::class, 'show'])->name('user-show');
+    Route::post('/user/profile-photo', [UsersController::class, 'updateProfilePhoto'])->name('user-profile-photo.update');
+    Route::patch('/user/{id}', [UsersController::class, 'update'])->name('user-update');
+    Route::delete('/user/{id}', [UsersController::class, 'delete'])->name('user->delete');
 
     // In routes/web.php, inside the auth middleware group
     Route::get('/profile/complete-profile', [UsersController::class, 'showCompletionForm'])->name('profile.completion.form');
     Route::post('/profile/complete-profile', [UsersController::class, 'completeProfile'])->name('profile.completion.submit');
 
-    // Staff Routes
+    // Staff Routes Used by Personnel page, Staff Page and Detachment Profile page
     Route::get('/staffs', [UsersController::class, 'staffs_index'])->name('staffs');
     Route::post('/staffs/store', [UsersController::class, 'store']);
     Route::get('/staffs/table', [UsersController::class, 'staffsTable']);

@@ -7,6 +7,7 @@ use App\Http\Classes\UserClass;
 use App\Models\User;
 use App\Services\FormSubmissionService;
 use Carbon\Carbon;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -95,7 +96,7 @@ class FormController
         }
 
         // Check for existing form if it's a one-to-one type
-        if (! $formConfig['more_than_one_form']) {
+        if (! $formConfig['one_to_one']) {
             $employee = User::find($validatedData['employee_id']);
             $formName = $formConfig['name'];
             $relationship = Str::camel($formSlug);
@@ -257,6 +258,11 @@ class FormController
 
     }
 
+    /**
+     * @return mixed
+     *
+     * @throws BindingResolutionException
+     */
     public function print(string $formSlug, int $id)
     {
         // 1. Find the form's configuration using the slug

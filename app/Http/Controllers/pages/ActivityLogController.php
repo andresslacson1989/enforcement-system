@@ -5,54 +5,46 @@ namespace App\Http\Controllers\pages;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class ActivityLogController extends Controller
 {
     public function logs(Request $request)
     {
         $user = Auth::user();
-        if (! $user->can(config('permit.view logs.name'))) {
+        // Corrected the permission name to match your permit.php config
+        if (! $user->can(config('permit.view activity logs menu.name'))) {
             return response()->view('content.pages.pages-misc-error');
         }
 
-        $query = ActivityLog::with('user', 'loggable')
-            ->latest(); // Order by most recent first
+        // Since DataTables is handling filtering on the client-side,
+        // we can simplify the query to just fetch all logs.
+        // Eager load the 'user' relationship to prevent N+1 query issues.
+        $logs = ActivityLog::with('user')->latest()->get();
 
-        // Filter by Model Type
-        if ($request->filled('model')) {
-            // You would need to map the friendly name to the actual model class
-            $modelClass = 'App\\Models\\'.$request->input('model');
-            $query->where('loggable_type', $modelClass);
-        }
+        // --- DYNAMICALLY BUILD THE FILTERABLE MODELS LIST ---
 
-        // Filter by Date Range
-        if ($request->filled('start_date')) {
-            $query->whereDate('created_at', '>=', $request->input('start_date'));
-        }
-        if ($request->filled('end_date')) {
-            $query->whereDate('created_at', '<=', $request->input('end_date'));
-        }
-
-        // Search Filter
-        if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('message', 'like', "%{$search}%")
-                    ->orWhereHas('user', function ($userQuery) use ($search) {
-                        $userQuery->where('name', 'like', "%{$search}%");
-                    });
-            });
-        }
-
-        $logs = $query->paginate(25);
-
-        // A list of models you want to be able to filter by
+        // 1. Start with the non-form models that have logs
         $filterableModels = [
-            'Detachment',
             'User',
-            'RequirementTransmittalForm',
+            'Detachment',
+            'Role',
         ];
 
-        return view('activity-logs.logs', compact('logs', 'filterableModels'));
+        // 2. Get all form models from the configuration
+        $formTypes = config('forms.types');
+
+        // 3. Loop through and add the base name of each form model
+        foreach ($formTypes as $form) {
+            if (isset($form['model'])) {
+                $filterableModels[] = Str::headline(class_basename($form['model']));
+            }
+        }
+
+        // 4. Ensure the list is unique and sorted alphabetically
+        $filterableModels = array_unique($filterableModels);
+        // sort($filterableModels);
+
+        return view('activity-logs.activity-logs', compact('logs', 'filterableModels'));
     }
 }

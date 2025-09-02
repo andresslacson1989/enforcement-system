@@ -1,4 +1,5 @@
 'use strict';
+
 document.addEventListener('DOMContentLoaded', function () {
   // --- Panel Elements ---
   const rolesListContainer = document.getElementById('roles-list');

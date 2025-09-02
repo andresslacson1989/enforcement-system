@@ -49,7 +49,7 @@ class UpdateEmployeeRequest extends FormRequest
 
             // System Info
             'email' => ['sometimes', 'required', 'email', 'max:255', Rule::unique('users')->ignore($userId)],
-            'password' => 'nullable|string|min:8|confirmed',
+            'password' => 'nullable|string|min:6|confirmed',
             'employee_number' => ['sometimes', 'required', 'string', 'max:255', Rule::unique('users')->ignore($userId)],
             'primary_role_id' => 'sometimes|required|exists:roles,id',
             'status' => 'sometimes|required|string',

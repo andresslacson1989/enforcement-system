@@ -2,14 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 
-class IdApplicationForm extends Model
+class IdApplicationForm extends BaseFormModel
 {
-    use HasFactory;
+    use \Illuminate\Database\Eloquent\Factories\HasFactory;
 
     /**
      * The attributes that are mass assignable.
@@ -18,7 +16,6 @@ class IdApplicationForm extends Model
      */
     protected $fillable = [
         'employee_id',
-        'submitted_by',
         'job_title',
         'emergency_contact_name',
         'emergency_contact_relation',
@@ -70,10 +67,10 @@ class IdApplicationForm extends Model
     }
 
     /**
-     * Get the HR user who completed the processing of this form.
+     * Get the HR user who completed the processing of this form
      */
-    public function completedBy(): BelongsTo
+    public function completeddBy()
     {
-        return $this->belongsTo(User::class, 'completed_by');
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

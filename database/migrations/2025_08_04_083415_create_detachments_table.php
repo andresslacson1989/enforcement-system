@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('detachments', function (Blueprint $table) {
             $table->id();
+            $table->softDeletes();
 
             // Basic Information
             $table->string('name');

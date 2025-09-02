@@ -12,13 +12,15 @@
 
 @section('vendor-script')
     @vite([
-      'resources/assets/vendor/libs/jquery/jquery.js',
-      'resources/assets/vendor/libs/sweetalert2/sweetalert2.js'
+      'resources/assets/vendor/libs/sweetalert2/sweetalert2.js',
     ])
 @endsection
 
 @section('page-script')
-    @vite(['resources/assets/js/pages-roles.js'])
+    @vite([
+        'resources/assets/js/pages-roles.js',
+        'resources/assets/js/ui-popover.js',
+    ])
 @endsection
 
 @section('content')

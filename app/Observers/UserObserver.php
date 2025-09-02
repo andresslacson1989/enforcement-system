@@ -5,24 +5,17 @@ namespace App\Observers;
 use App\Jobs\SendAndBroadcastNotification;
 use App\Models\Detachment;
 use App\Models\User;
-use App\Traits\Loggable;
 use Auth;
-use Illuminate\Support\Facades\Log;
 use Spatie\Permission\Models\Role;
 
 class UserObserver
 {
-    use Loggable;
-
     /**
      * Handle the User "created" event.
      * When a new user is created and assigned to a detachment.
      */
     public function created(User $user): void
     {
-        // logging
-        $this->logCreation($user);
-
         if ($user->detachment_id) {
             $this->updateDetachmentCategory(Detachment::find($user->detachment_id));
         }
@@ -77,9 +70,6 @@ class UserObserver
                 $this->notifyAssignedOfficer($user, $user->detachment_id);
             }
         }
-
-        // This will log any changed attributes automatically
-        $this->logUpdate($user);
     }
 
     public function updated(User $user)
@@ -93,8 +83,6 @@ class UserObserver
      */
     public function deleted(User $user): void
     {
-        $this->logDeletion($user);
-
         if ($user->detachment_id) {
             $this->updateDetachmentCategory(Detachment::find($user->detachment_id));
         }
