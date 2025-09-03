@@ -11,7 +11,6 @@ use App\Models\Submission;
 use App\Models\Suspension;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -26,13 +25,10 @@ use Spatie\Permission\Models\Role;
 
 class UsersController
 {
-    use AuthorizesRequests;
-
     public function profile(string $id = 'my-profile')
     {
         $personnel = ($id == 'my-profile') ? Auth::user() : User::findOrFail($id);
         // The policy will handle the authorization check.
-        // $this->authorize('viewOwnPersonnelProfile', $personnel);
         if (Gate::denies('viewOwnPersonnelProfile', $personnel)) {
             return view('content.pages.pages-misc-error');
         }
@@ -43,24 +39,31 @@ class UsersController
         $personnel_roles = (new UserClass)->listPersonnelRoles();
         $roles = Role::whereIn('name', $personnel_roles)->get();
 
-        // Generate a unique token for Telegram linking
-        $telegram_token = Str::random(32);
-        // Store the token in the cache, linking it to the user's ID for 10 minutes.
-        Cache::put('telegram_token:'.$telegram_token, $personnel->id, now()->addMinutes(10));
+        $telegram_linking_url = null;
+        if (! $personnel->telegram_chat_id) {
+            // Generate a unique token for Telegram linking only if not already linked.
+            $telegram_token = Str::random(32);
+            // Store the token in the cache, linking it to the user's ID for 10 minutes.
+            Cache::put('telegram_token:'.$telegram_token, $personnel->id, now()->addMinutes(10));
 
-        return view('content.pages.profile')
+            // Generate the Telegram linking URL
+            $bot_username = config('services.telegram.bot_username');
+            $telegram_linking_url = "https://t.me/{$bot_username}?start={$telegram_token}";
+        }
+
+        return view('content.pages.profile') // Changed to snake_case
             ->with('user', $personnel)
             ->with('notifications', $notifications)
             ->with('detachment', $personnel->detachment)
             ->with('forms', $forms)
             ->with('roles', $roles)
-            ->with('telegram_token', $telegram_token);
+            ->with('telegram_linking_url', $telegram_linking_url);
     }
 
     /**
      * Fetch a single user's data for the edit modal.
      */
-    public function show($id) // This is our standard method for fetching user JSON
+    public function show(string $id): JsonResponse // This is our standard method for fetching user JSON
     {
 
         $user = User::with(['detachment'])->find($id);
@@ -72,7 +75,7 @@ class UsersController
         return response()->json(['error' => 'User not found'], 404);
     }
 
-    public function store(StoreEmployeeRequest $request) // Uses Form Request for validation
+    public function store(StoreEmployeeRequest $request): JsonResponse // Uses Form Request for validation
     {
         try {
             $validated = $request->validated();
@@ -89,7 +92,7 @@ class UsersController
         }
     }
 
-    public function delete($id)
+    public function delete(string $id): JsonResponse
     {
         auth()->user()->can(config('permit.delete personnel.name')); // Use Laravel's built-in authorization
         $personnel = User::findOrFail($id);
@@ -98,7 +101,7 @@ class UsersController
         return response()->json(['message' => 'Success', 'text' => 'Personnel was deleted successfully!']);
     }
 
-    public function remove($id)
+    public function remove(string $id): JsonResponse
     {
         auth()->user()->can(config('permit.remove personnel.name')); // Use Laravel's built-in authorization
         $personnel = User::findOrFail($id);
@@ -114,7 +117,7 @@ class UsersController
      *
      * Suspension will notify the admins.
      */
-    public function suspend(Request $request)
+    public function suspend(Request $request): JsonResponse
     {
         auth()->user()->can(config('permit.suspend personnel.name'));
         $validated = $request->validate([
@@ -141,7 +144,7 @@ class UsersController
         return response()->json(['text' => 'User has been suspended.']);
     }
 
-    public function unsuspend(Request $request)
+    public function unsuspend(Request $request): JsonResponse
     {
         $user = User::findOrFail($request->user_id);
         $suspension = Suspension::where('user_id', $user->id)->whereNull('end_date')->latest()->first();
@@ -155,35 +158,35 @@ class UsersController
         return response()->json(['text' => 'User has been unsuspended.']);
     }
 
-    public function update(UpdateEmployeeRequest $request, $id)
+    public function update(UpdateEmployeeRequest $request, string $id): JsonResponse
     {
         $user = User::findOrFail($id);
-        $validatedData = $request->validated();
+        $validated_data = $request->validated();
 
         // Prepare data for update, starting with the validated fields.
-        $updateData = $validatedData;
+        $update_data = $validated_data;
 
         // Conditionally reconstruct the full 'name' if any name part is being updated.
-        if (isset($validatedData['first_name']) || isset($validatedData['last_name'])) {
-            $firstName = $validatedData['first_name'] ?? $user->first_name;
-            $lastName = $validatedData['last_name'] ?? $user->last_name;
-            $suffix = $validatedData['suffix'] ?? $user->suffix;
-            $updateData['name'] = trim($firstName.' '.$lastName.' '.$suffix);
+        if (isset($validated_data['first_name']) || isset($validated_data['last_name'])) {
+            $first_name = $validated_data['first_name'] ?? $user->first_name;
+            $last_name = $validated_data['last_name'] ?? $user->last_name;
+            $suffix = $validated_data['suffix'] ?? $user->suffix;
+            $update_data['name'] = trim($first_name.' '.$last_name.' '.$suffix);
         }
 
         // Conditionally hash the password if a new one is provided.
-        if (! empty($validatedData['password'])) {
-            $updateData['password'] = Hash::make($validatedData['password']);
+        if (! empty($validated_data['password'])) {
+            $update_data['password'] = Hash::make($validated_data['password']);
         } else {
-            unset($updateData['password']);
+            unset($update_data['password']);
         }
 
-        $user->update($updateData);
+        $user->update($update_data);
 
         // Conditionally update the user's role if it was part of the request.
-        if (isset($validatedData['primary_role_id'])) {
-            $user->syncRoles(Role::findById($validatedData['primary_role_id'])->name);
-            $user->setPrimaryRole($validatedData['primary_role_id']);
+        if (isset($validated_data['primary_role_id'])) {
+            $user->syncRoles(Role::findById($validated_data['primary_role_id'])->name);
+            $user->setPrimaryRole($validated_data['primary_role_id']);
         }
 
         // The frontend JS handles the specific success message.
@@ -191,9 +194,9 @@ class UsersController
     }
 
     // Helper functions to determine badge colors
-    private function getRoleColor($roleName)
+    private function getRoleColor(string $role_name): string
     {
-        return match (strtolower($roleName)) {
+        return match (strtolower($role_name)) {
             'hr manager', 'president', 'general manager' => 'bg-label-danger',
             'accounting manager', 'operation manager' => 'bg-label-warning',
             'detachment commander', 'officer in charge' => 'bg-label-info',
@@ -201,7 +204,7 @@ class UsersController
         };
     }
 
-    private function getStatusColor($status)
+    private function getStatusColor(string $status): string
     {
         return match ($status) {
             'hired' => 'bg-label-success',
@@ -215,7 +218,7 @@ class UsersController
     /**
      * Display the staffs page with summary stats and roles for filtering.
      */
-    public function staffs_index()
+    public function staffs_index(): View
     {
         if (! auth()->user()->can(config('permit.view staffs.name'))) {
             return view('content.pages.pages-misc-error');
@@ -243,10 +246,8 @@ class UsersController
 
     /**
      * Display a listing of the personnel.
-     *
-     * @return View
      */
-    public function personnel_index()
+    public function personnel_index(): View
     {
         if (! auth()->user()->can(config('permit.view personnel.name'))) {
             return view('content.pages.pages-misc-error');
@@ -287,7 +288,7 @@ class UsersController
             ->with('detachments', $detachments);
     }
 
-    public function staffsTable(Request $request)
+    public function staffsTable(Request $request): JsonResponse
     {
 
         // ## 1. Get DataTables parameters
@@ -296,15 +297,15 @@ class UsersController
         $rowperpage = $request->input('length');
         $order_arr = $request->input('order');
         $search_arr = $request->input('search');
-        $searchValue = $search_arr['value'];
+        $search_value = $search_arr['value'];
 
         // ## 2. Build the base query with JOINS
         $user_class = (new UserClass);
         $personnel_roles = $user_class->listStaffRoles();
         $query = User::query()
             ->where('users.id', '!=', Auth::id())
-            ->whereHas('roles', function ($query) use ($personnel_roles) {
-                $query->whereIn('name', $personnel_roles);
+            ->whereHas('roles', function ($q) use ($personnel_roles) {
+                $q->whereIn('name', $personnel_roles);
             })
             ->leftJoin('roles', 'users.primary_role_id', '=', 'roles.id')
             ->leftJoin('detachments', 'users.detachment_id', '=', 'detachments.id')
@@ -312,7 +313,7 @@ class UsersController
             ->select('users.*', 'roles.name as role_name', 'detachments.name as detachment_name');
 
         // Total records
-        return $this->usersTable($personnel_roles, $searchValue, $query, $request, $order_arr, $start, $rowperpage, $draw);
+        return $this->usersTable($personnel_roles, $search_value, $query, $request, $order_arr, $start, $rowperpage, $draw);
     }
 
     public function personnelTable(Request $request)
@@ -324,15 +325,15 @@ class UsersController
         $rowperpage = $request->input('length');
         $order_arr = $request->input('order');
         $search_arr = $request->input('search');
-        $searchValue = $search_arr['value'];
+        $search_value = $search_arr['value'];
 
         // ## 2. Build the base query with JOINS
         $user_class = (new UserClass);
         $personnel_roles = $user_class->listPersonnelRoles();
         $query = User::query()
             ->where('users.id', '!=', Auth::id())
-            ->whereHas('roles', function ($query) use ($personnel_roles) {
-                $query->whereIn('name', $personnel_roles);
+            ->whereHas('roles', function ($q) use ($personnel_roles) {
+                $q->whereIn('name', $personnel_roles);
             })
             ->leftJoin('roles', 'users.primary_role_id', '=', 'roles.id')
             ->leftJoin('detachments', 'users.detachment_id', '=', 'detachments.id')
@@ -340,7 +341,7 @@ class UsersController
             ->select('users.*', 'roles.name as role_name', 'detachments.name as detachment_name');
 
         // Total records
-        return $this->usersTable($personnel_roles, $searchValue, $query, $request, $order_arr, $start, $rowperpage, $draw);
+        return $this->usersTable($personnel_roles, $search_value, $query, $request, $order_arr, $start, $rowperpage, $draw);
     }
 
     public function detachmentPersonnelTable(Request $request)
@@ -358,7 +359,7 @@ class UsersController
         $rowperpage = $request->input('length');
         $order_arr = $request->input('order');
         $search_arr = $request->input('search');
-        $searchValue = $search_arr['value'];
+        $search_value = $search_arr['value'];
 
         // ## 2. Build the base query with JOINS
         $user_class = (new UserClass);
@@ -366,8 +367,8 @@ class UsersController
         $query = User::query()
             ->where('users.detachment_id', $detachment_id)
             ->where('users.id', '!=', Auth::id())
-            ->whereHas('roles', function ($query) use ($personnel_roles) {
-                $query->whereIn('name', $personnel_roles);
+            ->whereHas('roles', function ($q) use ($personnel_roles) {
+                $q->whereIn('name', $personnel_roles);
             })
             ->leftJoin('roles', 'users.primary_role_id', '=', 'roles.id')
             ->leftJoin('detachments', 'users.detachment_id', '=', 'detachments.id')
@@ -375,21 +376,21 @@ class UsersController
             ->select('users.*', 'roles.name as role_name', 'detachments.name as detachment_name');
 
         // Total records
-        return $this->usersTable($personnel_roles, $searchValue, $query, $request, $order_arr, $start, $rowperpage, $draw);
+        return $this->usersTable($personnel_roles, $search_value, $query, $request, $order_arr, $start, $rowperpage, $draw);
     }
 
-    public function usersTable(array $personnel_roles, mixed $searchValue, _IH_User_QB|Builder $query, Request $request, mixed $order_arr, mixed $start, mixed $rowperpage, mixed $draw): JsonResponse
+    public function usersTable(array $personnel_roles, mixed $search_value, _IH_User_QB|Builder $query, Request $request, mixed $order_arr, mixed $start, mixed $rowperpage, mixed $draw): JsonResponse
     {
         $totalRecords = User::whereHas('roles', function ($q) use ($personnel_roles) {
             return $q->whereIn('name', $personnel_roles);
         })->count();
 
         // ## 3. Apply Filters
-        if (! empty($searchValue)) {
-            $query->where(function ($q) use ($searchValue) {
-                $q->where('users.name', 'like', '%'.$searchValue.'%')
-                    ->orWhere('users.employee_number', 'like', '%'.$searchValue.'%')
-                    ->orWhere('detachments.name', 'like', '%'.$searchValue.'%');
+        if (! empty($search_value)) {
+            $query->where(function ($q) use ($search_value) {
+                $q->where('users.name', 'like', '%'.$search_value.'%')
+                    ->orWhere('users.employee_number', 'like', '%'.$search_value.'%')
+                    ->orWhere('detachments.name', 'like', '%'.$search_value.'%');
             });
         }
         if ($request->filled('status_filter')) {
@@ -399,22 +400,22 @@ class UsersController
             $query->where('roles.name', $request->role_filter);
         }
 
-        $totalRecordswithFilter = $query->count();
+        $total_records_with_filter = $query->count();
 
         // ## 4. Apply Sorting
         if (! empty($order_arr)) {
-            $columnName_arr = $request->input('columns');
-            $columnIndex = $order_arr[0]['column'];
-            $columnName = $columnName_arr[$columnIndex]['data'];
-            $columnSortOrder = $order_arr[0]['dir'];
-            $columnMap = [
+            $column_name_arr = $request->input('columns');
+            $column_index = $order_arr[0]['column'];
+            $column_name = $column_name_arr[$column_index]['data'];
+            $column_sort_order = $order_arr[0]['dir'];
+            $column_map = [
                 'name' => 'users.name',
                 'status' => 'users.status',
                 'detachment' => 'detachment_name',
                 'role' => 'role_name',
             ];
-            if (isset($columnMap[$columnName])) {
-                $query->orderBy($columnMap[$columnName], $columnSortOrder);
+            if (isset($column_map[$column_name])) {
+                $query->orderBy($column_map[$column_name], $column_sort_order);
             }
         }
 
@@ -425,29 +426,29 @@ class UsersController
 
         // ## 6. Format the data for the response
         $data_arr = [];
-        foreach ($records as $user) {
-            $roleName = $user->role_name ? ucwords($user->role_name) : 'N/A';
-            $roleColor = $this->getRoleColor($roleName);
-            $statusColor = $this->getStatusColor($user->status);
+        foreach ($records as $record) {
+            $role_name = $record->role_name ? ucwords($record->role_name) : 'N/A';
+            $role_color = $this->getRoleColor($role_name);
+            $status_color = $this->getStatusColor($record->status);
 
             // ** ICON LOGIC UPDATED HERE **
-            $suspendAction = $user->status === 'suspended'
-              ? '<a href="javascript:;" class="dropdown-item unsuspend-user" data-user-id="'.$user->id.'"><i class="icon-base ti tabler-user-check me-1"></i>Unsuspend</a>'
-              : '<a href="javascript:;" class="dropdown-item suspend-user" data-user-id="'.$user->id.'"><i class="icon-base ti tabler-user-off me-1"></i>Suspend</a>';
+            $suspend_action = $record->status === 'suspended'
+              ? '<a href="javascript:;" class="dropdown-item unsuspend-user" data-user-id="'.$record->id.'"><i class="icon-base ti tabler-user-check me-1"></i>Unsuspend</a>'
+              : '<a href="javascript:;" class="dropdown-item suspend-user" data-user-id="'.$record->id.'"><i class="icon-base ti tabler-user-off me-1"></i>Suspend</a>';
 
-            $removeAction = $user->detachment != null
-              ? '<a href="javascript:;" class="dropdown-item text-warning remove-user" data-detachment-name="'.$user->detachment->name.'" data-detachment-id="'.$user->detachment_id.'" data-user-id="'.$user->id.'"><i class="icon-base ti tabler-user-x me-1"></i>Remove</a>'
+            $remove_action = $record->detachment != null
+              ? '<a href="javascript:;" class="dropdown-item text-warning remove-user" data-detachment-name="'.$record->detachment->name.'" data-detachment-id="'.$record->detachment_id.'" data-user-id="'.$record->id.'"><i class="icon-base ti tabler-user-x me-1"></i>Remove</a>'
               : '';
 
             $data_arr[] = [
-                'name' => '<a href="/user/profile/'.$user->id.'" class="list-group-item list-group-item-action d-flex align-items-center">
-                            <img src="'.$user->profile_photo_url.'" alt="User Image" class="rounded-circle me-4 w-px-50">
+                'name' => '<a href="/user/profile/'.$record->id.'" class="list-group-item list-group-item-action d-flex align-items-center">
+                            <img src="'.$record->profile_photo_url.'" alt="User Image" class="rounded-circle me-4 w-px-50">
                             <div class="w-100">
                               <div class="d-flex justify-content-between">
                                 <div class="user-info">
-                                  <h6 class="mb-1">'.$user->name.'</h6>
-                                  <small class="text-muted">'.$user->phone_number.'</small> <br>
-                                  <small class="text-muted">#'.$user->employee_number.'</small>
+                                  <h6 class="mb-1">'.$record->name.'</h6>
+                                  <small class="text-muted">'.$record->phone_number.'</small> <br>
+                                  <small class="text-muted">#'.$record->employee_number.'</small>
                                   <div class="user-status">
                                     <span class="badge badge-dot bg-success"></span>
                                     <small>Online</small>
@@ -456,27 +457,27 @@ class UsersController
                               </div>
                             </div>
                           </a>',
-                'role' => '<span class="badge '.$roleColor.'">'.$roleName.'</span>',
-                'detachment' => $user->detachment ? $user->detachment->name : '<span class="text-muted">Unassigned</span>',
-                'status' => '<span class="badge '.$statusColor.'">'.ucwords(str_replace('_', ' ', $user->status)).'</span>',
+                'role' => '<span class="badge '.$role_color.'">'.$role_name.'</span>',
+                'detachment' => $record->detachment ? $record->detachment->name : '<span class="text-muted">Unassigned</span>',
+                'status' => '<span class="badge '.$status_color.'">'.ucwords(str_replace('_', ' ', $record->status)).'</span>',
                 'action' => '
                 <div class="d-inline-block">
                     <a href="javascript:;" class="btn btn-sm btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                         <i class="icon-base ti tabler-dots-vertical"></i>
                     </a>
                     <div class="dropdown-menu dropdown-menu-end m-0">
-                        <a href="/user/profile/'.$user->id.'" class="dropdown-item"><i class="icon-base ti tabler-user-circle me-1"></i>View Profile</a>
-                        <a href="javascript:;" class="dropdown-item edit-user" data-user-id="'.$user->id.'"><i class="icon-base ti tabler-edit me-1"></i>Edit</a>
+                        <a href="/user/profile/'.$record->id.'" class="dropdown-item"><i class="icon-base ti tabler-user-circle me-1"></i>View Profile</a>
+                        <a href="javascript:;" class="dropdown-item edit-user" data-user-id="'.$record->id.'"><i class="icon-base ti tabler-edit me-1"></i>Edit</a>
                         <div class="dropdown-divider"></div>
                         <a href="javascript:;" class="dropdown-item change-role-btn"
-                           data-user-name="'.$user->name.'"
-                           data-current-role-id="'.$user->primary_role_id.'">
+                           data-user-name="'.$record->name.'"
+                           data-current-role-id="'.$record->primary_role_id.'">
                            <i class="icon-base ti tabler-user-cog me-1"></i>Change Role
                         </a>
-                        '.$suspendAction.'
+                        '.$suspend_action.'
                         <div class="dropdown-divider"></div>
-                        '.$removeAction.'
-                        <a href="javascript:;" class="dropdown-item text-danger delete-user" data-user-id="'.$user->id.'"><i class="icon-base ti tabler-trash me-1"></i>Delete</a>
+                        '.$remove_action.'
+                        <a href="javascript:;" class="dropdown-item text-danger delete-user" data-user-id="'.$record->id.'"><i class="icon-base ti tabler-trash me-1"></i>Delete</a>
                     </div>
                 </div>',
             ];
@@ -486,14 +487,14 @@ class UsersController
         $response = [
             'draw' => intval($draw),
             'iTotalRecords' => $totalRecords,
-            'iTotalDisplayRecords' => $totalRecordswithFilter,
+            'iTotalDisplayRecords' => $total_records_with_filter,
             'aaData' => $data_arr,
         ];
 
         return response()->json($response);
     }
 
-    public function showCompletionForm()
+    public function showCompletionForm(): View
     {
         $user = Auth::user();
 
@@ -501,15 +502,15 @@ class UsersController
         return view('content.pages.profile-completion', compact('user'));
     }
 
-    public function completeProfile(CompleteProfileRequest $request)
+    public function completeProfile(CompleteProfileRequest $request): JsonResponse
     {
         $user = Auth::user();
-        $validatedData = $request->validated();
+        $validated_data = $request->validated();
 
         // Also update the main 'name' field for consistency.
-        $validatedData['name'] = trim($validatedData['first_name'].' '.$validatedData['last_name']);
+        $validated_data['name'] = trim($validated_data['first_name'].' '.$validated_data['last_name']);
 
-        $user->update($validatedData);
+        $user->update($validated_data);
 
         return response()->json([
             'redirect_url' => route('form-library'),
@@ -519,10 +520,8 @@ class UsersController
 
     /**
      * Update the user's profile photo.
-     *
-     * @return JsonResponse
      */
-    public function updateProfilePhoto(Request $request)
+    public function updateProfilePhoto(Request $request): JsonResponse
     {
         $request->validate([
             'user_id' => ['required', 'exists:users,id'],

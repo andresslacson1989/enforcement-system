@@ -13,6 +13,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification as NotificationFacade;
+use Telegram\Bot\Laravel\Facades\Telegram;
 
 class SendAndBroadcastNotification implements ShouldQueue
 {
@@ -37,6 +38,15 @@ class SendAndBroadcastNotification implements ShouldQueue
     public function handle(): void
     {
         foreach ($this->user_ids as $user_id) {
+            // Notify via Telegram
+            if ($user = User::find($user_id)) {
+                Telegram::sendMessage([
+                    'chat_id' => $user->telegram_chat_id,
+                    'text' => "*$this->title* \n $this->message",
+                    'parse_mode' => 'Markdown',
+                ]);
+            }
+
             $notification = DbNotification::create([
                 'title' => $this->title,
                 'body' => $this->message,

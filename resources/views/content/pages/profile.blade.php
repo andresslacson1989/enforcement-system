@@ -76,7 +76,7 @@
                             </div>
                             <input type="file" id="profile-photo-input" name="photo" class="d-none" accept="image/png, image/jpeg, image/jpg">
                             <h4 class="card-title mt-3"> {{ $user->name ?? '' }} </h4>
-                            <p class="text-muted mb-1">Employee No.: #{{ $user->employee_number?? '' }} </p>
+                            <p class="text-muted mb-1">Employee No.: #{{ $user->employee_number ?? '' }} </p>
                             <h5>
                                 <span class="badge bg-primary"> {{ ucwords(Role::findById($user->primary_role_id)->name ?? '') }} </span>
                                 <span class="badge bg-success"> {{ ucwords($user->status ?? '') }} </span>
@@ -115,11 +115,11 @@
                             <h5 class="card-title mb-0"><i class="fas fa-building me-2"></i>Current Detachment</h5>
                         </div>
                         <div class="card-body">
-                            <h4> {{ $detachment->name ?? 'N/A' }}</h4>
-                            <p class="text-muted"> {{ ucwords($detachment->street ?? '') }} {{ ucwords($detachment->city ?? '') }} {{ ucwords($detachment->province ?? '') }} {{ $detachment->zip_code ?? '' }}</p>
+                            <h4> {{ $user->detachment?->name ?? 'N/A' }}</h4>
+                            <p class="text-muted"> {{ ucwords($user->detachment?->street ?? '') }} {{ ucwords($user->detachment?->city ?? '') }} {{ ucwords($user->detachment?->province ?? '') }} {{ $user->detachment?->zip_code ?? '' }}</p>
                             <hr>
-                            <p><strong>Assigned Officer:</strong> {{ $detachment->assignedOfficer->name ?? '' }} </p>
-                            <p><strong>Contact Number:</strong> {{ $detachment->phone_number ?? '' }} </p>
+                            <p><strong>Assigned Officer:</strong> {{ $user->detachment?->assignedOfficer?->name ?? 'N/A' }} </p>
+                            <p><strong>Contact Number:</strong> {{ $user->detachment?->phone_number ?? 'N/A' }} </p>
                         </div>
                     </div>
                     <!-- Tab Navigation & Content -->
@@ -159,29 +159,29 @@
                                             </thead>
                                             @foreach ($forms as $item)
                                                 @php
-                                                    $form = $item->submittable;
+                                                    $submitted_form = $item->submittable;
                                                 @endphp
                                                 <tr>
                                                     <td>
-                                                        <a href="/form/view/{{ strtolower(str_replace(' ', '-', $form->name)) }}/{{ $form->id }}"> {{ $form->name }}</a>
+                                                        <a href="/form/view/{{ strtolower(str_replace(' ', '-', $submitted_form->name)) }}/{{ $submitted_form->id }}"> {{ $submitted_form->name }}</a>
                                                     </td>
                                                     <td>
                                                         @can(config("permit.view any personnel profile.name"))
-                                                            <a href="{{ route('user-profile', $form->submittedBy->id) }}">{{ $form->submittedBy->name ?? ''}}</a>
+                                                            <a href="{{ route('user-profile', $submitted_form->submittedBy->id) }}">{{ $submitted_form->submittedBy->name ?? ''}}</a>
                                                         @else
-                                                            {{ $form->submittedBy->name ?? ''}}
+                                                            {{ $submitted_form->submittedBy->name ?? ''}}
                                                         @endcan
                                                     </td>
                                                     <td>
                                                         @can(config("permit.view any personnel profile.name"))
-                                                            <a href="{{ route('user-profile', $form->employee->id) }}">{{ $form->employee->name ?? ''}}</a>
+                                                            <a href="{{ route('user-profile', $submitted_form->employee->id) }}">{{ $submitted_form->employee->name ?? ''}}</a>
                                                         @else
-                                                            {{ $form->employee->name ?? ''}}
+                                                            {{ $submitted_form->employee->name ?? ''}}
                                                         @endcan
                                                     </td>
                                                     <td class="text-nowrap">
-                                                        <span>{{ $form->created_at->format('M d, Y H:i') }}</span> <br>
-                                                        <small class="text-muted">{{ $form->created_at->diffForHumans() }}</small>
+                                                        <span>{{ $submitted_form->created_at->format('M d, Y H:i') }}</span> <br>
+                                                        <small class="text-muted">{{ $submitted_form->created_at->diffForHumans() }}</small>
                                                     </td>
                                                 </tr>
                                             @endforeach
@@ -208,16 +208,24 @@
                                 <!-- Telegram Tab -->
                                 <div class="tab-pane" id="telegram" role="tabpanel" aria-labelledby="telegram-tab">
                                     <div class="text-center">
-                                        @if($user->telegram_chat_id)
+                                        @if ($user->telegram_chat_id)
                                             <div class="alert alert-success" role="alert">
                                                 <h5 class="alert-heading"><i class="ti ti-circle-check me-2"></i>Account Linked!</h5>
                                                 <p class="mb-0">Your Telegram account is successfully linked to the system.</p>
                                             </div>
                                         @else
-                                            <h5>Link Your Telegram Account</h5>
-                                            <p class="text-muted">Scan the QR code below with your phone's Telegram app to receive notifications.</p>
-                                            <div id="telegram-qrcode" class="d-flex justify-content-center" data-token="{{ $telegram_token }}" data-bot-username="{{ config('services.telegram.bot_username') }}"></div>
-                                            <small class="text-muted d-block mt-2">This code is valid for 10 minutes.</small>
+                                            <div id="telegram-linking-section">
+                                                @if($telegram_linking_url)
+                                                    <h5>Link Your Telegram Account</h5>
+                                                    <p class="text-muted">Click the button below to link your Telegram account and receive notifications directly.</p>
+                                                    <a href="{{ $telegram_linking_url }}" target="_blank" class="btn btn-primary my-3">
+                                                        <i class="ti tabler-brand-telegram me-2"></i> Link with Telegram
+                                                    </a>
+                                                    <small class="text-muted d-block mt-2">This link is valid for 10 minutes.</small>
+                                                @else
+                                                    <p class="text-muted">Could not generate a linking URL at this time. Please try again later.</p>
+                                                @endif
+                                            </div>
                                         @endif
                                     </div>
                                 </div>

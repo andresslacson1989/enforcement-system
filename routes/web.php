@@ -14,8 +14,11 @@ use App\Http\Controllers\pages\MiscError;
 use App\Http\Controllers\pages\RequirementTransmittalFormController;
 use App\Http\Controllers\pages\RoleController;
 use App\Http\Controllers\pages\SearchController;
+use App\Http\Controllers\pages\TelegramController;
 use App\Http\Controllers\pages\UsersController;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
+use Telegram\Bot\Laravel\Facades\Telegram;
 
 // locale
 Route::get('/lang/{locale}', [LanguageController::class, 'swap']);
@@ -24,6 +27,9 @@ Route::get('/pages/misc-error', [MiscError::class, 'index'])->name('pages-misc-e
 // authentication
 Route::get('/auth/login-basic', [LoginBasic::class, 'index'])->name('auth-login-basic');
 Route::get('/auth/register-basic', [RegisterBasic::class, 'index'])->name('auth-register-basic');
+Route::post('/telegram/webhook', [TelegramController::class, 'webhook'])->withoutMiddleware(VerifyCsrfToken::class);
+
+Route::get('/telegram/webhook', [TelegramController::class, 'webhook']);
 
 Route::middleware(['auth:web'])->group(function () {
 
@@ -113,7 +119,13 @@ Route::middleware(['auth:web'])->group(function () {
 
     // Test
     Route::get('/test', function () {
-        return phpinfo();
+        $user = Auth::user();
+        $message_text = "*Telegram Linked*\nYour Telegram account has been linked to your ".config('app.name')." Account.\nYou will now receive notifications in this Telegram Account.";
+        Telegram::sendMessage([
+            'chat_id' => $user->telegram_chat_id,
+            'text' => $message_text,
+            'parse_mode' => 'Markdown',
+        ]);
     });
 
 });
