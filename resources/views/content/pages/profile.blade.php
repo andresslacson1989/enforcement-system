@@ -51,11 +51,6 @@
 @endsection
 
 @section('content')
-    <style>
-        .profile-details i {
-            width: 1.2rem; /* Align icons nicely */
-        }
-    </style>
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><span class="fw-bold">Main</span></li>
@@ -72,9 +67,9 @@
                         <div class="card-header"></div>
                         <div class="card-body">
                             <div class="profile-pic-container position-relative d-inline-block">
-                                <img src="{{ $user->profile_photo_url }}" alt="Profile Picture" class="img img-thumbnail rounded-3 w-px-160" id="profile-pic-img">
-                                @if(Auth::user()->can(config("permit.edit any personnel profile.name")))
-                                    <button class="btn btn-icon btn-label-gray position-absolute bottom-0 end-0" id="change-photo-btn" data-bs-toggle="tooltip" data-user-id="{{ $user->id }}" title="Change Photo">
+                                <img src="{{ $user->profile_photo_url }}" alt="Profile Picture" class="img img-thumbnail rounded-3 w-px-160" id="profile-pic-img" />
+                                @if(Auth::id() == $user->id || Auth::user()->can(config("permit.edit personnel.name")))
+                                    <button class="btn btn-icon btn-label-gray position-absolute bottom-0 end-0" id="change-photo-btn" data-custom-tooltip="tooltip" data-user-id="{{ $user->id }}" custom-tooltip-title="Change Photo">
                                         <i class="ti icon-lg tabler-camera"></i>
                                     </button>
                                 @endif
@@ -106,7 +101,7 @@
                                 <p><i class="ti tabler-id me-2"></i><strong>Pag-IBIG:</strong> {{ $user->pagibig_number ?? 'N/A' }}</p>
                             </div>
                             {{-- A user can edit their own profile, or an admin with permission can edit any profile --}}
-                            @if(Auth::id() == $user->id || Auth::user()->can(config("permit.edit own personnel profile.name")))
+                            @if(Auth::id() == $user->id || Auth::user()->can(config("permit.edit personnel.name")))
                                 <a href="#" class="btn btn-dark mt-3 w-100 edit-user" data-user-id="{{ $user->id }}">Edit Profile</a>
                             @endif
                         </div>
@@ -142,6 +137,11 @@
                                             Notifications
                                         </button>
                                     </li>
+                                    <li class="nav-item " role="presentation">
+                                        <button class="nav-link" id="telegram-tab" data-bs-toggle="tab" data-bs-target="#telegram" type="button" role="tab" aria-controls="telegram" aria-selected="false">
+                                            Telegram
+                                        </button>
+                                    </li>
                                 </ul>
                             </div>
                             <div class="card-body p-4 tab-content" id="detachmentTabContent">
@@ -166,10 +166,18 @@
                                                         <a href="/form/view/{{ strtolower(str_replace(' ', '-', $form->name)) }}/{{ $form->id }}"> {{ $form->name }}</a>
                                                     </td>
                                                     <td>
-                                                        {{ $form->submittedBy->name ?? ''}}
+                                                        @can(config("permit.view any personnel profile.name"))
+                                                            <a href="{{ route('user-profile', $form->submittedBy->id) }}">{{ $form->submittedBy->name ?? ''}}</a>
+                                                        @else
+                                                            {{ $form->submittedBy->name ?? ''}}
+                                                        @endcan
                                                     </td>
                                                     <td>
-                                                        {{ $form->employee->name ?? ''}}
+                                                        @can(config("permit.view any personnel profile.name"))
+                                                            <a href="{{ route('user-profile', $form->employee->id) }}">{{ $form->employee->name ?? ''}}</a>
+                                                        @else
+                                                            {{ $form->employee->name ?? ''}}
+                                                        @endcan
                                                     </td>
                                                     <td class="text-nowrap">
                                                         <span>{{ $form->created_at->format('M d, Y H:i') }}</span> <br>
@@ -196,6 +204,22 @@
                                             <li class="list-group-item text-center text-muted">No notifications.</li>
                                         @endforelse
                                     </ul>
+                                </div>
+                                <!-- Telegram Tab -->
+                                <div class="tab-pane" id="telegram" role="tabpanel" aria-labelledby="telegram-tab">
+                                    <div class="text-center">
+                                        @if($user->telegram_chat_id)
+                                            <div class="alert alert-success" role="alert">
+                                                <h5 class="alert-heading"><i class="ti ti-circle-check me-2"></i>Account Linked!</h5>
+                                                <p class="mb-0">Your Telegram account is successfully linked to the system.</p>
+                                            </div>
+                                        @else
+                                            <h5>Link Your Telegram Account</h5>
+                                            <p class="text-muted">Scan the QR code below with your phone's Telegram app to receive notifications.</p>
+                                            <div id="telegram-qrcode" class="d-flex justify-content-center" data-token="{{ $telegram_token }}" data-bot-username="{{ config('services.telegram.bot_username') }}"></div>
+                                            <small class="text-muted d-block mt-2">This code is valid for 10 minutes.</small>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         </div>

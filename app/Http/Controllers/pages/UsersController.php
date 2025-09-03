@@ -16,8 +16,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use LaravelIdea\Helper\App\Models\_IH_User_QB;
 use Spatie\Permission\Models\Role;
@@ -41,12 +43,18 @@ class UsersController
         $personnel_roles = (new UserClass)->listPersonnelRoles();
         $roles = Role::whereIn('name', $personnel_roles)->get();
 
+        // Generate a unique token for Telegram linking
+        $telegram_token = Str::random(32);
+        // Store the token in the cache, linking it to the user's ID for 10 minutes.
+        Cache::put('telegram_token:'.$telegram_token, $personnel->id, now()->addMinutes(10));
+
         return view('content.pages.profile')
             ->with('user', $personnel)
             ->with('notifications', $notifications)
             ->with('detachment', $personnel->detachment)
             ->with('forms', $forms)
-            ->with('roles', $roles);
+            ->with('roles', $roles)
+            ->with('telegram_token', $telegram_token);
     }
 
     /**
@@ -517,10 +525,12 @@ class UsersController
     public function updateProfilePhoto(Request $request)
     {
         $request->validate([
+            'user_id' => ['required', 'exists:users,id'],
             'photo' => ['required', 'mimes:jpg,jpeg,png', 'max:2048'],
         ]);
 
-        $user = User::find($request->user_id);
+        // Find the user whose profile is being updated, not necessarily the logged-in user.
+        $user = User::findOrFail($request->user_id);
 
         // This method comes from the HasProfilePhoto trait and handles everything.
         $user->updateProfilePhoto($request->file('photo'));

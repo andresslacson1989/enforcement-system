@@ -38,7 +38,6 @@
                         <p class="text-muted mb-4">
                             To ensure we have all the necessary information, please complete your profile. This is a one-time process.
                         </p>
-
                         @if(session('warning'))
                             <div class="alert alert-warning" role="alert">
                                 <div class="d-flex">

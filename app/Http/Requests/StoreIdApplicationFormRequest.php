@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreIdApplicationFormRequest extends FormRequest
@@ -19,7 +20,7 @@ class StoreIdApplicationFormRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
+     * @return array<string, ValidationRule|array|string>
      */
     public function rules(): array
     {
@@ -27,6 +28,7 @@ class StoreIdApplicationFormRequest extends FormRequest
         if ($this->isMethod('POST')) {
             return [
                 'employee_id' => 'required|exists:users,id',
+                'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048', // Add validation for the photo
                 'emergency_contact_name' => 'required|string|max:255',
                 'emergency_contact_relation' => 'required|string|max:255',
                 'emergency_contact_address' => 'required|string|max:1000',
@@ -43,6 +45,8 @@ class StoreIdApplicationFormRequest extends FormRequest
                 'is_encoded' => 'nullable|boolean',
                 'is_card_done' => 'nullable|boolean',
                 'is_delivered' => 'nullable|boolean',
+                'status' => 'nullable|string|in:pending,processed,approved,denied',
+                'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             ];
         }
 

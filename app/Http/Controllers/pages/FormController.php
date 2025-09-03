@@ -4,10 +4,12 @@ namespace App\Http\Controllers\pages;
 
 use App\Helpers\NotificationHelper;
 use App\Http\Classes\UserClass;
+use App\Jobs\SendAndBroadcastNotification;
 use App\Models\User;
 use App\Services\FormSubmissionService;
 use Carbon\Carbon;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Contracts\View\Factory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -16,105 +18,149 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
-use Spatie\Permission\Models\Role;
+use Illuminate\View\View;
+use Throwable;
 
 class FormController
 {
     protected FormSubmissionService $formSubmissionService;
 
+    /**
+     * FormController constructor.
+     *
+     * @param  FormSubmissionService  $formSubmissionService  The service responsible for handling form submissions.
+     */
     public function __construct(FormSubmissionService $formSubmissionService)
     {
         $this->formSubmissionService = $formSubmissionService;
     }
 
-    public function create(string $formSlug)
+    /**
+     * Displays the form creation view based on the provided slug.
+     *
+     * @param  string  $form_slug  The unique identifier for the form from the configuration.
+     */
+    public function create(string $form_slug): View|Factory
     {
         // 1. Find the form's configuration using the slug
-        $formConfig = Config::get("forms.types.{$formSlug}");
+        $form_config = Config::get("forms.types.{$form_slug}");
 
         // 2. If the slug or handler doesn't exist, it's an invalid form type
-        if (! $formConfig || ! isset($formConfig['handler'])) {
+        if (! $form_config || ! isset($form_config['handler'])) {
             abort(404, 'Form type not found or handler not configured.');
         }
 
         // 3. Create an instance of the handler from our config
-        $handler = App::make($formConfig['handler']);
+        $handler = App::make($form_config['handler']);
 
         // 4. Delegate the work to the handler's create method
         return $handler->create();
     }
 
-    public function view(string $formSlug, int $id)
+    /**
+     * Displays a specific submitted form instance for viewing or editing.
+     *
+     * @param  string  $form_slug  The unique identifier for the form from the configuration.
+     * @param  int  $id  The ID of the specific form submission to view.
+     */
+    public function view(string $form_slug, int $id): View|Factory
     {
         // 1. Find the form's configuration using the slug
-        $formConfig = Config::get("forms.types.{$formSlug}");
+        $form_config = Config::get("forms.types.{$form_slug}");
 
         // 2. If the slug or handler doesn't exist, it's an invalid form type
-        if (! $formConfig || ! isset($formConfig['handler'])) {
+        if (! $form_config || ! isset($form_config['handler'])) {
             abort(404, 'Form type not found or handler not configured.');
         }
 
         // 3. Create an instance of the handler from our config
-        $handler = App::make($formConfig['handler']);
+        $handler = App::make($form_config['handler']);
 
         // 4. Delegate the work to the handler's view method
         return $handler->view($id);
     }
 
-    public function store(Request $request, string $formSlug)
+    /**
+     * Handles the submission and storage of a new form.
+     *
+     * @param  Request  $request  The incoming HTTP request.
+     * @param  string  $form_slug  The unique identifier for the form being submitted.
+     */
+    public function store(Request $request, string $form_slug): JsonResponse
     {
 
         // 1. Find the form's configuration using the slug
-        $formConfig = Config::get("forms.types.{$formSlug}");
+        $form_config = Config::get("forms.types.{$form_slug}");
 
         // If the slug doesn't exist in the config, it's an invalid form type
-        if (! $formConfig) {
+        if (! $form_config) {
             abort(404, 'Form type not found.');
         }
         $user = auth()->user();
 
         // 2. Dynamically use the correct Form Request for validation
         // We create an instance of the validation class from our config.
-        $validationRequest = App::make($formConfig['request']);
+        $validation_request = App::make($form_config['request']);
 
-        $validatedData = $request->validate($validationRequest->rules());
+        $validated_data = $request->validate($validation_request->rules());
 
-        $employee = null;
-        // If this is the form for new employees, create the user first.
-        if ($formSlug === 'requirement-transmittal-form') {
-            $employee = $this->createUserFromRequirementTransmittalFormData($validatedData);
-            $validatedData['employee_id'] = $employee->id;
-        }
+        // 3. Handle one-to-one form checks BEFORE creating any models.
+        $is_one_to_one = $form_config['one_to_one'] ?? false;
+        if ($is_one_to_one) {
+            // Special check for the onboarding form, as the user doesn't exist yet.
+            if ($form_slug === 'requirement-transmittal-form') {
+                $existing_user = User::where('employee_number', $validated_data['employee_number'])
+                    ->orWhere('email', $validated_data['email'])
+                    ->first();
+                if ($existing_user) {
+                    return response()->json([
+                        'message' => 'Error',
+                        'icon' => 'error',
+                        'text' => 'A user with this Employee Number or Email already exists.',
+                    ], 409);
+                }
+            }
+            // Standard check for all other one-to-one forms for existing users.
+            elseif (isset($validated_data['employee_id'])) {
+                $employee = User::find($validated_data['employee_id']);
+                $relationship = Str::camel($form_slug).'Form'; // e.g., 'firstMonthPerformanceEvaluationForm'
+                $form_name = $form_config['name'];
 
-        // For the ID Application Form, we need to fetch the job title from the employee's current role
-        // and add it to the data to be saved, since it's not submitted from the form.
-        if ($formSlug === 'id-application-form') {
-            $employeeForForm = User::find($validatedData['employee_id']);
-            $validatedData['job_title'] = $employeeForForm?->PrimaryRole?->name ?? 'N/A';
-        }
-
-        // Check for existing form if it's a one-to-one type
-        if (! $formConfig['one_to_one']) {
-            $employee = User::find($validatedData['employee_id']);
-            $formName = $formConfig['name'];
-            $relationship = Str::camel($formSlug);
-            $existingFormResponse = $this->checkForExistingForm($employee, $relationship, $formName);
-            if ($existingFormResponse) {
-                return $existingFormResponse;
+                $existing_form_response = $this->checkForExistingForm($employee, $relationship, $form_name);
+                if ($existing_form_response) {
+                    return $existing_form_response;
+                }
             }
         }
-        $usersToNotifyIds = (new NotificationHelper)->determineRecipients($formSlug, $validatedData, $user, $employee);
 
-        // 3. Call the service with the dynamic values from the config
-        $validatedData['submitted_by'] = $user->id;
+        // 4. Handle User creation for onboarding form
+        $employee = null;
+        if ($form_slug === 'requirement-transmittal-form') {
+            $employee = $this->_handle_create_user_from_requirement_transmittal_form_data($validated_data);
+            $validated_data['employee_id'] = $employee->id;
+        } elseif (isset($validated_data['employee_id'])) {
+            $employee = User::find($validated_data['employee_id']);
+        }
+
+        // 5. Add any additional data needed before saving
+        if ($form_slug === 'id-application-form') {
+            $validated_data = $this->_handle_id_application_form_data($request, $validated_data);
+        }
+
+        // 6. Determine notification recipients
+        $users_to_notify_ids = (new NotificationHelper)->determineRecipients($form_slug, $validated_data, $user, $employee);
+
+        // 7. Call the service to handle submission
+        $validated_data['submitted_by'] = $user->id;
         $form = $this->formSubmissionService->handle(
-            $formConfig['model'], // <-- Dynamically loaded from config
-            $validatedData,
+            $form_config['model'], // <-- Dynamically loaded from config
+            $validated_data,
             $user,
-            $usersToNotifyIds,
-            $formConfig['name']// <-- Dynamically loaded from config
+            $users_to_notify_ids,
+            $form_config['name']// <-- Dynamically loaded from config
         );
 
         return response()->json([
@@ -126,13 +172,17 @@ class FormController
     }
 
     /**
-     * @throws \Throwable
+     * @param  Request  $request  The incoming HTTP request.
+     * @param  string  $form_type  The unique identifier for the form being updated.
+     * @param  int  $id  The ID of the form submission to update. // This was a snake_case violation
+     *
+     * @throws Throwable
      */
-    public function update(Request $request, string $formType, int $id)
+    public function update(Request $request, string $form_type, int $id): JsonResponse
     {
         // Step 1: Look up the configuration for this form type
-        $formConfig = config("forms.types.{$formType}");
-        if (! $formConfig) {
+        $form_config = config("forms.types.{$form_type}");
+        if (! $form_config) {
             abort(404, 'Form type not found.');
         }
 
@@ -144,43 +194,38 @@ class FormController
         }
 
         // Step 2: Dynamically get the correct FormRequest class and its rules
-        $formRequestClass = $formConfig['request'];
-        $formRequest = app($formRequestClass);
+        $form_request_class = $form_config['request'];
+        $form_request = app($form_request_class);
 
         // Step 3: THIS IS THE CRITICAL PART
         // Create a validator instance and get the validated (and transformed) data.
         // This is what correctly converts "on" to true.
-        $validator = Validator::make($request->all(), $formRequest->rules());
-        $validatedData = $validator->validated();
+        $validator = Validator::make($request->all(), $form_request->rules());
+        $validated_data = $validator->validated();
 
         // Add specific logic for the ID Application Form HR processing
-        if ($formType === 'id-application-form') {
-            $hr_fields = ['is_info_complete', 'has_id_picture', 'is_for_filing', 'is_encoded', 'is_card_done', 'is_delivered'];
-            $is_hr_update = false;
-            // Check if any HR-specific fields were submitted
-            foreach ($hr_fields as $field) {
-                if (array_key_exists($field, $validatedData)) {
-                    $is_hr_update = true;
-                    break;
-                }
-            }
-
-            if ($is_hr_update) {
-                // If HR is updating, stamp the current user as the one who completed it.
-                $validatedData['completed_by'] = Auth::id();
-            }
+        if ($form_type === 'id-application-form') {
+            $validated_data = $this->_handle_id_application_form_data($request, $validated_data, $id);
         }
 
         // Step 4: Proceed with the update logic using the clean data
-        $form = $formConfig['model']::findOrFail($id);
+        $form = $form_config['model']::findOrFail($id);
         $user = User::findOrFail($form->employee_id);
 
-        DB::transaction(function () use ($user, $form, $validatedData) {
-            $userData = Arr::only($validatedData, $user->getFillable());
-            $formData = Arr::only($validatedData, $form->getFillable());
+        DB::transaction(function () use ($user, $form, $validated_data) {
+            $user_data = Arr::only($validated_data, $user->getFillable());
+            $form_data = Arr::only($validated_data, $form->getFillable());
 
-            $user->update($userData);
-            $form->update($formData);
+            // --- This is the fix ---
+            // The 'status' field belongs to the form's submission, not the user.
+            // We ensure it's in the form_data and explicitly remove it from user_data.
+            if (isset($validated_data['status'])) {
+                $form_data['status'] = $validated_data['status'];
+                unset($user_data['status']);
+            }
+
+            $user->update($user_data);
+            $form->update($form_data);
         });
 
         return response()->json([
@@ -192,10 +237,13 @@ class FormController
     }
 
     /**R
-     * Handles the special logic of creating a user from transmittal form data.
+     * Handles the special logic of creating a new user from the Requirement Transmittal Form data.
      * This keeps the store() method clean.
+     *
+     * @param  array  $data  The validated data from the form.
+     * @return User The newly created user instance.
      */
-    private function createUserFromRequirementTransmittalFormData(array $data): User
+    private function _handle_create_user_from_requirement_transmittal_form_data(array $data): User
     {
         $employee_name = trim($data['first_name'].' '.$data['last_name'].' '.($data['suffix'] ?? ''));
         $employee_data = [
@@ -228,19 +276,25 @@ class FormController
         return $employee;
     }
 
-    public function printReport(string $formSlug, int $id)
+    /**
+     * Updates the print status and count for a given form.
+     *
+     * @param  string  $form_slug  The unique identifier for the form.
+     * @param  int  $id  The ID of the form submission.
+     */
+    public function printReport(string $form_slug, int $id): JsonResponse
     {
-        $formConfig = config("forms.types.{$formSlug}");
-        if (! $formConfig) {
+        $form_config = config("forms.types.{$form_slug}");
+        if (! $form_config) {
             return response()->json(['message' => 'Error', 'error' => 'Form type not found.'], 404);
         }
 
-        if (! Auth::user()->can('print '.$formConfig['name'])) {
+        if (! Auth::user()->can('print '.$form_config['name'])) {
             return response()->json(['message' => 'Error', 'error' => 'You do not have permission to print the form.'], 403);
         }
 
         try {
-            $form = $formConfig['model']::findOrFail($id);
+            $form = $form_config['model']::findOrFail($id);
 
             $form->date_last_printed = now();
             $form->printed = true;
@@ -259,22 +313,25 @@ class FormController
     }
 
     /**
-     * @return mixed
+     * Generates a printable view of a specific form submission.
+     *
+     * @param  string  $form_slug  The unique identifier for the form.
+     * @param  int  $id  The ID of the form submission to print.
      *
      * @throws BindingResolutionException
      */
-    public function print(string $formSlug, int $id)
+    public function print(string $form_slug, int $id): mixed
     {
         // 1. Find the form's configuration using the slug
-        $formConfig = Config::get("forms.types.{$formSlug}");
+        $form_config = Config::get("forms.types.{$form_slug}");
 
         // 2. If the slug or handler doesn't exist, it's an invalid form type
-        if (! $formConfig || ! isset($formConfig['handler'])) {
+        if (! $form_config || ! isset($form_config['handler'])) {
             abort(404, 'Form type not found or handler not configured.');
         }
 
         // 3. Create an instance of the handler from our config
-        $handler = App::make($formConfig['handler']);
+        $handler = App::make($form_config['handler']);
 
         // 4. Delegate the work to the handler's print method
         return $handler->print($id);
@@ -284,20 +341,91 @@ class FormController
      * Checks if a user already has a specific one-to-one form.
      *
      * @param  User  $employee  The user to check.
-     * @param  string  $relationship  The name of the relationship method on the User model.
-     * @param  string  $formName  The user-friendly name of the form.
+     * @param  string  $relationship  The name of the relationship method on the User model. // This was a snake_case violation
+     * @param  string  $form_name  The user-friendly name of the form.
      * @return JsonResponse|null
      */
-    private function checkForExistingForm(User $employee, string $relationship, string $formName)
+    private function checkForExistingForm(User $employee, string $relationship, string $form_name)
     {
         if ($employee->{$relationship}()->exists()) {
             return response()->json([
                 'message' => 'Error',
                 'icon' => 'error',
-                'text' => "This employee already has a {$formName}.",
+                'text' => "This employee already has a {$form_name}.",
             ], 409); // 409 Conflict is a good HTTP status code for this.
         }
 
         return null;
+    }
+
+    /**
+     * Handles form-specific logic for the ID Application Form, such as photo uploads and HR processing.
+     *
+     * @param  Request  $request  The incoming HTTP request.
+     * @param  array  $validated_data  The validated data from the form.
+     * @param  int|null  $form_id  The ID of the form being updated, if applicable.
+     * @return array The modified validated data.
+     */
+    private function _handle_id_application_form_data(Request $request, array $validated_data, ?int $form_id = null): array
+    {
+        // Set the job title based on the employee's primary role, but only on creation.
+        if (! $form_id) {
+            $employee = User::find($validated_data['employee_id']);
+            $validated_data['job_title'] = $employee?->PrimaryRole?->name ?? 'N/A';
+        }
+
+        // If a new photo is being uploaded...
+        if ($request->hasFile('photo')) {
+            // If this is an update, find the existing form and delete the old photo.
+            if ($form_id) {
+                $current_form = \App\Models\IdApplicationForm::findOrFail($form_id);
+                if ($current_form && $current_form->photo_path) {
+                    Storage::disk('public')->delete($current_form->photo_path);
+                }
+            }
+
+            // Store the new photo and add its path to the data.
+            $validated_data['photo_path'] = $request->file('photo')->store('id-applications', 'public');
+        }
+
+        // Handle HR Processing section updates
+        $hr_fields = ['is_card_done', 'is_delivered'];
+        // Check if any of the HR fields were part of the submitted form data.
+        $is_hr_update = Arr::hasAny($request->all(), $hr_fields);
+
+        // --- This is the fix ---
+        // We must always check for the presence of the checkbox fields in the request.
+        // If they are not present, it means they were unchecked, and we must set them to false.
+        $validated_data['is_card_done'] = $request->has('is_card_done');
+        $validated_data['is_delivered'] = $request->has('is_delivered');
+
+        if ($is_hr_update) {
+            $validated_data['completed_by'] = Auth::id();
+
+            // --- New Notification Logic ---
+            // Find the original submission record to get the submitter's ID
+            $submission = \App\Models\IdApplicationForm::findOrFail($form_id)->submission;
+            $submitter_id = $submission->submitted_by;
+
+            // Check if the 'is_card_done' status has just been changed to true
+            if ($validated_data['is_card_done'] && ! $submission->submittable->is_card_done) {
+                $title = 'ID Card Ready for Pickup';
+                $employee_name = $submission->submittable->employee->name;
+                $message = "The ID card for {$employee_name} is now ready for pickup.";
+                $link = route('forms.view', ['formSlug' => 'id-application-form', 'id' => $form_id]);
+
+                // Dispatch the notification job to the original submitter
+                SendAndBroadcastNotification::dispatch($title, $message, $link, [$submitter_id]);
+            }
+
+            if ($validated_data['is_delivered']) {
+                $validated_data['status'] = 'processed';
+            } else {
+                // If delivered is unchecked, revert status to submitted
+                $validated_data['status'] = 'submitted';
+            }
+        }
+
+        return $validated_data;
     }
 }

@@ -107,8 +107,11 @@
                                     <label class="form-check-label" for="selectAll">Select All</label>
                                 </div>
                             </div>
-
                             <div class="permissions-container">
+                                <div class="mb-4">
+                                    <i class="icon-base ti tabler-info-circle icon-lg text-muted ms-1" data-custom-tooltip="tooltip" custom-tooltip-title="Hover to see description"></i>
+                                    <small class="text-muted">Hover to see description</small>
+                                </div>
                                 @foreach($permissions as $group => $permissionGroup)
                                     <div class="mb-3">
                                         <h6 class="bg-label-dark p-2 fw-bold">{{ $group }}</h6>
@@ -119,7 +122,7 @@
                                                         <input class="form-check-input permission-checkbox" type="checkbox" name="permissions[]" value="{{ $permission['name'] }}" id="perm_{{ $permission['id'] }}" />
                                                         <label class="form-check-label" for="perm_{{ $permission['id'] }}">
                                                             {{ ucwords($permission['name']) }}
-                                                            <i class="icon-base ti tabler-info-circle icon-xs text-muted ms-1 mb-2" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $permission['description'] }}"></i>
+                                                            <i class="icon-base ti tabler-info-circle icon-xs text-muted ms-1 mb-2" data-custom-tooltip="tooltip" custom-tooltip-title="{{ $permission['description'] }}"></i>
                                                         </label>
                                                     </div>
                                                 </div>

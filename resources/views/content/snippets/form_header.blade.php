@@ -8,7 +8,7 @@
     </span>
         </h5>
         <div class="d-flex justify-content-between">
-            @if($submission->status == 'approved' || $submission->status == 'denied' || $submission->status == 'submitted')
+            @if(in_array($submission->status, ['approved', 'submitted', 'processed']))
                 @can(config("permit.print $form_name.name"))
                     <a href="/forms/print/{{ str_replace(' ', '-', strtolower($form_name)) }}/{{ $submission->id }}" class="btn btn-primary me-4" target="_blank">
                         <span class="align-middle">Print</span>
@@ -31,6 +31,14 @@
                     <button type="submit" class="btn btn-primary mb-2">Update Form</button>
                 @endif
             @endcan
+            @can("permit.update processed form.name")
+                @if(($submission->status == 'processed' ))
+                    <!-- Change the button to indicate an update -->
+                    <button type="submit" class="btn btn-primary mb-2">Update Form</button>
+                @endif
+            @endcan
+
+
         </div>
     </div>
 @else

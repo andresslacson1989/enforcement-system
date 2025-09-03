@@ -54,39 +54,54 @@ class NotificationHelper
             }
         }
 
-        // 3. Notify the employee who is the subject of the form, if configured
-        if (($notificationConfig['notify_employee'] ?? false) && $employee) {
+        // 3. Conditionally notify the employee who is the subject of the form
+        $shouldNotifyEmployee = $notificationConfig['notify_employee'] ?? false;
+        if ($shouldNotifyEmployee && $employee) {
             $usersToNotifyIds[] = $employee->id;
         }
 
-        // Ensure the list is unique and return
+        // 4. Remove the original submitter from the list, unless they are also the employee
+        // being notified. This prevents users from getting notifications for their own actions.
+        if ($employee === null || $submitted_by->id !== $employee->id) {
+            $usersToNotifyIds = array_filter($usersToNotifyIds, function ($id) use ($submitted_by) {
+                return $id !== $submitted_by->id;
+            });
+        }
+
+        // 5. Ensure the list is unique and return
         return array_unique($usersToNotifyIds);
     }
 
     /**
      * Handles the complex notification logic for all performance evaluation forms.
      */
-    private function _handlePerformanceEvaluationRecipients(array $validatedData, User $submitted_by): array
+    private function _handle_performanceEvaluationRecipients(array $validatedData, User $submitted_by): array
     {
         $detachmentId = $validatedData['detachment_id'] ?? null;
-        if (! $detachmentId) {
+        $detachment = $detachmentId ? Detachment::find($detachmentId) : null;
+
+        if (! $detachment) {
             return [];
         }
 
+        $staffs = ['hr manager', 'hr specialist', 'operation manager'];
+
         // If the submitter is the assigned officer of the detachment, notify HR/Ops.
-        if ($submitted_by->detachment_id == $detachmentId && $submitted_by->isAssignedOfficer()) {
-            return $this->getIds(['hr manager', 'hr specialist', 'operation manager']);
+        if ($submitted_by->id === $detachment->assigned_officer) {
+            return $this->getIds($staffs);
         } else {
-            $detachment = Detachment::find($detachmentId);
-            $assigned_officer_id = $detachment->assigned_officer;
-            if ($assigned_officer_id) {
-                return [$assigned_officer_id];
+            // If there is an assigned officer, notify them.
+            if ($detachment->assigned_officer) {
+                return [$detachment->assigned_officer];
             } elseif ($detachment->category == 'Single Post') {
-                return $this->getIds(['hr manager', 'hr specialist', 'operation manager']);
+                // If it's a single post with no officer, notify staffs.
+                return $this->getIds($staffs);
+            } else {
+                // Fallback: If no specific officer is assigned, and it's not a single post,
+                // default to notifying the staffs to ensure the form is seen.
+                return $this->getIds($staffs);
             }
         }
-
-        return [];
     }
 
     /**
@@ -96,6 +111,9 @@ class NotificationHelper
     {
         return User::whereHas('roles', function ($query) use ($roles) {
             $query->whereIn('name', $roles);
-        })->pluck('id')->toArray();
+        })
+            ->where('status', 'hired') // notify the hired only
+            ->pluck('id')
+            ->toArray();
     }
 }

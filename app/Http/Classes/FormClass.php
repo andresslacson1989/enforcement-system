@@ -5,8 +5,9 @@ namespace App\Http\Classes;
 use App\Models\Detachment;
 use App\Models\Submission;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class FormClass
 {
@@ -99,5 +100,12 @@ class FormClass
         } catch (\Exception $exception) {
             return view('content.pages.pages-misc-error');
         }
+    }
+
+    public function sendErrorMessage(\Exception $e): JsonResponse
+    {
+        Log::error($e->getMessage());
+
+        return response()->json(['message' => 'Failed', 'icon' => 'error', 'text' => 'Something went wrong.'], 500);
     }
 }

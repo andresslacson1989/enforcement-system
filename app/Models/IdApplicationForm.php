@@ -17,17 +17,16 @@ class IdApplicationForm extends BaseFormModel
     protected $fillable = [
         'employee_id',
         'job_title',
+        'photo_path',
         'emergency_contact_name',
         'emergency_contact_relation',
         'emergency_contact_address',
         'emergency_contact_number',
-        'is_info_complete',
-        'has_id_picture',
-        'is_for_filing',
-        'is_encoded',
         'is_card_done',
         'is_delivered',
         'completed_by',
+        'submitted_by',
+        'status',
     ];
 
     /**
@@ -36,10 +35,6 @@ class IdApplicationForm extends BaseFormModel
      * @var array
      */
     protected $casts = [
-        'is_info_complete' => 'boolean',
-        'has_id_picture' => 'boolean',
-        'is_for_filing' => 'boolean',
-        'is_encoded' => 'boolean',
         'is_card_done' => 'boolean',
         'is_delivered' => 'boolean',
     ];
@@ -69,8 +64,8 @@ class IdApplicationForm extends BaseFormModel
     /**
      * Get the HR user who completed the processing of this form
      */
-    public function completeddBy()
+    public function completedBy()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'completed_by');
     }
 }

@@ -17,3 +17,14 @@ body:has(.select2-modal.select2-container--open) {
     overflow-x: hidden !important
 
 }
+
+.custom-tooltip {
+    position: absolute;
+    background-color: #333;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 1rem;
+    z-index: 10000;
+    display: none;
+}

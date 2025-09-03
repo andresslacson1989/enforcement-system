@@ -13,6 +13,13 @@
 @endsection
 
 <!-- Page Styles -->
+@section('page-style')
+    <style>
+        .profile-pic-container .btn {
+            transform: translate(25%, 25%); /* Adjust button position */
+        }
+    </style>
+@endsection
 {{--@section('page-style')--}}
 {{--  @vite([--}}
 {{--  //'resources/assets/vendor/scss/pages/wizard-ex-checkout.scss'--}}
@@ -63,6 +70,25 @@
                             @endif
 
                             {{-- Employee Information --}}
+                            <div class="d-flex justify-content-center mb-4 mt-4">
+                                <div class="profile-pic-container position-relative d-inline-block">
+                                    {{-- The image source will be updated by JS on file selection --}}
+                                    @php
+                                        // Use the Storage facade to get the correct public URL for the photo
+                                        $photoUrl = $submission && $submission->photo_path ? Illuminate\Support\Facades\Storage::url($submission->photo_path) : $employee->profile_photo_url;
+                                    @endphp
+                                    <img src="{{ $photoUrl }}" alt="Profile Picture"
+                                         class="img img-thumbnail rounded-3 w-px-160" id="profile-pic-preview">
+                                    <button type="button" class="btn btn-icon btn-label-dark position-absolute bottom-0 end-0" id="change-photo-btn" data-bs-toggle="tooltip" title="Change Photo">
+                                        <i class="ti tabler-camera"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            {{-- This hidden input will hold the selected file for submission --}}
+                            <input type="file" id="profile-photo-input" name="photo" class="d-none" accept="image/png, image/jpeg, image/jpg">
+                            {{-- Container for the photo validation error message --}}
+                            <div class="text-center"><small class="text-danger error-text photo-error"></small></div>
+
                             <h5 class="mt-3">Employee Information Details</h5>
                             <hr>
                             <div class="mb-3">
@@ -147,39 +173,50 @@
                                     <table class="table table-bordered text-center">
                                         <thead>
                                         <tr>
-                                            <th>Complete Info</th>
-                                            <th>With ID Picture</th>
-                                            <th>For Filing</th>
-                                            <th>Encoded</th>
                                             <th>Card Done</th>
                                             <th>Delivered</th>
                                         </tr>
                                         </thead>
                                         <tbody>
                                         <tr>
-                                            <td><input class="form-check-input" type="checkbox" name="is_info_complete" {{ $submission->is_info_complete ? 'checked' : '' }} {{ !$canProcessForm ? 'disabled' : '' }}></td>
-                                            <td><input class="form-check-input" type="checkbox" name="has_id_picture" {{ $submission->has_id_picture ? 'checked' : '' }} {{ !$canProcessForm ? 'disabled' : '' }}></td>
-                                            <td><input class="form-check-input" type="checkbox" name="is_for_filing" {{ $submission->is_for_filing ? 'checked' : '' }} {{ !$canProcessForm ? 'disabled' : '' }}></td>
-                                            <td><input class="form-check-input" type="checkbox" name="is_encoded" {{ $submission->is_encoded ? 'checked' : '' }} {{ !$canProcessForm ? 'disabled' : '' }}></td>
                                             <td><input class="form-check-input" type="checkbox" name="is_card_done" {{ $submission->is_card_done ? 'checked' : '' }} {{ !$canProcessForm ? 'disabled' : '' }}></td>
                                             <td><input class="form-check-input" type="checkbox" name="is_delivered" {{ $submission->is_delivered ? 'checked' : '' }} {{ !$canProcessForm ? 'disabled' : '' }}></td>
                                         </tr>
                                         </tbody>
                                     </table>
 
-                                    <div class="row mt-4">
-                                        <div class="col-md-6">
+                                    <div class="row mt-12 mb-12 text-center">
+                                        <div class="col-md-12">
                                             <label class="form-label">Completed by:</label>
-                                            <div class="form-control-plaintext fw-bold">{{ $submission->completedBy->name ?? 'N/A' }}</div>
+                                            <div class="form-control-plaintext fw-bold">
+                                                @if($submission->is_delivered)
+                                                    {{ $submission->completedBy->name ?? 'N/A' }}
+                                                @else
+                                                    <div class="border border-bottom col-md-3 m-auto mt-5"></div>
+                                                @endif
+                                            </div>
                                             <small class="text-muted">Printed name & Signature</small>
                                         </div>
                                     </div>
                                 @endcan
                             @endif
-
-                            <div class="d-grid">
-                                <button type="submit" id="submitBtn" class="btn btn-primary">Submit Application</button>
-                            </div>
+                            @if ($submission && in_array($submission->status, ['submitted', 'pending']))
+                                {{-- Only show the update button if the user has permission to edit this form --}}
+                                @can(config('permit.edit id application form.name'))
+                                    <div class="d-grid">
+                                        <button type="submit" id="submitBtn" class="btn btn-primary">Update Application</button>
+                                    </div>
+                                @endcan
+                            @elseif($submission && $submission->status == 'processed' && Auth::user()->can("permit.update processed form.name"))
+                                <div class="d-grid">
+                                    <button type="submit" id="submitBtn" class="btn btn-primary">Update Application</button>
+                                </div>
+                            @else
+                                {{-- This is a new form, so it uses the 'fill' permission --}}
+                                <div class="d-grid">
+                                    <button type="submit" id="submitBtn" class="btn btn-primary">Submit Application</button>
+                                </div>
+                            @endif
                         </div>
                     </form>
                 </div>

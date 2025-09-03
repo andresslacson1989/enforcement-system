@@ -2,192 +2,191 @@
 
 document.addEventListener('DOMContentLoaded', function () {
   // --- Panel Elements ---
-  const rolesListContainer = document.getElementById('roles-list');
-  const initialStatePanel = document.getElementById('initial-state');
-  const editingStatePanel = document.getElementById('editing-state');
-
+  const roles_list_container = document.getElementById('roles-list');
+  const initial_state_panel = document.getElementById('initial-state');
+  const editing_state_panel = document.getElementById('editing-state');
   // --- Form Elements ---
-  const roleForm = document.getElementById('roleForm');
-  const formTitle = document.getElementById('form-title');
-  const roleIdInput = document.getElementById('role_id');
-  const roleNameInput = document.getElementById('role_name');
-  const roleDescriptionInput = document.getElementById('role_description');
-  const selectAllCheckbox = document.getElementById('selectAll');
-  const permissionCheckboxes = document.querySelectorAll('.permission-checkbox');
+  const role_form = document.getElementById('roleForm');
+  const form_title = document.getElementById('form-title');
+  const role_id_input = document.getElementById('role_id');
+  const role_name_input = document.getElementById('role_name');
+  const role_description_input = document.getElementById('role_description');
+  const select_all_checkbox = document.getElementById('selectAll');
+  const permission_checkboxes = document.querySelectorAll('.permission-checkbox');
 
   // --- Buttons ---
-  const addNewRoleBtn = document.getElementById('addNewRoleBtn');
+  const add_new_role_btn = document.getElementById('addNewRoleBtn');
 
   /**
    * Shows the editing panel and hides the initial placeholder.
    */
   const showEditingPanel = () => {
-    initialStatePanel.classList.add('d-none');
-    editingStatePanel.classList.remove('d-none');
+    initial_state_panel.classList.add('d-none');
+    editing_state_panel.classList.remove('d-none');
   };
 
   /**
    * Resets the form to its default state and deselects any active role.
    */
   const resetForm = () => {
-    roleForm.reset();
-    permissionCheckboxes.forEach(cb => (cb.checked = false));
-    selectAllCheckbox.checked = false;
-    roleIdInput.value = '';
+    role_form.reset();
+    permission_checkboxes.forEach(cb => (cb.checked = false));
+    select_all_checkbox.checked = false;
+    role_id_input.value = '';
     // Remove active class from all roles
     document.querySelectorAll('.role-item.active').forEach(item => item.classList.remove('active'));
   };
 
   // --- Event Listener for Role Selection ---
-  rolesListContainer.addEventListener('click', function (e) {
-    e.preventDefault();
-    const roleItem = e.target.closest('.role-item');
-    if (!roleItem) return;
+  if (roles_list_container) {
+    roles_list_container.addEventListener('click', function (e) {
+      e.preventDefault();
+      const role_item = e.target.closest('.role-item');
+      if (!role_item) return;
 
-    resetForm(); // Reset form before populating
+      resetForm(); // Reset form before populating
 
-    // Set active class on the clicked role
-    roleItem.classList.add('active');
+      // Set active class on the clicked role
+      role_item.classList.add('active');
 
-    // Populate the form with data from the clicked role's data attributes
-    formTitle.textContent = 'Edit Role';
-    roleIdInput.value = roleItem.dataset.roleId;
-    roleNameInput.value = roleItem.dataset.roleName;
-    roleDescriptionInput.value = roleItem.dataset.roleDescription;
+      // Populate the form with data from the clicked role's data attributes
+      form_title.textContent = 'Edit Role';
+      role_id_input.value = role_item.dataset.roleId;
+      role_name_input.value = role_item.dataset.roleName;
+      role_description_input.value = role_item.dataset.roleDescription;
 
-    const rolePermissions = JSON.parse(roleItem.dataset.rolePermissions);
-    permissionCheckboxes.forEach(checkbox => {
-      checkbox.checked = rolePermissions.includes(checkbox.value);
+      const role_permissions = JSON.parse(role_item.dataset.rolePermissions);
+      permission_checkboxes.forEach(checkbox => {
+        checkbox.checked = role_permissions.includes(checkbox.value);
+      });
+
+      // Update the "Select All" checkbox state
+      select_all_checkbox.checked = role_permissions.length === permission_checkboxes.length;
+
+      showEditingPanel();
     });
-
-    // Update the "Select All" checkbox state
-    selectAllCheckbox.checked = rolePermissions.length === permissionCheckboxes.length;
-
-    showEditingPanel();
-  });
+  }
 
   // --- Event Listener for "Add New Role" Button ---
-  addNewRoleBtn.addEventListener('click', function () {
-    resetForm();
-    formTitle.textContent = 'Add a New Role';
-    showEditingPanel();
-    roleNameInput.focus();
-  });
+  if (add_new_role_btn) {
+    add_new_role_btn.addEventListener('click', function () {
+      resetForm();
+      form_title.textContent = 'Add a New Role';
+      showEditingPanel();
+      role_name_input.focus();
+    });
+  }
 
   // --- Checkbox Logic ---
-  selectAllCheckbox.addEventListener('change', function () {
-    permissionCheckboxes.forEach(cb => (cb.checked = this.checked));
-  });
+  if (select_all_checkbox) {
+    select_all_checkbox.addEventListener('change', function () {
+      permission_checkboxes.forEach(cb => (cb.checked = this.checked));
+    });
+  }
 
-  permissionCheckboxes.forEach(checkbox => {
+  permission_checkboxes.forEach(checkbox => {
     checkbox.addEventListener('change', () => {
-      const allChecked = Array.from(permissionCheckboxes).every(cb => cb.checked);
-      selectAllCheckbox.checked = allChecked;
+      const all_checked = Array.from(permission_checkboxes).every(cb => cb.checked);
+      if (select_all_checkbox) {
+        select_all_checkbox.checked = all_checked;
+      }
     });
   });
 
   // --- Form Submission Logic (using modern Fetch API) ---
-  roleForm.addEventListener('submit', async function (e) {
-    e.preventDefault();
+  if (role_form) {
+    role_form.addEventListener('submit', async function (e) {
+      e.preventDefault();
 
-    const isEdit = !!roleIdInput.value;
-    const url = isEdit ? `/form/update-roles` : '/form/roles';
-    // Note: For a true RESTful approach, the method for update should be 'PUT' or 'PATCH'.
-    // We are using 'POST' here to match your original AJAX setup.
-    const method = 'POST';
+      const is_edit = !!role_id_input.value;
+      const url = is_edit ? `/form/update-roles` : '/form/roles';
+      const method = 'POST';
 
-    // Show loading indicator
-    Swal.fire({
-      title: 'Please Wait!',
-      text: 'Processing your request...',
-      allowOutsideClick: false,
-      showConfirmButton: false,
-      willOpen: () => {
-        Swal.showLoading();
-      }
-    });
-
-    // Prepare form data
-    const formData = new FormData(this);
-    const data = {};
-
-    // Convert FormData to a plain object
-    formData.forEach((value, key) => {
-      // This logic handles the 'permissions[]' array correctly
-      if (key.endsWith('[]')) {
-        const arrayKey = key.slice(0, -2);
-        if (!data[arrayKey]) {
-          data[arrayKey] = [];
+      // Show loading indicator
+      Swal.fire({
+        title: 'Please Wait!',
+        text: 'Processing your request...',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        willOpen: () => {
+          Swal.showLoading();
         }
-        data[arrayKey].push(value);
-      } else {
-        data[key] = value;
-      }
-    });
-
-    // **IMPORTANT**: This part remaps keys to match your backend expectations for updates.
-    if (isEdit) {
-      data.role_description = data.description;
-      data.role_permissions = data.permissions;
-      delete data.description;
-      delete data.permissions;
-    }
-
-    try {
-      const response = await fetch(url, {
-        method: method,
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-          Accept: 'application/json'
-        },
-        body: JSON.stringify(data)
       });
 
-      const result = await response.json();
+      // Prepare form data
+      const form_data = new FormData(this);
+      const data = {};
 
-      if (!response.ok) {
-        // If response is not ok, create an error object to be caught by the catch block
-        const error = new Error('HTTP status ' + response.status);
-        error.response = result;
-        error.status = response.status;
-        throw error;
+      // Convert FormData to a plain object
+      form_data.forEach((value, key) => {
+        if (key.endsWith('[]')) {
+          const array_key = key.slice(0, -2);
+          if (!data[array_key]) {
+            data[array_key] = [];
+          }
+          data[array_key].push(value);
+        } else {
+          data[key] = value;
+        }
+      });
+
+      if (is_edit) {
+        data.role_description = data.description;
+        data.role_permissions = data.permissions;
+        delete data.description;
+        delete data.permissions;
       }
 
-      // Handle success
-      if (result.message === 'Success') {
-        Swal.fire({
-          icon: 'success',
-          title: result.text || (isEdit ? 'Role Updated!' : 'Role Created!'),
-          showConfirmButton: false,
-          timer: 1500
-        }).then(() => {
-          location.reload();
+      try {
+        const response = await fetch(url, {
+          method: method,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            Accept: 'application/json'
+          },
+          body: JSON.stringify(data)
         });
-      } else {
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          const error = new Error('HTTP status ' + response.status);
+          error.response = result;
+          error.status = response.status;
+          throw error;
+        }
+
+        if (result.message === 'Success') {
+          Swal.fire({
+            icon: 'success',
+            title: result.text || (is_edit ? 'Role Updated!' : 'Role Created!'),
+            showConfirmButton: false,
+            timer: 1500
+          }).then(() => {
+            location.reload();
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: result.text || 'An unknown error occurred.'
+          });
+        }
+      } catch (error) {
+        let error_msg = 'Could not connect to the server.';
+        if (error.status === 422) {
+          const errors = error.response.errors;
+          error_msg = Object.values(errors)
+            .map(e => e[0])
+            .join('<br>');
+        }
         Swal.fire({
           icon: 'error',
-          title: 'Error',
-          text: result.text || 'An unknown error occurred.'
+          title: 'Submission Failed',
+          html: error_msg
         });
       }
-    } catch (error) {
-      // Handle network errors and failed HTTP statuses
-      let errorMsg = 'Could not connect to the server.';
-
-      // Specifically handle 422 Validation Errors from Laravel
-      if (error.status === 422) {
-        const errors = error.response.errors;
-        errorMsg = Object.values(errors)
-          .map(e => e[0])
-          .join('<br>');
-      }
-
-      Swal.fire({
-        icon: 'error',
-        title: 'Submission Failed',
-        html: errorMsg
-      });
-    }
-  });
+    });
+  }
 });

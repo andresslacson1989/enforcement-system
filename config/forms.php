@@ -24,10 +24,10 @@ return [
             'request' => StoreRequirementTransmittalFormRequest::class,
             'handler' => RequirementTransmittalFormHandler::class,
             'name' => 'Requirement Transmittal Form',
-            'one_to_one' => 'requirementTransmittalForm', // A user can only be onboarded once.
+            'one_to_one' => true, // A user can only be onboarded once.
             'notifications' => [
                 'roles' => ['hr manager', 'hr specialist', 'operation manager'],
-                'notify_employee' => true, // Also notify the new employee
+                'notify_employee' => true,
             ],
         ],
         'first-month-performance-evaluation-form' => [
@@ -35,9 +35,10 @@ return [
             'request' => StoreFirstMonthPerformanceEvaluationForm::class,
             'handler' => FirstMonthPerformanceEvaluationFormHandler::class,
             'name' => 'First Month Performance Evaluation Form',
-            'one_to_one' => 'firstMonthPerformanceEvaluation',
+            'one_to_one' => true,
             'notifications' => [
-                'special_logic' => 'performance_evaluation', // Use a dedicated handler for complex logic
+                'special_logic' => 'performance_evaluation',
+                'notify_employee' => true,
             ],
         ],
         'third-month-performance-evaluation-form' => [
@@ -45,9 +46,10 @@ return [
             'request' => StoreThirdMonthPerformanceEvaluationForm::class,
             'handler' => ThirdMonthPerformanceEvaluationFormHandler::class,
             'name' => 'Third Month Performance Evaluation Form',
-            'one_to_one' => 'thirdMonthPerformanceEvaluation',
+            'one_to_one' => true,
             'notifications' => [
                 'special_logic' => 'performance_evaluation',
+                'notify_employee' => true,
             ],
         ],
         'sixth-month-performance-evaluation-form' => [
@@ -55,9 +57,10 @@ return [
             'request' => StoreSixthMonthPerformanceEvaluationForm::class,
             'handler' => SixthMonthPerformanceEvaluationFormHandler::class,
             'name' => 'Sixth Month Performance Evaluation Form',
-            'one_to_one' => 'sixthMonthPerformanceEvaluation',
+            'one_to_one' => true,
             'notifications' => [
                 'special_logic' => 'performance_evaluation',
+                'notify_employee' => true,
             ],
         ],
         'id-application-form' => [
@@ -65,9 +68,10 @@ return [
             'request' => StoreIdApplicationFormRequest::class,
             'handler' => IdApplicationFormHandler::class,
             'name' => 'ID Application Form',
-            // This form can be submitted multiple times, so no 'one_to_one' key.
+            'one_to_one' => false, // A user can have multiple ID applications.
             'notifications' => [
                 'roles' => ['hr manager', 'hr specialist'],
+                'notify_employee' => false,
             ],
         ],
         // Add any new form types here

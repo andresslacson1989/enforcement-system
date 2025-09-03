@@ -15,29 +15,29 @@ $(function () {
   }
 
   // --- Profile Photo Upload Logic ---
-  const changePhotoButton = $('#change-photo-btn');
-  const photoInput = $('#profile-photo-input');
-  const profilePicImg = $('#profile-pic-img');
+  const change_photo_button = $('#change-photo-btn');
+  const photo_input = $('#profile-photo-input');
+  const profile_pic_img = $('#profile-pic-img');
 
-  if (changePhotoButton.length) {
+  if (change_photo_button.length) {
     // 1. Trigger the hidden file input when the camera button is clicked
-    changePhotoButton.on('click', function () {
-      photoInput.click();
+    change_photo_button.on('click', function () {
+      photo_input.click();
     });
 
     // 2. Handle the file selection and upload
-    photoInput.on('change', function () {
+    photo_input.on('change', function () {
       const file = this.files[0];
       if (!file) {
         return;
       }
 
       // 3. Use FormData to prepare the file for upload
-      const formData = new FormData();
-      formData.append('photo', file);
+      const form_data = new FormData();
+      form_data.append('photo', file);
       // We also need to add the CSRF token for Laravel to accept the POST request
-      formData.append('_token', $('meta[name="csrf-token"]').attr('content'));
-      formData.append('user_id', changePhotoButton.data('user-id'));
+      form_data.append('_token', $('meta[name="csrf-token"]').attr('content'));
+      form_data.append('user_id', change_photo_button.data('user-id'));
       // Show a loading state with SweetAlert
       Swal.fire({
         title: 'Uploading...',
@@ -52,12 +52,12 @@ $(function () {
       $.ajax({
         url: '/user/profile-photo/',
         method: 'POST',
-        data: formData,
+        data: form_data,
         processData: false, // Important for FormData
         contentType: false, // Important for FormData
         success: function (response) {
           // 5. On success, update the image source and show a success message
-          profilePicImg.attr('src', response.profile_photo_url);
+          profile_pic_img.attr('src', response.profile_photo_url);
           // Also update the navbar profile picture if it exists
           //  $('.navbar-dropdown .avatar img').attr('src', response.profile_photo_url);
 
@@ -69,11 +69,11 @@ $(function () {
         },
         error: function (xhr) {
           // 6. On error, display the validation message or a generic error
-          const errorMessage = xhr.responseJSON?.message || 'An unexpected error occurred.';
+          const error_message = xhr.responseJSON?.message || 'An unexpected error occurred.';
           Swal.fire({
             icon: 'error',
             title: 'Upload Failed',
-            text: errorMessage
+            text: error_message
           });
         }
       });

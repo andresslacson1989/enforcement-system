@@ -50,7 +50,7 @@ class SearchController extends Controller
             if ($user->can(config('permit.'.$permissionName.'.name'))) {
                 $searchable[] = [
                     'name' => $form['name'],
-                    'url' => '/form/create/'.$slug, // Prepend a slash for consistency
+                    'url' => 'form/create/'.$slug,
                     'icon' => 'ti tabler-forms',
                 ];
             }

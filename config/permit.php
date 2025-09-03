@@ -238,7 +238,7 @@ return [
     ],
     'update processed form' => [
         'name' => 'update processed form',
-        'description' => 'Allows user to update the processing status of a form (e.g., HR section).',
+        'description' => 'Allows user to update an alread processed a form (e.g., HR section).',
     ],
     'delete processed form' => [
         'name' => 'delete processed form',

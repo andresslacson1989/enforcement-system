@@ -18,17 +18,6 @@ window.Echo = new Echo({
   forceTLS: true
 });
 
-// window.Echo.channel('notifications')
-//   // Listen for the 'NotificationSent' event
-//   .listen('NotificationSent', (e) => {
-//     alert('Notification Sent');
-//     const message = e.message;
-//
-//     // Use jQuery to add the notification to the DOM
-//     const notification = $(`<div class="alert alert-primary">${message}</div>`);
-//     $('#notification-container').prepend(notification);
-//   });
-
 /**
  * Main function to handle new notifications and update the UI.
  * @param {object} notificationData The JSON data from the Pusher event.
@@ -128,3 +117,29 @@ document.addEventListener('DOMContentLoaded', () => {
     theme.initializeAutocomplete();
   }
 });
+
+//Custom Tooltip can be used globally
+$(document)
+  .on('mouseenter', '[data-custom-tooltip="tooltip"]', function (e) {
+    const title = $(this).attr('custom-tooltip-title');
+    if (!title) return;
+    // Create and append the tooltip element to the body
+    $('<div class="custom-tooltip"></div>').text(title).appendTo('body');
+
+    // Position the tooltip
+    const icon_pos = $(this).offset();
+    const tooltip = $('.custom-tooltip');
+    const tooltip_height = tooltip.outerHeight();
+
+    tooltip
+      .css({
+        top: icon_pos.top - tooltip_height - 5, // 5px above the icon
+        left: icon_pos.left + $(this).outerWidth() / 2 - tooltip.outerWidth() / 2 // Centered horizontally
+      })
+      .stop()
+      .fadeIn(150); // A subtle fade-in effect
+  })
+  .on('mouseleave', '[data-custom-tooltip="tooltip"]', function () {
+    // Remove the tooltip when the mouse leaves
+    $('.custom-tooltip').remove();
+  });
