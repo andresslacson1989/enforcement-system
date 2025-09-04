@@ -30,7 +30,7 @@ class SendTelegramNotification extends Notification
 
     public function toTelegram(object $notifiable): void
     {
-        $botToken = env('TELEGRAM_BOT_TOKEN');
+        $botToken = config('telegram.token');
 
         // THE CHANGE: Get the chat ID from the user being notified.
         $chatId = $notifiable->telegram_chat_id;

@@ -27,8 +27,10 @@ Route::get('/pages/misc-error', [MiscError::class, 'index'])->name('pages-misc-e
 // authentication
 Route::get('/auth/login-basic', [LoginBasic::class, 'index'])->name('auth-login-basic');
 Route::get('/auth/register-basic', [RegisterBasic::class, 'index'])->name('auth-register-basic');
-Route::post('/telegram/webhook', [TelegramController::class, 'webhook'])->withoutMiddleware(VerifyCsrfToken::class);
 
+// Telegram Routes
+Route::post('/telegram/webhook', [TelegramController::class, 'webhook'])->withoutMiddleware(VerifyCsrfToken::class);
+Route::get('/telegram/login-callback', [TelegramController::class, 'loginCallback'])->name('telegram.login.callback');
 Route::get('/telegram/webhook', [TelegramController::class, 'webhook']);
 
 Route::middleware(['auth:web'])->group(function () {

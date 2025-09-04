@@ -209,9 +209,12 @@
                                 <div class="tab-pane" id="telegram" role="tabpanel" aria-labelledby="telegram-tab">
                                     <div class="text-center">
                                         @if ($user->telegram_chat_id)
-                                            <div class="alert alert-success" role="alert">
-                                                <h5 class="alert-heading"><i class="ti ti-circle-check me-2"></i>Account Linked!</h5>
+                                            <div class="alert alert-success" role="alert"><i class="ti tabler-circle-check me-2 display-1"></i>
+                                                <h5 class="alert-heading">Account Linked!</h5>
                                                 <p class="mb-0">Your Telegram account is successfully linked to the system.</p>
+                                            </div>
+                                            <div class="row">
+                                                <h4>Telegram ID: {{ $user->telegram_chat_id }}</h4>
                                             </div>
                                         @else
                                             <div id="telegram-linking-section">

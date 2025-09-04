@@ -51,8 +51,8 @@
                     <form id="formAuthentication" class="mb-6" action="{{ route('login') }}" method="POST">
                         @csrf
                         <div class="mb-6">
-                            <label for="login-email" class="form-label">Email</label>
-                            <input type="text" class="form-control @error('email') is-invalid @enderror" id="login-email" name="email"
+                            <label for="login_email" class="form-label">Email</label>
+                            <input type="text" class="form-control @error('email') is-invalid @enderror" id="login_email" name="email"
                                    placeholder="john@example.com" autofocus value="{{ old('email') }}" />
                             @error('email')
                             <span class="invalid-feedback" role="alert">
@@ -61,9 +61,9 @@
                             @enderror
                         </div>
                         <div class="mb-6 form-password-toggle">
-                            <label class="form-label" for="login-password">Password</label>
+                            <label class="form-label" for="login_password">Password</label>
                             <div class="input-group input-group-merge @error('password') is-invalid @enderror">
-                                <input type="password" id="login-password" class="form-control @error('password') is-invalid @enderror"
+                                <input type="password" id="login_password" class="form-control @error('password') is-invalid @enderror"
                                        name="password" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
                                        aria-describedby="password" />
                                 <span class="input-group-text cursor-pointer"><i class="icon-base ti tabler-eye-off"></i></span>
@@ -77,9 +77,9 @@
                         <div class="my-8">
                             <div class="d-flex justify-content-between">
                                 <div class="form-check mb-0 ms-2">
-                                    <input class="form-check-input" type="checkbox" id="remember-me" name="remember"
+                                    <input class="form-check-input" type="checkbox" id="remember_me" name="remember"
                                         {{ old('remember') ? 'checked' : '' }} />
-                                    <label class="form-check-label" for="remember-me"> Remember Me </label>
+                                    <label class="form-check-label" for="remember_me"> Remember Me </label>
                                 </div>
                                 @if (Route::has('password.request'))
                                     <a href="{{ route('password.request') }}">
@@ -104,22 +104,12 @@
                         <div class="divider-text">or</div>
                     </div>
 
-                    <div class="d-flex justify-content-center">
-                        <a href="javascript:;" class="btn btn-icon rounded-circle btn-text-facebook me-1_5">
-                            <i class="icon-base ti tabler-brand-facebook-filled icon-20px"></i>
-                        </a>
-
-                        <a href="javascript:;" class="btn btn-icon rounded-circle btn-text-twitter me-1_5">
-                            <i class="icon-base ti tabler-brand-twitter-filled icon-20px"></i>
-                        </a>
-
-                        <a href="javascript:;" class="btn btn-icon rounded-circle btn-text-github me-1_5">
-                            <i class="icon-base ti tabler-brand-github-filled icon-20px"></i>
-                        </a>
-
-                        <a href="javascript:;" class="btn btn-icon rounded-circle btn-text-google-plus">
-                            <i class="icon-base ti tabler-brand-google-filled icon-20px"></i>
-                        </a>
+                    <div class="d-flex justify-content-center" id="telegram-login-container">
+                        <script async src="https://telegram.org/js/telegram-widget.js?22"
+                                data-telegram-login="{{ config('telegram.username') }}"
+                                data-size="large"
+                                data-auth-url="{{ route('telegram.login.callback') }}"
+                                data-request-access="write"></script>
                     </div>
                 </div>
             </div>

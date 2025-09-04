@@ -47,7 +47,7 @@ class UsersController
             Cache::put('telegram_token:'.$telegram_token, $personnel->id, now()->addMinutes(10));
 
             // Generate the Telegram linking URL
-            $bot_username = config('services.telegram.bot_username');
+            $bot_username = config('telegram.username');
             $telegram_linking_url = "https://t.me/{$bot_username}?start={$telegram_token}";
         }
 
@@ -436,8 +436,8 @@ class UsersController
               ? '<a href="javascript:;" class="dropdown-item unsuspend-user" data-user-id="'.$record->id.'"><i class="icon-base ti tabler-user-check me-1"></i>Unsuspend</a>'
               : '<a href="javascript:;" class="dropdown-item suspend-user" data-user-id="'.$record->id.'"><i class="icon-base ti tabler-user-off me-1"></i>Suspend</a>';
 
-            $remove_action = $record->detachment != null
-              ? '<a href="javascript:;" class="dropdown-item text-warning remove-user" data-detachment-name="'.$record->detachment->name.'" data-detachment-id="'.$record->detachment_id.'" data-user-id="'.$record->id.'"><i class="icon-base ti tabler-user-x me-1"></i>Remove</a>'
+            $remove_action = $record->detachment?->name != null
+              ? '<a href="javascript:;" class="dropdown-item text-warning remove-user" data-detachment-name="'.$record->detachment->name.'" data-detachment-id="'.$record->detachment->id.'" data-user-id="'.$record->id.'"><i class="icon-base ti tabler-user-x me-1"></i>Remove</a>'
               : '';
 
             $data_arr[] = [
