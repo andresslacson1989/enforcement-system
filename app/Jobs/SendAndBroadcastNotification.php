@@ -3,16 +3,14 @@
 namespace App\Jobs;
 
 use App\Events\NotificationSent;
-use App\Models\Notification as DbNotification;
+use App\Models\Notification as DatabaseNotification;
 use App\Models\User;
-use App\Notifications\SendTelegramNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Notification as NotificationFacade;
 use Telegram\Bot\Laravel\Facades\Telegram;
 
 class SendAndBroadcastNotification implements ShouldQueue
@@ -21,53 +19,59 @@ class SendAndBroadcastNotification implements ShouldQueue
 
     protected string $title;
 
-    protected string $message;
+    protected string $body;
 
     protected string $link;
 
     protected array $user_ids;
 
-    public function __construct(string $title, string $message, string $link, array $user_ids)
+    public function __construct(string $title, string $body, string $link, array $user_ids)
     {
         $this->title = $title;
-        $this->message = $message;
+        $this->body = $body;
         $this->link = $link;
         $this->user_ids = $user_ids;
     }
 
     public function handle(): void
     {
-        foreach ($this->user_ids as $user_id) {
-            // Notify via Telegram
-            if ($user = User::find($user_id)) {
-                Telegram::sendMessage([
-                    'chat_id' => $user->telegram_chat_id,
-                    'text' => "*$this->title* \n $this->message",
-                    'parse_mode' => 'Markdown',
-                ]);
+        $users = User::whereIn('id', $this->user_ids)->get();
+
+        foreach ($users as $user) {
+            // 1. Send Telegram Notification if the user is linked
+            if ($user->telegram_chat_id) {
+                try {
+                    $telegram_message = "*{$this->title}*\n\n{$this->body}";
+
+                    $params = [
+                        'chat_id' => $user->telegram_chat_id,
+                        'text' => $telegram_message,
+                        'parse_mode' => 'Markdown',
+                    ];
+
+                    // If a link is provided, add an inline button to the message.
+                    if ($this->link) {
+                        $params['reply_markup'] = json_encode([
+                            'inline_keyboard' => [[['text' => 'View Details', 'url' => $this->link]]],
+                        ]);
+                    }
+
+                    Telegram::sendMessage($params);
+                } catch (\Exception $e) {
+                    Log::error('Failed to send Telegram message in job: '.$e->getMessage(), ['user_id' => $user->id]);
+                }
             }
 
-            $notification = DbNotification::create([
+            // 2. Create the in-app database notification
+            $notification = DatabaseNotification::create([
                 'title' => $this->title,
-                'body' => $this->message,
-                'user_id' => $user_id,
+                'body' => $this->body,
+                'user_id' => $user->id,
                 'link' => $this->link,
             ]);
-            Log::info($notification);
 
-            // Instead of passing the whole object, pass only its ID.
+            // 3. Broadcast the event for real-time updates in the UI
             NotificationSent::dispatch($notification->id);
-
-            // Send Telegram notification
-            $user = User::find($user_id);
-            if ($user && $user->telegram_chat_id) {
-                // 3. Send the notification directly to the user object.
-                NotificationFacade::send($user, new SendTelegramNotification(
-                    $this->title,
-                    $this->message,
-                    $this->link
-                ));
-            }
         }
     }
 }

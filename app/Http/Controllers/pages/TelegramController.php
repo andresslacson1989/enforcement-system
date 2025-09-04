@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\pages;
 
+use App\Jobs\SendAndBroadcastNotification;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -62,13 +63,12 @@ class TelegramController extends Controller
                         Cache::forget('telegram_token:'.$token);
                         Log::info("Successfully linked Telegram chat_id: {$chat_id} to user_id: {$user_id}.");
                         try {
-                            // Send confirmation using the new SDK
-                            $message_text = "*Telegram Linked*\n\nYour Telegram account has been linked to your ".config('app.name')." Account.\nYou will now receive notifications in this Telegram Account.";
-                            Telegram::sendMessage([
-                                'chat_id' => $chat_id,
-                                'text' => $message_text,
-                                'parse_mode' => 'Markdown',
-                            ]);
+                            // Send confirmation both to telegram and system notification
+                            $title = 'Telegram Linked';
+                            $body = 'Your Telegram account has been linked to your '.config('app.name')." Account.\nYou will now receive notifications in this Telegram Account.";
+                            $link = route('my-profile', 'my-profile').'#notifications';
+                            SendAndBroadcastNotification::dispatch($title, $body, $link, [$user->id]);
+
                         } catch (TelegramSDKException $e) {
                             Log::error('Telegram confirmation message failed to send.', ['error' => $e->getMessage()]);
                         }
@@ -108,7 +108,7 @@ class TelegramController extends Controller
                 // Check if this Telegram account is already linked to another user.
                 $existing_user = User::where('telegram_chat_id', $telegram_id)->first();
                 if ($existing_user && $existing_user->id !== Auth::id()) {
-                    Log::warning("User ".Auth::user()->name." (ID: ".Auth::id().") attempted to link a Telegram account (ID: {$telegram_id}) that is already linked to user ID: {$existing_user->id}.");
+                    Log::warning('User '.Auth::user()->name.' (ID: '.Auth::id().") attempted to link a Telegram account (ID: {$telegram_id}) that is already linked to user ID: {$existing_user->id}.");
 
                     return redirect()->route('my-profile')
                         ->withErrors(['telegram_link' => 'This Telegram account is already linked to another user in the system.']);

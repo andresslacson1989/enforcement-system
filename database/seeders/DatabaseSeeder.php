@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             DetachmentSeeder::class,
             PermissionsAndRolesSeeder::class,
+            DummyDataSeeder::class,
         ]);
         User::factory(50)->create();
 

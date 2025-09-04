@@ -31,7 +31,7 @@
                     <button type="submit" class="btn btn-primary mb-2">Update Form</button>
                 @endif
             @endcan
-            @can("permit.update processed form.name")
+            @can("permit.edit processed form.name")
                 @if(($submission->status == 'processed' ))
                     <!-- Change the button to indicate an update -->
                     <button type="submit" class="btn btn-primary mb-2">Update Form</button>

@@ -28,9 +28,6 @@
                          alt="auth-login-cover" class="my-5 auth-illustration"
                          data-app-light-img="illustrations/enf_light.png"
                          data-app-dark-img="illustrations/enf_dark.png" />
-                    <img src="{{ asset('assets/img/illustrations/enf_-' . $configData['theme'] . '.png') }}"
-                         alt="auth-login-cover" class="platform-bg" data-app-light-img="illustrations/bg-shape-image-light.png"
-                         data-app-dark-img="illustrations/bg-shape-image-dark.png" />
                 </div>
             </div>
             <!-- /Left Text -->

@@ -75,7 +75,7 @@ class PermissionsAndRolesSeeder extends Seeder
         $admin_permissions = [
             'view staffs', 'edit staff', 'delete staff', 'change staff role', 'suspend staff',
 
-            'update processed form', 'delete processed form',
+            'edit processed form', 'delete processed form',
 
             'view requirement transmittal form',
 

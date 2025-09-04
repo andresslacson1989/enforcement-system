@@ -45,6 +45,7 @@ class FormController
      */
     public function create(string $form_slug): View|Factory
     {
+
         // 1. Find the form's configuration using the slug
         $form_config = Config::get("forms.types.{$form_slug}");
 
@@ -92,6 +93,7 @@ class FormController
     public function store(Request $request, string $form_slug): JsonResponse
     {
 
+        $employee = null;
         // 1. Find the form's configuration using the slug
         $form_config = Config::get("forms.types.{$form_slug}");
 
@@ -104,7 +106,6 @@ class FormController
         // 2. Dynamically use the correct Form Request for validation
         // We create an instance of the validation class from our config.
         $validation_request = App::make($form_config['request']);
-
         $validated_data = $request->validate($validation_request->rules());
 
         // 3. Handle one-to-one form checks BEFORE creating any models.
@@ -122,6 +123,9 @@ class FormController
                         'text' => 'A user with this Employee Number or Email already exists.',
                     ], 409);
                 }
+                // 4. Handle User creation for onboarding form
+                $employee = $this->_handle_create_user_from_requirement_transmittal_form_data($validated_data);
+                $validated_data['employee_id'] = $employee->id;
             }
             // Standard check for all other one-to-one forms for existing users.
             elseif (isset($validated_data['employee_id'])) {
@@ -134,15 +138,6 @@ class FormController
                     return $existing_form_response;
                 }
             }
-        }
-
-        // 4. Handle User creation for onboarding form
-        $employee = null;
-        if ($form_slug === 'requirement-transmittal-form') {
-            $employee = $this->_handle_create_user_from_requirement_transmittal_form_data($validated_data);
-            $validated_data['employee_id'] = $employee->id;
-        } elseif (isset($validated_data['employee_id'])) {
-            $employee = User::find($validated_data['employee_id']);
         }
 
         // 5. Add any additional data needed before saving
@@ -168,6 +163,7 @@ class FormController
             'icon' => 'success',
             'text' => 'Form submitted successfully!',
             'form_id' => $form->id,
+            'employee_id' => $employee->id ?? '',
         ]);
     }
 

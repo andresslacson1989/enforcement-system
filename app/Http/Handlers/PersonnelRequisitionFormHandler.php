@@ -2,21 +2,27 @@
 
 namespace App\Http\Handlers;
 
-use App\Interfaces\FormHandlerInterface;
 use App\Models\Detachment;
 use App\Models\Submission;
 use App\Models\User;
-use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
-use Spatie\Permission\Models\Role;
+use Illuminate\View\View;
+use Spatie\Tags\Tag;
 
-class RequirementTransmittalFormHandler implements FormHandlerInterface
+class PersonnelRequisitionFormHandler
 {
-    protected string $form_slug = 'requirement-transmittal-form';
+    protected string $form_slug = 'personnel-requisition-form';
 
     // It's better to use the consistent name from the config file.
-    protected string $form_name = 'Requirement Transmittal Form';
+    protected string $form_name = 'Personnel Requisition Form';
 
+    public array $personnel_types = ['Security Officer', 'Security Guard', 'Lady Guard', 'EMT/First Aiders', 'Protection Agents', 'CCTV Operator', 'Security Escort'];
+
+    public array $purposes = ['New Client', 'Additional Posting', 'Seasonal/Augmentation', 'Reliever', 'Replacement', 'Special Project'];
+
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create(): View
     {
         $user = Auth::user();
@@ -25,15 +31,22 @@ class RequirementTransmittalFormHandler implements FormHandlerInterface
         if (! $user->can(config("permit.fill  $this->form_name.name"))) {
             // It's better to use Laravel's authorization.
             // We can refactor this to a FormRequest or Gate later.
-            return view('content.pages.pages-misc-error');
+            abort(403, 'You do not have permission to view this form.');
         }
-
+        // Fetch all detachments to populate the client dropdown
         $detachments = Detachment::all();
 
-        return view('content.forms.'.$this->form_slug)
+        // Fetch all existing tags to populate the skills dropdown
+        $all_tags = Tag::all();
+
+        // populate types of personnel
+
+        return view('content.forms.personnel-requisition-form')
             ->with('form_name', $this->form_name)
-            ->with('user', $user)
             ->with('detachments', $detachments)
+            ->with('all_tags', $all_tags)
+            ->with('purposes', $this->purposes)
+            ->with('personnel_types', $this->personnel_types)
             ->with('submission', false);
     }
 
@@ -56,48 +69,20 @@ class RequirementTransmittalFormHandler implements FormHandlerInterface
             ->where('submittable_type', $formModelClass)
             ->with('submittedBy') // Eager load the user who submitted
             ->firstOrFail();
+        $all_tags = Tag::all();
 
         $employee = User::find($submission->employee_id);
         $detachments = Detachment::all();
 
         return view('content.forms.'.$this->form_slug)
             ->with('submission', $submission)
+            ->with('purposes', $this->purposes)
+            ->with('all_tags', $all_tags)
+            ->with('personnel_types', $this->personnel_types)
             ->with('submitted_by', $submissionRecord->submittedBy)
             ->with('detachments', $detachments)
             ->with('employee', $employee)
             ->with('form_name', $this->form_name)
             ->with('user', $user);
-    }
-
-    public function print(int $id): View
-    {
-        $user = Auth::user();
-
-        // You should have a specific permission for printing
-        if (! $user->can('print '.$this->form_name)) {
-            abort(403, 'You do not have permission to print this form.');
-        }
-
-        $formModelClass = config('forms.types.'.$this->form_slug.'.model');
-        $submission = $formModelClass::findOrFail($id);
-
-        $submissionRecord = Submission::where('submittable_id', $id)
-            ->where('submittable_type', $formModelClass)
-            ->with('submittedBy')
-            ->firstOrFail();
-
-        $employee = User::findOrFail($submission->employee_id);
-        $detachment = Detachment::find($employee->detachment_id);
-
-        $roles = Role::whereNotIn('name', ['root', 'president', 'vice president', 'general manager'])->get();
-
-        return view('content.forms.to-print')
-            ->with('user', $user)
-            ->with('employee', $employee)
-            ->with('submitted_by', $submissionRecord->submittedBy)
-            ->with('detachment', $detachment)
-            ->with('submission', $submission)
-            ->with('roles', $roles)
-            ->with('form_type', $this->form_slug);
     }
 }

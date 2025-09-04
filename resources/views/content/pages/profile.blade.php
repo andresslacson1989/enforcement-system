@@ -1,5 +1,5 @@
 @php
-    use App\Models\User;use Spatie\Permission\Models\Role;$configData = Helper::appClasses();
+    use App\Models\User;use Carbon\Carbon;use Spatie\Permission\Models\Role;$configData = Helper::appClasses();
 @endphp
 
 @extends('layouts/layoutMaster')
@@ -61,7 +61,6 @@
     <div class="row g-6">
         <div class="container my-4 my-md-5">
             <div class="row">
-
                 <div class="col-lg-4 mb-4">
                     <div class="card text-center profile-card shadow-sm">
                         <div class="card-header"></div>
@@ -142,6 +141,11 @@
                                             Telegram
                                         </button>
                                     </li>
+                                    <li class="nav-item " role="presentation">
+                                        <button class="nav-link" id="trainings-tab" data-bs-toggle="tab" data-bs-target="#trainings" type="button" role="tab" aria-controls="trainings" aria-selected="false">
+                                            Trainings
+                                        </button>
+                                    </li>
                                 </ul>
                             </div>
                             <div class="card-body p-4 tab-content" id="detachmentTabContent">
@@ -167,17 +171,26 @@
                                                     </td>
                                                     <td>
                                                         @can(config("permit.view any personnel profile.name"))
-                                                            <a href="{{ route('user-profile', $submitted_form->submittedBy->id) }}">{{ $submitted_form->submittedBy->name ?? ''}}</a>
+                                                            @if($submitted_form->submitted_by)
+                                                                <a href="{{ route('user-profile', $submitted_form->submittedBy->id ?? '') }}">{{ $submitted_form->submittedBy->name?? ''}}</a>
+                                                            @else
+                                                                N/A
+                                                            @endif
                                                         @else
                                                             {{ $submitted_form->submittedBy->name ?? ''}}
                                                         @endcan
                                                     </td>
                                                     <td>
                                                         @can(config("permit.view any personnel profile.name"))
-                                                            <a href="{{ route('user-profile', $submitted_form->employee->id) }}">{{ $submitted_form->employee->name ?? ''}}</a>
+                                                            @if($submitted_form->employee)
+                                                                <a href="{{ route('user-profile', $submitted_form->employee->id ?? '') }}">{{ $submitted_form->employee->name?? ''}}</a>
+                                                            @else
+                                                                N/A
+                                                            @endif
                                                         @else
                                                             {{ $submitted_form->employee->name ?? ''}}
                                                         @endcan
+
                                                     </td>
                                                     <td class="text-nowrap">
                                                         <span>{{ $submitted_form->created_at->format('M d, Y H:i') }}</span> <br>
@@ -208,28 +221,131 @@
                                 <!-- Telegram Tab -->
                                 <div class="tab-pane" id="telegram" role="tabpanel" aria-labelledby="telegram-tab">
                                     <div class="text-center">
-                                        @if ($user->telegram_chat_id)
-                                            <div class="alert alert-success" role="alert"><i class="ti tabler-circle-check me-2 display-1"></i>
-                                                <h5 class="alert-heading">Account Linked!</h5>
-                                                <p class="mb-0">Your Telegram account is successfully linked to the system.</p>
-                                            </div>
-                                            <div class="row">
-                                                <h4>Telegram ID: {{ $user->telegram_chat_id }}</h4>
-                                            </div>
+                                        @if(Auth::id() == $user->id)
+                                            @if ($user->telegram_chat_id)
+                                                <div class="alert alert-success" role="alert"><i class="ti tabler-circle-check me-2 display-1"></i>
+                                                    <h5 class="alert-heading">Account Linked!</h5>
+                                                    <p class="mb-0">Your Telegram account is successfully linked to the system.</p>
+                                                </div>
+                                                <div class="row">
+                                                    <h4>Telegram ID: {{ $user->telegram_chat_id }}</h4>
+                                                </div>
+                                            @else
+                                                <div id="telegram-linking-section">
+                                                    @if($telegram_linking_url)
+                                                        <h5>Link Your Telegram Account</h5>
+                                                        <p class="text-muted">Click the button below to link your Telegram account and receive notifications directly.</p>
+                                                        <a href="{{ $telegram_linking_url }}" target="_blank" class="btn btn-primary my-3">
+                                                            <i class="ti tabler-brand-telegram me-2"></i> Link with Telegram
+                                                        </a>
+                                                        <small class="text-muted d-block mt-2">This link is valid for 10 minutes.</small>
+                                                    @else
+                                                        <p class="text-muted">Could not generate a linking URL at this time. Please try again later.</p>
+                                                    @endif
+                                                </div>
+                                            @endif
                                         @else
-                                            <div id="telegram-linking-section">
-                                                @if($telegram_linking_url)
-                                                    <h5>Link Your Telegram Account</h5>
-                                                    <p class="text-muted">Click the button below to link your Telegram account and receive notifications directly.</p>
-                                                    <a href="{{ $telegram_linking_url }}" target="_blank" class="btn btn-primary my-3">
-                                                        <i class="ti tabler-brand-telegram me-2"></i> Link with Telegram
-                                                    </a>
-                                                    <small class="text-muted d-block mt-2">This link is valid for 10 minutes.</small>
-                                                @else
-                                                    <p class="text-muted">Could not generate a linking URL at this time. Please try again later.</p>
-                                                @endif
-                                            </div>
+                                            @if ($user->telegram_chat_id)
+                                                <div class="alert alert-success" role="alert"><i class="ti tabler-circle-check me-2 display-1"></i>
+                                                    <h5 class="alert-heading">Account Linked!</h5>
+                                                    <p class="mb-0">The Telegram account is successfully linked to the system.</p>
+                                                </div>
+                                                <div class="row">
+                                                    <h4>Telegram ID: {{ $user->telegram_chat_id }}</h4>
+                                                </div>
+                                            @else
+                                                <div id="telegram-linking-section">
+                                                    <div class="alert alert-warning" role="alert"><i class="ti tabler-circle-x me-2 display-1"></i>
+                                                        <h5 class="alert-heading">Account Not Linked</h5>
+                                                        <p class="mb-0">The Telegram account is not yet linked to the system.</p>
+                                                    </div>
+                                                </div>
+                                            @endif
                                         @endif
+                                    </div>
+                                </div>
+                                <!-- Trainings Tab -->
+                                <div class="tab-pane" id="trainings" role="tabpanel" aria-labelledby="trainings-tab">
+                                    @can(config("permit.add certificate.name"))
+                                        <div class="card mb-4">
+                                            <h5 class="card-header">Add New Training Certificate</h5>
+                                            <div class="card-body">
+                                                <form id="add_training_certificate_form">
+                                                    <input type="hidden" name="user_id" value="{{ $user->id }}">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-6">
+                                                            <label class="form-label" for="training_name">Training Name</label>
+                                                            <input type="text" id="training_name" name="name" class="form-control" placeholder="e.g., CCTV Training Course" />
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label" for="training_center">Training Center</label>
+                                                            <input type="text" id="training_center" name="training_center" class="form-control" placeholder="e.g., ESIAI Training Center" />
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label" for="date_of_training">Date of Training</label>
+                                                            <input type="text" class="form-control flatpickr-date" id="date_of_training" name="date_of_training" placeholder="YYYY-MM-DD" />
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label for="certificate_file" class="form-label">Upload Certificate (Optional)</label>
+                                                            <input class="form-control" type="file" id="certificate_file" name="certificate_file">
+                                                        </div>
+                                                        <div class="col-md-12">
+                                                            <label for="training_tags" class="form-label">Tags</label>
+                                                            <select id="training_tags" class="select2 form-select" name="tags[]" multiple>
+                                                                @foreach($all_tags as $tag)
+                                                                    <option value="{{ $tag->name }}">{{ $tag->name }}</option>
+                                                                @endforeach
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="pt-4">
+                                                        <button type="submit" class="btn btn-primary me-sm-3 me-1">Add Certificate</button>
+                                                        <button type="reset" class="btn btn-label-secondary">Cancel</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    @endcan
+                                    <h5>Existing Certificates</h5>
+                                    <div class="table-responsive">
+                                        <table class="table" id="training_certificates_table_body">
+                                            <thead>
+                                            <tr>
+                                                <th>Training Name</th>
+                                                <th>Training Center</th>
+                                                <th>Date</th>
+                                                <th>Tags</th>
+                                                <th>Certificate</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            @forelse($user->trainingCertificates as $certificate)
+                                                <tr>
+                                                    <td class="fw-bold">{{ $certificate->name }}</td>
+                                                    <td>{{ $certificate->training_center }}</td>
+                                                    <td>{{ Carbon::parse($certificate->date_of_training)->format('M d, Y') }}</td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-sm btn-label-info view-tags-btn" data-certificate-name="{{ $certificate->name }}"
+                                                                data-tags="{{ json_encode($certificate->tags->pluck('name')) }}">View Tags
+                                                        </button>
+                                                    </td>
+                                                    <td>
+                                                        @if($certificate->certificate_path)
+                                                            <button type="button" class="btn btn-sm btn-label-secondary view-certificate-btn"
+                                                                    data-bs-toggle="modal" data-bs-target="#viewCertificateModal" data-certificate-url="{{ Storage::url($certificate->certificate_path) }}"
+                                                                    data-certificate-name="{{ $certificate->name }}"
+                                                                    data-file-type="{{ pathinfo($certificate->certificate_path, PATHINFO_EXTENSION) }}"
+                                                                    data-can-print="{{ Auth::user()->can(config('permit.print certificate.name')) ? 'true' : 'false' }}">
+                                                                View
+                                                            </button>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @empty
+
+                                            @endforelse
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             </div>
@@ -242,4 +358,27 @@
     @can(config("permit.edit personnel.name"))
         @include('content.modals.edit-profile-modal')
     @endcan
+
+    <!-- View Certificate Modal -->
+    <div class="modal fade" id="viewCertificateModal" tabindex="-1" aria-labelledby="viewCertificateModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewCertificateModalLabel">Certificate</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="certificate_viewer_container"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Close</button>
+                    @can(config("permit.print certificate.name"))
+                        <button type="button" class="btn btn-primary" id="print_certificate_btn" style="display: none;">
+                            <i class="ti tabler-printer me-2"></i>Print
+                        </button>
+                    @endcan
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection

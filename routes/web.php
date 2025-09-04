@@ -14,7 +14,9 @@ use App\Http\Controllers\pages\MiscError;
 use App\Http\Controllers\pages\RequirementTransmittalFormController;
 use App\Http\Controllers\pages\RoleController;
 use App\Http\Controllers\pages\SearchController;
+use App\Http\Controllers\pages\TagController;
 use App\Http\Controllers\pages\TelegramController;
+use App\Http\Controllers\pages\TrainingCertificateController;
 use App\Http\Controllers\pages\UsersController;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
@@ -102,6 +104,8 @@ Route::middleware(['auth:web'])->group(function () {
     Route::patch('/form/approve/first-month-performance-evaluation-form/{id}', [FirstMonthPerformanceEvaluationFormController::class, 'approve']);
     Route::patch('/form/print/first-month-performance-evaluation-form/{id}', [FirstMonthPerformanceEvaluationFormController::class, 'print']);
 
+    // Personnel Requisition Form
+
     // Detachments Route
     Route::get('/detachments', [DetachmentController::class, 'index'])->name('detachments');
     Route::post('/detachments/store', [DetachmentController::class, 'store']);
@@ -116,8 +120,15 @@ Route::middleware(['auth:web'])->group(function () {
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->middleware('auth:sanctum');
 
     // Roles Route
-
     Route::get('/get-roles/{category}', [RoleController::class, 'getRoles'])->name('get-roles');
+
+    // Tags Search Route (for Select2)
+    Route::get('/tags/search', [TagController::class, 'search'])->name('tags.search');
+
+    // Training Certificates Route
+    Route::get('/training-certificates', [TrainingCertificateController::class, 'view'])->name('training-certificates');
+    Route::get('/training-certificates/table', [TrainingCertificateController::class, 'table'])->name('training-certificates');
+    Route::post('/training-certificates/store', [TrainingCertificateController::class, 'store'])->name('training-certificates.store');
 
     // Test
     Route::get('/test', function () {

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 /**
@@ -91,6 +92,7 @@ use Illuminate\Database\Eloquent\Relations\MorphOne;
  * @property-read \App\Models\Submission|null $submission
  * @property-read \App\Models\User $submittedBy
  * @property-read \App\Models\User|null $user
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|RequirementTransmittalForm newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|RequirementTransmittalForm newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|RequirementTransmittalForm query()
@@ -174,10 +176,12 @@ use Illuminate\Database\Eloquent\Relations\MorphOne;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|RequirementTransmittalForm whereSubmittedBy($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|RequirementTransmittalForm whereTimesPrinted($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|RequirementTransmittalForm whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
- */class RequirementTransmittalForm extends BaseFormModel
+ */ class RequirementTransmittalForm extends BaseFormModel
 {
     use \Illuminate\Database\Eloquent\Factories\HasFactory;
+
     protected $fillable = [
         'submitted_by',
         'employee_id',
@@ -359,5 +363,13 @@ use Illuminate\Database\Eloquent\Relations\MorphOne;
         // This defines that a form belongs to one Detachment.
         // We specify 'deployment' as the foreign key on this model's table.
         return $this->belongsTo(Detachment::class, 'detachment_id', 'id');
+    }
+
+    /**
+     * Get all the training certificates for the form.
+     */
+    public function trainingCertificates(): HasMany
+    {
+        return $this->hasMany(TrainingCertificate::class);
     }
 }

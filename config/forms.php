@@ -4,14 +4,17 @@ use App\Http\Handlers\IdApplicationFormHandler;
 use App\Http\Handlers\PerformanceEvaluationForms\FirstMonthPerformanceEvaluationFormHandler;
 use App\Http\Handlers\PerformanceEvaluationForms\SixthMonthPerformanceEvaluationFormHandler;
 use App\Http\Handlers\PerformanceEvaluationForms\ThirdMonthPerformanceEvaluationFormHandler;
+use App\Http\Handlers\PersonnelRequisitionFormHandler;
 use App\Http\Handlers\RequirementTransmittalFormHandler;
 use App\Http\Requests\StoreFirstMonthPerformanceEvaluationForm;
 use App\Http\Requests\StoreIdApplicationFormRequest;
+use App\Http\Requests\StorePersonnelRequisitionFormRequest;
 use App\Http\Requests\StoreRequirementTransmittalFormRequest;
 use App\Http\Requests\StoreSixthMonthPerformanceEvaluationForm;
 use App\Http\Requests\StoreThirdMonthPerformanceEvaluationForm;
 use App\Models\FirstMonthPerformanceEvaluationForm;
 use App\Models\IdApplicationForm;
+use App\Models\PersonnelRequisitionForm;
 use App\Models\RequirementTransmittalForm;
 use App\Models\SixthMonthPerformanceEvaluationForm;
 use App\Models\ThirdMonthPerformanceEvaluationForm;
@@ -68,6 +71,17 @@ return [
             'request' => StoreIdApplicationFormRequest::class,
             'handler' => IdApplicationFormHandler::class,
             'name' => 'ID Application Form',
+            'one_to_one' => false, // A user can have multiple ID applications.
+            'notifications' => [
+                'roles' => ['hr manager', 'hr specialist'],
+                'notify_employee' => false,
+            ],
+        ],
+        'personnel-requisition-form' => [
+            'model' => PersonnelRequisitionForm::class,
+            'request' => StorePersonnelRequisitionFormRequest::class,
+            'handler' => PersonnelRequisitionFormHandler::class,
+            'name' => 'Personnel Requisition Form',
             'one_to_one' => false, // A user can have multiple ID applications.
             'notifications' => [
                 'roles' => ['hr manager', 'hr specialist'],

@@ -218,31 +218,54 @@ return [
         'description' => 'Allows user to approve newly created detachments, making them active.',
     ],
 
+    // Training Certificates
+    'Training Certificates' => 'group name',
+    'add certificate' => [
+        'name' => 'add certificate',
+        'description' => 'Allows user to add or upload training certificates',
+    ],
+    'delete certificate' => [
+        'name' => 'delete certificate',
+        'description' => 'Allows user to delete uploaded training certificates',
+    ],
+    'edit certificate' => [
+        'name' => 'edit certificate',
+        'description' => 'Allows user to edit training certificate details',
+    ],
+    'view own certificate' => [
+        'name' => 'view own certificate',
+        'description' => 'Allows user to view own uploaded training certificate',
+    ],
+    'view any certificate' => [
+        'name' => 'view any certificate',
+        'description' => 'Allows user to view any uploaded training certificate',
+    ],
+    'print certificate' => [
+        'name' => 'print certificate',
+        'description' => 'Allows user to print training certificate uploaded image',
+    ],
+
     // Forms
-    'Forms' => 'group name',
-    'edit approved forms' => [
-        'name' => 'edit approved forms',
-        'description' => 'Allows user to edit forms that have already been approved.',
+    'Processed Forms' => 'group name',
+    'edit processed form' => [
+        'name' => 'edit processed form',
+        'description' => 'Allows user to edit/update forms that have already been approved/processed.',
     ],
-    'delete approved forms' => [
+    'delete processed forms' => [
         'name' => 'delete approved forms',
-        'description' => 'Allows user to delete forms that have already been approved.',
+        'description' => 'Allows user to delete forms that have already been approved/processed.',
     ],
-    'view approved forms' => [
+    'view processed forms' => [
         'name' => 'view approved forms',
-        'description' => 'Allows user to view forms that have already been approved.',
+        'description' => 'Allows user to view forms that have already been approved/processed.',
     ],
-    'print approved forms' => [
+    'print processed forms' => [
         'name' => 'print approved forms',
-        'description' => 'Allows user to print forms that have already been approved.',
-    ],
-    'update processed form' => [
-        'name' => 'update processed form',
-        'description' => 'Allows user to update an alread processed a form (e.g., HR section).',
+        'description' => 'Allows user to print forms that have already been approved/processed.',
     ],
     'delete processed form' => [
         'name' => 'delete processed form',
-        'description' => 'Allows user to delete forms that have been processed.',
+        'description' => 'Allows user to delete forms that have been approved/processed.',
     ],
 
     // Attendance Form

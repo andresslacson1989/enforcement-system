@@ -38,7 +38,7 @@
 
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><span class="fw-bold">Directories</span></li>
+            <li class="breadcrumb-item"><span class="fw-bold">Directoriess</span></li>
             <li class="breadcrumb-item active">Staffs</li>
         </ol>
     </nav>

@@ -10,6 +10,7 @@ use App\Models\Detachment;
 use App\Models\Submission;
 use App\Models\Suspension;
 use App\Models\User;
+use App\Traits\ImageUploadTrait;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,13 +19,17 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use LaravelIdea\Helper\App\Models\_IH_User_QB;
 use Spatie\Permission\Models\Role;
+use Spatie\Tags\Tag;
 
 class UsersController
 {
+    use ImageUploadTrait;
+
     public function profile(string $id = 'my-profile')
     {
         $personnel = ($id == 'my-profile') ? Auth::user() : User::findOrFail($id);
@@ -38,6 +43,9 @@ class UsersController
         $forms = (new Submission)->getSubmittedForms($personnel->id);
         $personnel_roles = (new UserClass)->listPersonnelRoles();
         $roles = Role::whereIn('name', $personnel_roles)->get();
+
+        // Fetch all existing tags to populate the dropdown
+        $all_tags = Tag::all();
 
         $telegram_linking_url = null;
         if (! $personnel->telegram_chat_id) {
@@ -57,6 +65,7 @@ class UsersController
             ->with('detachment', $personnel->detachment)
             ->with('forms', $forms)
             ->with('roles', $roles)
+            ->with('all_tags', $all_tags)
             ->with('telegram_linking_url', $telegram_linking_url);
     }
 
@@ -442,7 +451,7 @@ class UsersController
 
             $data_arr[] = [
                 'name' => '<a href="/user/profile/'.$record->id.'" class="list-group-item list-group-item-action d-flex align-items-center">
-                            <img src="'.$record->profile_photo_url.'" alt="User Image" class="rounded-circle me-4 w-px-50">
+                            <img src="'.$record->profile_photo_url.'" alt="User Image" class="rounded-circle me-4 w-px-50 img-thumbnail">
                             <div class="w-100">
                               <div class="d-flex justify-content-between">
                                 <div class="user-info">
@@ -471,6 +480,7 @@ class UsersController
                         <div class="dropdown-divider"></div>
                         <a href="javascript:;" class="dropdown-item change-role-btn"
                            data-user-name="'.$record->name.'"
+                           data-user-id="'.$record->id.'"
                            data-current-role-id="'.$record->primary_role_id.'">
                            <i class="icon-base ti tabler-user-cog me-1"></i>Change Role
                         </a>
@@ -531,8 +541,15 @@ class UsersController
         // Find the user whose profile is being updated, not necessarily the logged-in user.
         $user = User::findOrFail($request->user_id);
 
-        // This method comes from the HasProfilePhoto trait and handles everything.
-        $user->updateProfilePhoto($request->file('photo'));
+        // Process and store the compressed image using our trait
+        $path = $this->processAndStoreFile($request->file('photo'), 'profile-photos', 80);
+
+        // Delete the old photo if it exists
+        if ($user->profile_photo_path) {
+            Storage::disk('public')->delete($user->profile_photo_path);
+        }
+
+        $user->forceFill(['profile_photo_path' => $path])->save();
 
         return response()->json(['profile_photo_url' => $user->profile_photo_url]);
     }

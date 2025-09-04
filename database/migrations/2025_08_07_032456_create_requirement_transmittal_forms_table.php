@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+
         Schema::create('requirement_transmittal_forms', function (Blueprint $table) {
             $table->id();
             $table->string('name')->default('Requirement Transmittal Form');
@@ -56,8 +57,6 @@ return new class extends Migration
             $table->boolean('photocopy_diploma')->default(false);
             $table->boolean('original_transcript')->default(false);
             $table->boolean('photocopy_transcript')->default(false);
-            $table->boolean('original_training_certificate')->default(false);
-            $table->boolean('photocopy_training_certificate')->default(false);
             $table->boolean('original_psa_birth')->default(false);
             $table->boolean('photocopy_psa_birth')->default(false);
             $table->boolean('original_psa_marriage')->default(false);
@@ -94,7 +93,6 @@ return new class extends Migration
             $table->date('exp_barangay_clearance')->nullable();
             $table->date('exp_neuro_psychiatric_test')->nullable();
             $table->date('exp_drug_test')->nullable();
-            $table->date('exp_training_certificate')->nullable();
             $table->date('exp_philhealth_id')->nullable();
             $table->date('exp_pagibig_id')->nullable();
 

@@ -207,7 +207,7 @@
                                         <button type="submit" id="submitBtn" class="btn btn-primary">Update Application</button>
                                     </div>
                                 @endcan
-                            @elseif($submission && $submission->status == 'processed' && Auth::user()->can("permit.update processed form.name"))
+                            @elseif($submission && $submission->status == 'processed' && Auth::user()->can("permit.edit processed form.name"))
                                 <div class="d-grid">
                                     <button type="submit" id="submitBtn" class="btn btn-primary">Update Application</button>
                                 </div>

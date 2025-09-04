@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\User;
+use App\Models\Detachment;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class DetachmentFactory extends Factory
 {
+    protected $model = Detachment::class;
+
     /**
      * Define the model's default state.
      *
@@ -18,21 +20,14 @@ class DetachmentFactory extends Factory
     public function definition(): array
     {
         return [
-            // Example: "Laguna Division" or "Batangas Command"
-            'name' => fake()->city().' '.fake()->randomElement(['Division', 'Command', 'Detachment']),
-
-            'street' => fake()->streetName(),
+            'name' => fake()->company().' - '.fake()->city(),
+            'category' => fake()->randomElement(['commercial', 'industrial', 'residential']),
+            'status' => 'approved',
+            'street' => fake()->streetAddress(),
             'city' => fake()->city(),
-            'province' => fake()->city(),
-            'zip_code' => fake()->randomNumber(),
-
-            // Assign a assigned_officer by picking a random user's ID
-            // Make sure you have users in your 'users' table!
+            'province' => fake()->state(),
+            'zip_code' => fake()->postcode(),
             'phone_number' => fake()->phoneNumber(),
-
-            // We do NOT set 'users_count' or 'personnel' here.
-            // That value should be calculated by an observer or withCount(),
-            // so we let the database handle it.
         ];
     }
 }

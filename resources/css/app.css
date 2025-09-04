@@ -28,3 +28,4 @@ body:has(.select2-modal.select2-container--open) {
     z-index: 10000;
     display: none;
 }
+

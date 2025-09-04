@@ -49,6 +49,13 @@
             "permission": "view detachments menu"
         },
         {
+            "url": "training-certificates",
+            "icon": "menu-icon icon-base ti tabler-certificate",
+            "name": "Training Certificates",
+            "slug": "training-certificates",
+            "permission": "view all certificates menu"
+        },
+        {
             "menuHeader": "Management"
         },
         {

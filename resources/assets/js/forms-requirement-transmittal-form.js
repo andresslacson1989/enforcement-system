@@ -163,15 +163,22 @@ $(function () {
             // Remove loading state from button
             submitButton.prop('disabled', false).text('Submit Form');
             Swal.fire({
-              title: data.message,
-              text: data.text,
-              icon: data.icon,
-              customClass: {
-                confirmButton: 'btn btn-primary'
-              },
-              buttonsStyling: false
-            }).then(function () {
-              window.location.href = '/form/view/requirement-transmittal-form/' + data.form_id;
+              title: 'Upload Certificates?',
+              text: 'Do you want to upload the training certificate?',
+              icon: 'info',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              confirmButtonText: 'Yes',
+              allowOutsideClick: false,
+              allowEscapeKey: false
+            }).then(result => {
+              // If the user clicks the "Confirm" button...
+              if (result.isConfirmed) {
+                window.location.href = '/user/profile/' + data.employee_id + '#trainings';
+              } else {
+                window.location.href = '/form/view/requirement-transmittal-form/' + data.form_id;
+              }
             });
           },
           error: function (xhr, status, error) {
