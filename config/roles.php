@@ -2,7 +2,7 @@
 
 /**
  * Official Roles
- * 'Super Admin' => 'root',
+ * 'super-admin' => 'root',
  * 'president' => 'president',
  * 'vice president' => 'vice president',
  * 'general manager' => 'general manager',
@@ -24,8 +24,8 @@
  */
 
 return [
-    'Super Admin' => [
-        'Super Admin' => [
+    'super-admin' => [
+        'super admin' => [
             'name' => 'root',
             'description' => 'All Access',
         ],

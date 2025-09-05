@@ -36,6 +36,8 @@ class SendAndBroadcastNotification implements ShouldQueue
     public function handle(): void
     {
         $users = User::whereIn('id', $this->user_ids)->get();
+        // We'll collect the IDs of the created notifications to broadcast them all at once.
+        $created_notification_ids = [];
 
         foreach ($users as $user) {
             // 1. Send Telegram Notification if the user is linked
@@ -69,9 +71,14 @@ class SendAndBroadcastNotification implements ShouldQueue
                 'user_id' => $user->id,
                 'link' => $this->link,
             ]);
+            // Add the new notification's ID to our collection.
+            $created_notification_ids[] = $notification->id;
+        }
 
-            // 3. Broadcast the event for real-time updates in the UI
-            NotificationSent::dispatch($notification->id);
+        // 3. Broadcast a single event with all the new notification IDs.
+        // This is much more efficient than dispatching an event inside the loop.
+        if (! empty($created_notification_ids)) {
+            NotificationSent::dispatch($created_notification_ids);
         }
     }
 }

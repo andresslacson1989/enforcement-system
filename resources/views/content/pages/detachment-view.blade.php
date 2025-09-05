@@ -201,7 +201,7 @@
                                             </div>
                                         </div>
                                         <div class="card-datatable table-responsive">
-                                            <table id="users_table" class="table border-top" data-detachment-id="{{ $detachment->id }}">
+                                            <table id="detachment_personnel_table" class="table border-top users-datatable" data-detachment-id="{{ $detachment->id }}">
                                                 <thead>
                                                 <tr>
                                                     <th>Name</th>

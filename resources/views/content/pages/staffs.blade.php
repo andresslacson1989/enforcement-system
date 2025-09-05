@@ -176,7 +176,7 @@
             </div>
         </div>
         <div class="card-datatable table-responsive">
-            <table id="users_table" class="table border-top">
+            <table id="users_table" class="table border-top users-datatable" data-context="staff">
                 <thead>
                 <tr>
                     <th>Name</th>

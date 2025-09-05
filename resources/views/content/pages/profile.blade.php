@@ -151,6 +151,7 @@
                             <div class="card-body p-4 tab-content" id="detachmentTabContent">
                                 <!-- Forms -->
                                 <div class="tab-pane show active" id="documents" role="tabpanel" aria-labelledby="documents-tab">
+                                    <span class="text-info">*Forms submitted by or subjected to you are listed here.</span>
                                     @if($forms->count() > 0)
                                         <table class="table-sm table-borderless table-flush-spacing" id="forms_table">
                                             <thead>
@@ -267,7 +268,7 @@
                                 <!-- Trainings Tab -->
                                 <div class="tab-pane" id="trainings" role="tabpanel" aria-labelledby="trainings-tab">
                                     @can(config("permit.add certificate.name"))
-                                        <div class="card mb-4">
+                                        <div class="card mb-7">
                                             <h5 class="card-header">Add New Training Certificate</h5>
                                             <div class="card-body">
                                                 <form id="add_training_certificate_form">
@@ -298,15 +299,14 @@
                                                             </select>
                                                         </div>
                                                     </div>
-                                                    <div class="pt-4">
-                                                        <button type="submit" class="btn btn-primary me-sm-3 me-1">Add Certificate</button>
-                                                        <button type="reset" class="btn btn-label-secondary">Cancel</button>
+                                                    <div class="pt-7 d-flex justify-content-end">
+                                                        <button type="submit" class="btn btn-primary">Add Certificate</button>
                                                     </div>
                                                 </form>
                                             </div>
                                         </div>
                                     @endcan
-                                    <h5>Existing Certificates</h5>
+                                    <h5>Training Certificates</h5>
                                     <div class="table-responsive">
                                         <table class="table" id="training_certificates_table_body">
                                             <thead>

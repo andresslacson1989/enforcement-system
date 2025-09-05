@@ -147,7 +147,7 @@
             </div>
         </div>
         <div class="card-datatable table-responsive">
-            <table id="users_table" class="table border-top">
+            <table id="personnel_table" class="table border-top users-datatable" data-context="personnel">
                 <thead>
                 <tr>
                     <th>Name</th>

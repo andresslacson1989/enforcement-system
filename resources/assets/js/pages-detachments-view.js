@@ -13,7 +13,7 @@ $(function () {
     placeholder: 'Choose an option'
   });
 
-  const users_table = $('#users_table');
+  const users_table = $('.users-datatable');
 
   // --- MODAL LOGIC ---
   $('#edit_detachment_modal').on('shown.bs.modal', function () {

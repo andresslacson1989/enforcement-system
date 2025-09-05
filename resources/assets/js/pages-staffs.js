@@ -2,12 +2,12 @@ $(function () {
   'use strict';
   $('.select2').select2();
 
-  const users_table = $('#users_table');
+  const $users_table = $('.users-datatable'); // Use the common class
   let dt_users;
 
   // Initialize DataTables
-  if (users_table.length) {
-    dt_users = users_table.DataTable({
+  if ($users_table.length) {
+    dt_users = $users_table.DataTable({
       ajax: {
         url: '/staffs/table',
         data: function (d) {
@@ -25,6 +25,6 @@ $(function () {
       ],
       language: { searchPlaceholder: 'Search Staff...' }
     });
-    $(document).trigger('datatable:ready', [dt_users]);
   }
+  $(document).trigger('datatable:ready', [dt_users, $users_table.attr('id')]);
 });

@@ -42,9 +42,9 @@
 
     @if ($submission)
         {{-- This is now an EDIT form --}}
+
         <div class="row">
-            <form action="/forms/update/third-month-performance-evaluation-form/{{ $submission->id }}" method="PUT"
-                  id="third_month_performance_evaluation_form_edit">
+            <form action="/forms/update/third-month-performance-evaluation-form/{{ $submission->id }}" method="POST" id="third_month_performance_evaluation_form_edit">
                 @csrf
                 @method('PUT')
                 <div class="col-12">
@@ -69,6 +69,19 @@
                                     <label class="form-label fw-bold">Job Title</label>
                                     <div class="form-control-plaintext">
                                         {{ ucwords(Role::findById($employee->primary_role_id)->name ?? '') }}</div>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label fw-bold" for="period_review_start_date">Period of Review
+                                        Start</label>
+                                    <input type="text" class="form-control flatpickr-date"
+                                           name="period_review_start_date"
+                                           value="{{ $submission->period_review_start_date ? $submission->period_review_start_date->format('Y-m-d') : '' }}">
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label fw-bold" for="period_review_end_date">Period of Review
+                                        End</label>
+                                    <input type="text" class="form-control flatpickr-date" name="period_review_end_date"
+                                           value="{{ $submission->period_review_end_date ? $submission->period_review_end_date->format('Y-m-d') : '' }}">
                                 </div>
                             </div>
                             <div class="row mt-12">
@@ -156,7 +169,6 @@
                                         <tr>
                                             <td>b.</td>
                                             <td>Respectful interaction with colleagues, clients, visitors</td>
-                                            _               
                                             <td class="text-center"><?php renderRatingRadio('professionalism_ethic_b', $submission->professionalism_ethic_b, 'poor'); ?></td>
                                             <td class="text-center"><?php renderRatingRadio('professionalism_ethic_b', $submission->professionalism_ethic_b, 'fair'); ?></td>
                                             <td class="text-center"><?php renderRatingRadio('professionalism_ethic_b', $submission->professionalism_ethic_b, 'good'); ?></td>
@@ -334,7 +346,8 @@
                                     <h6 class="fw-bold text-center">Supervisor's Comment</h6>
 
                                     <textarea class="form-control" name="supervisor_comment" rows="5">{{ $submission->supervisor_comment }}</textarea>
-                                    <div class="col-12 text-center mt-4 fw-bold">
+                                    <br>
+                                    <div class="col-12 text-center mt-12 fw-bold">
                                         {{ $submitted_by->first_name }} {{ $submitted_by->last_name }}
                                         {{ $submitted_by->suffix ?? '' }}
                                     </div>
@@ -344,20 +357,10 @@
                                 </div>
                                 <div class="col-6">
                                     <h6 class="fw-bold text-center">Security Personnel's Comment</h6>
-
                                     <textarea class="form-control" name="security_comment" rows="5">{{ $submission->security_comment }}</textarea>
-                                    <div class="col-12 text-center">
-                    <span class="w-px-200 border-bottom border-gray border-2 text-center">&nbsp;
-                      &nbsp;&nbsp;
-                      &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp; &nbsp
-                      &nbsp; &nbsp;&nbsp;
-                      &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp; &nbsp
-                      &nbsp; &nbsp;&nbsp;
-                      &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
-                    </span>
-                                    </div>
+                                    <br>
+                                    <div class="col-6 text-center mt-12 border-bottom border-1 border-dark m-auto"></div>
                                     <div class="text-center signature-text mt-1">Printed Name/Sgd</div>
-
                                 </div>
                             </div>
 
@@ -434,6 +437,20 @@
                                                    readonly />
                                             <input type="hidden" id="submitted_by" name="submitted_by" aria-label="submitted_by"
                                                    aria-describedby="submitted_by" value="{{ $user->id ?? '' }}" />
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label" for="period_review_start_date">Period of Review
+                                                Start</label>
+                                            <input type="text" class="form-control flatpickr-date"
+                                                   id="period_review_start_date" name="period_review_start_date"
+                                                   placeholder="YYYY-MM-DD">
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label" for="period_review_end_date">Period of Review
+                                                End</label>
+                                            <input type="text" class="form-control flatpickr-date"
+                                                   id="period_review_end_date" name="period_review_end_date"
+                                                   placeholder="YYYY-MM-DD">
                                         </div>
                                     </div>
 

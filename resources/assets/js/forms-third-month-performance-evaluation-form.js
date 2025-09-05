@@ -5,11 +5,22 @@
 'use strict';
 
 $(function () {
-  const form = $('#third-month-performance-evaluation-form');
+  const $form = $('#third-month-performance-evaluation-form');
   $('.select2').select2({
     dropdownParent: $('#users_modal .modal-body')
   });
-  form.on('submit', function (e) {
+
+  // Initialize flatpickr for all date inputs on this form
+  const $date_inputs = $('.flatpickr-date');
+  if ($date_inputs.length) {
+    $date_inputs.flatpickr({
+      altInput: true,
+      altFormat: 'F j, Y',
+      dateFormat: 'Y-m-d'
+    });
+  }
+
+  $form.on('submit', function (e) {
     e.preventDefault(); // Prevent the default form submission
 
     // Show a simple confirmation SweetAlert
@@ -24,9 +35,8 @@ $(function () {
       // Check if the user clicked the "confirm" button.
       if (result.isConfirmed) {
         // If confirmed, proceed with the AJAX form submission.
-        // NOTE: The line for setting the meeting_date_input has been removed.
-        const url = form.attr('action');
-        const formData = form.serialize();
+        const url = $form.attr('action');
+        const form_data = $form.serialize();
         Swal.fire({
           title: 'Please Wait!',
           text: 'Processing your request...',
@@ -40,7 +50,7 @@ $(function () {
         $.ajax({
           type: 'POST',
           url: url,
-          data: formData,
+          data: form_data,
           headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
           },
@@ -78,8 +88,8 @@ $(function () {
 
   //fetch employee data
   // Listen for the 'change' event on your employee dropdown
-  $('#employee_id').on('change', function () {
-    const userId = $(this).val();
+  $('#employee_id').on('change', function() {
+    const user_id = $(this).val();
     Swal.fire({
       title: 'Processing...',
       text: 'Please wait while we save your data.',
@@ -89,7 +99,7 @@ $(function () {
       }
     });
     // If the selected value is empty, do nothing or clear the fields
-    if (!userId || userId.trim() === '') {
+    if (!user_id || user_id.trim() === '') {
       $('#employee_number').val('');
       $('#detachment_id').val('');
       // Decide if you want to clear the supervisor field or leave it
@@ -100,7 +110,7 @@ $(function () {
     // --- AJAX Request ---
     $.ajax({
       // The URL points to your Laravel route, fetching the selected user
-      url: '/user/' + userId, // Make sure this route exists in your web.php
+      url: '/user/' + user_id, // Make sure this route exists in your web.php
       type: 'GET',
       dataType: 'json',
       success: function (response) {
@@ -131,7 +141,7 @@ $(function () {
 
   //compute overall performance
   // Define the numerical values for each rating
-  const ratingScores = {
+  const rating_scores = {
     poor: 1,
     fair: 2,
     good: 3,
@@ -139,36 +149,36 @@ $(function () {
   };
 
   // Find the table and listen for changes on any radio button inside it
-  $('.performance-criteria-table').on('change', 'input[type="radio"]', function () {
-    let totalScore = 0;
-    let ratingCount = 0;
+  $('.performance-criteria-table').on('change', 'input[type="radio"]', function() {
+    let total_score = 0;
+    let rating_count = 0;
 
     // Find all checked radio buttons within the criteria table
-    $('.performance-criteria-table input[type="radio"]:checked').each(function () {
-      const ratingValue = $(this).val();
-      if (ratingScores[ratingValue]) {
-        totalScore += ratingScores[ratingValue];
-        ratingCount++;
+    $('.performance-criteria-table input[type="radio"]:checked').each(function() {
+      const rating_value = $(this).val();
+      if (rating_scores[rating_value]) {
+        total_score += rating_scores[rating_value];
+        rating_count++;
       }
     });
 
-    if (ratingCount > 0) {
-      const averageScore = totalScore / ratingCount;
-      let overallRating = '';
+    if (rating_count > 0) {
+      const average_score = total_score / rating_count;
+      let overall_rating = '';
 
       // Determine the final rating based on the average score
-      if (averageScore <= 1.5) {
-        overallRating = 'poor';
-      } else if (averageScore <= 2.5) {
-        overallRating = 'fair';
-      } else if (averageScore <= 3.5) {
-        overallRating = 'good';
+      if (average_score <= 1.5) {
+        overall_rating = 'poor';
+      } else if (average_score <= 2.5) {
+        overall_rating = 'fair';
+      } else if (average_score <= 3.5) {
+        overall_rating = 'good';
       } else {
-        overallRating = 'excellent';
+        overall_rating = 'excellent';
       }
 
       // Check the corresponding radio button in the "Overall Standing" section
-      $('#overall_standing_' + overallRating).prop('checked', true);
+      $('#overall_standing_' + overall_rating).prop('checked', true);
     }
   });
 
@@ -247,10 +257,9 @@ $(function () {
       // Check if the user clicked the "confirm" button.
       if (result.isConfirmed) {
         // If confirmed, proceed with the AJAX form submission.
-        const form = $(this);
-        const url = form.attr('action');
-        const method = form.attr('method');
-        const formData = form.serialize();
+        const $form_edit = $(this);
+        const url = $form_edit.attr('action');
+        const form_data = $form_edit.serialize();
         Swal.fire({
           title: 'Please Wait!',
           text: 'Processing your request...',
@@ -261,9 +270,9 @@ $(function () {
           }
         });
         $.ajax({
-          type: method,
+          type: 'PUT', // Explicitly set the method to PUT for updates
           url: url,
-          data: formData,
+          data: form_data,
           headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
           },

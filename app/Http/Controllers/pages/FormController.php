@@ -19,7 +19,6 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Throwable;
@@ -92,8 +91,13 @@ class FormController
      */
     public function store(Request $request, string $form_slug): JsonResponse
     {
-
         $employee = null;
+        foreach ($request->all() as $key => $item) {
+            if ($item == 'on') {
+                $request->request->set($key, true);
+            }
+        }
+
         // 1. Find the form's configuration using the slug
         $form_config = Config::get("forms.types.{$form_slug}");
 
@@ -130,7 +134,7 @@ class FormController
             // Standard check for all other one-to-one forms for existing users.
             elseif (isset($validated_data['employee_id'])) {
                 $employee = User::find($validated_data['employee_id']);
-                $relationship = Str::camel($form_slug).'Form'; // e.g., 'firstMonthPerformanceEvaluationForm'
+                $relationship = Str::camel($form_slug); // e.g., 'firstMonthPerformanceEvaluationForm'
                 $form_name = $form_config['name'];
 
                 $existing_form_response = $this->checkForExistingForm($employee, $relationship, $form_name);
@@ -190,14 +194,11 @@ class FormController
         }
 
         // Step 2: Dynamically get the correct FormRequest class and its rules
-        $form_request_class = $form_config['request'];
-        $form_request = app($form_request_class);
+        $validation_request = App::make($form_config['request']);
 
-        // Step 3: THIS IS THE CRITICAL PART
-        // Create a validator instance and get the validated (and transformed) data.
-        // This is what correctly converts "on" to true.
-        $validator = Validator::make($request->all(), $form_request->rules());
-        $validated_data = $validator->validated();
+        // Step 3: Validate the request using the dynamically loaded Form Request.
+        // This ensures the correct rules are applied for the specific form being updated.
+        $validated_data = $request->validate($validation_request->rules());
 
         // Add specific logic for the ID Application Form HR processing
         if ($form_type === 'id-application-form') {
@@ -343,6 +344,7 @@ class FormController
      */
     private function checkForExistingForm(User $employee, string $relationship, string $form_name)
     {
+
         if ($employee->{$relationship}()->exists()) {
             return response()->json([
                 'message' => 'Error',

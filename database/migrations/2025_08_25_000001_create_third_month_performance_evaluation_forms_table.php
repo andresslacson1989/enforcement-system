@@ -26,36 +26,52 @@ return new class extends Migration
                 ->onDelete('set null');
             $table->string('employee_number')->nullable();
             $table->string('job_title')->nullable();
-            $table->foreignId('detachment_id')->constrained('detachments')->onDelete('cascade');
+            $table->foreignId('detachment_id')
+                ->constrained('detachments')
+                ->onDelete('cascade');
 
             // Form specific data
-            $table->date('evaluation_date');
+            $table->date('evaluation_date')->nullable();
+            $table->date('period_review_start_date')->nullable();
+            $table->date('period_review_end_date')->nullable();
 
-            // Performance Ratings (1-5). unsignedTinyInteger is efficient for numbers 0-255.
-            $table->unsignedTinyInteger('attendance_and_punctuality');
-            $table->unsignedTinyInteger('quality_and_quantity_of_work');
-            $table->unsignedTinyInteger('dependability_and_responsibility');
-            $table->unsignedTinyInteger('knowledge_of_work');
-            $table->unsignedTinyInteger('attitude_and_cooperation');
-            $table->unsignedTinyInteger('judgment_and_decision_making');
-            $table->unsignedTinyInteger('relationship_with_others');
-            $table->unsignedTinyInteger('initiative_and_resourcefulness');
-            $table->unsignedTinyInteger('grooming_and_appearance');
-            $table->unsignedTinyInteger('physical_condition');
-            $table->unsignedTinyInteger('potential_for_growth');
-            $table->unsignedTinyInteger('overall_performance_rating');
+            // Detailed Performance Ratings
+            $table->string('attendance_punctuality_a')->nullable();
+            $table->string('attendance_punctuality_b')->nullable();
+            $table->string('attendance_punctuality_c')->nullable();
+            $table->string('job_knowledge_a')->nullable();
+            $table->string('job_knowledge_b')->nullable();
+            $table->string('job_knowledge_c')->nullable();
+            $table->string('professionalism_ethic_a')->nullable();
+            $table->string('professionalism_ethic_b')->nullable();
+            $table->string('professionalism_ethic_c')->nullable();
+            $table->string('communication_skills_a')->nullable();
+            $table->string('communication_skills_b')->nullable();
+            $table->string('communication_skills_c')->nullable();
+            $table->string('problem_solving_a')->nullable();
+            $table->string('problem_solving_b')->nullable();
+            $table->string('problem_solving_c')->nullable();
+            $table->string('teamwork_interpersonal_a')->nullable();
+            $table->string('teamwork_interpersonal_b')->nullable();
+            $table->string('teamwork_interpersonal_c')->nullable();
+            $table->string('adaptability_flexibility_a')->nullable();
+            $table->string('adaptability_flexibility_b')->nullable();
 
-            // Comments and Recommendations
-            $table->text('comments')->nullable();
-            $table->text('recommendations')->nullable();
+            // Strengths and Improvements
+            $table->string('strength_1')->nullable();
+            $table->string('strength_2')->nullable();
+            $table->string('strength_3')->nullable();
+            $table->string('improvement_1')->nullable();
+            $table->string('improvement_2')->nullable();
+            $table->string('improvement_3')->nullable();
+
+            // Overall Standing and Comments
+            $table->string('overall_standing')->nullable();
+            $table->text('supervisor_comment')->nullable();
+            $table->text('security_comment')->nullable();
 
             // Signatures
-            $table->string('evaluated_by_name');
-            $table->string('evaluated_by_position');
-            $table->date('evaluated_by_date');
-            $table->string('acknowledged_by_name');
-            $table->string('acknowledged_by_position');
-            $table->date('acknowledged_by_date');
+            $table->string('status')->default('pending');
 
             $table->timestamps();
         });

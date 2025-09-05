@@ -5,12 +5,12 @@ $(function () {
     dropdownParent: $('#users_modal .modal-body')
   });
 
-  const users_table = $('#users_table');
+  const $users_table = $('.users-datatable'); // Use the common class
   let dt_users;
 
   // Initialize DataTables
-  if (users_table.length) {
-    dt_users = users_table.DataTable({
+  if ($users_table.length) {
+    dt_users = $users_table.DataTable({
       ajax: {
         url: '/personnel/table',
         data: function (d) {
@@ -29,6 +29,6 @@ $(function () {
       ],
       language: { searchPlaceholder: 'Search Personnel...' }
     });
-    $(document).trigger('datatable:ready', [dt_users]);
   }
+  $(document).trigger('datatable:ready', [dt_users, $users_table.attr('id')]);
 });

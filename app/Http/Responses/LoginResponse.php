@@ -16,7 +16,7 @@ class LoginResponse implements LoginResponseContract
      * @param  Request  $request
      * @return Response
      */
-    public function toResponse($request)
+    public function toResponse($request): JsonResponse|Response
     {
         $user = Auth::user();
 
@@ -27,30 +27,29 @@ class LoginResponse implements LoginResponseContract
                 ->with('warning', 'Welcome! Please complete your profile information to continue.');
         }
 
-        // Check if the user is a `root`
-        if ($user->hasRole('root')) {
-            return redirect()->route('form-library');
-        }
+        /*  // Check if the user is a `root`
+          if ($user->hasRole('root')) {
+              return redirect()->route('form-library');
+          }
 
-        // Check if the user is a `hr manager`
-        if ($user->hasRole('hr manager')) {
-            return redirect()->route('personnel');
-        }
+          // Check if the user is a `hr manager`
+          if ($user->hasRole('hr manager')) {
+              return redirect()->route('personnel');
+          }
 
-        // Check if the user is a `detachment commander`
-        if ($user->hasRole('assigned officer')) {
+          // Check if the user is a `detachment commander`
+          if ($user->hasRole('assigned officer')) {
+              return redirect()->route('detachment-profile', ['id' => $user->detachment_id]);
+          }
 
-            return redirect()->route('detachment-profile', ['id' => $user->detachment_id]);
-        }
-
-        // Check if the user is a `security guard`
-        if ($user->hasRole('security guard')) {
-            return redirect()->route('profile', ['id' => $user->id]);
-        }
+          // Check if the user is a `security guard`
+          if ($user->hasRole('security guard')) {
+              return redirect()->route('my-profile', ['id' => $user->id]);
+          }*/
 
         // Default redirect to the home page if no specific role matches
         return $request->wantsJson()
           ? new JsonResponse(['two_factor' => false])
-          : redirect()->route('profile');
+          : redirect()->route('my-profile');
     }
 }

@@ -206,9 +206,9 @@ class UsersController
     private function getRoleColor(string $role_name): string
     {
         return match (strtolower($role_name)) {
-            'hr manager', 'president', 'general manager' => 'bg-label-danger',
-            'accounting manager', 'operation manager' => 'bg-label-warning',
-            'detachment commander', 'officer in charge' => 'bg-label-info',
+            'hr manager', 'president', 'general manager' => 'bg-label-primary',
+            'accounting manager', 'operation manager' => 'bg-label-info',
+            'detachment commander', 'officer in charge' => 'bg-label-dark',
             default => 'bg-label-secondary'
         };
     }
@@ -436,7 +436,7 @@ class UsersController
         // ## 6. Format the data for the response
         $data_arr = [];
         foreach ($records as $record) {
-            $role_name = $record->role_name ? ucwords($record->role_name) : 'N/A';
+            $role_name = $record->primaryRole->name ? ucwords($record->primaryRole->name) : 'N/A';
             $role_color = $this->getRoleColor($role_name);
             $status_color = $this->getStatusColor($record->status);
 
