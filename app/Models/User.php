@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Traits\Loggable;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -66,7 +68,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Laravel\Sanctum\PersonalAccessToken> $tokens
  * @property-read int|null $tokens_count
  *
- * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
+ * @method static UserFactory factory($count = null, $state = [])
  * @method static Builder<static>|User newModelQuery()
  * @method static Builder<static>|User newQuery()
  * @method static Builder<static>|User onlyTrashed()
@@ -115,6 +117,7 @@ class User extends Authenticatable
     use HasFactory;
     use HasProfilePhoto;
     use HasRoles;
+    use Loggable;
     use Notifiable;
     use SoftDeletes;
     use TwoFactorAuthenticatable;
@@ -170,6 +173,29 @@ class User extends Authenticatable
     protected $appends = [
         'profile_photo_url',
     ];
+
+    /**
+     * The "booted" method of the model.
+     *
+     * This method registers model event listeners to automatically log
+     * creation, update, and deletion events for any model that extends this class.
+     */
+    protected static function booted(): void
+    {
+        parent::booted();
+
+        static::created(function (self $model) {
+            $model->logCreation($model);
+        });
+
+        static::updating(function (self $model) {
+            $model->logUpdate($model);
+        });
+
+        static::deleted(function (self $model) {
+            $model->logDeletion($model);
+        });
+    }
 
     /**
      * Get the detachment that the user belongs to.

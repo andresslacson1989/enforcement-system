@@ -28,8 +28,7 @@ class RoleController
      * 'cluster head guard',
      * 'head guard',
      * 'assistant head guard',
-     * 'security guard',
-     * 'lady guard'
+     * 'guard',
      */
     public function getRoles(string $category, UserClass $user_class)
     {

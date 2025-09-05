@@ -16,7 +16,6 @@ class MenuHelper
     public static function getDynamicMenu(array $menu): array
     {
         $user = Auth::user();
-
         // If no user is logged in, show only public items.
         if (! $user) {
             return array_filter($menu, fn ($item) => ! isset($item['permission']));

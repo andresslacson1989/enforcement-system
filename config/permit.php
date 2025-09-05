@@ -50,6 +50,10 @@ return [
         'name' => 'view detachments menu',
         'description' => 'Allows user to see the Detachments directory link in the sidebar.',
     ],
+    'view training certificates menu' => [
+        'name' => 'view training certificates menu',
+        'description' => 'Allows user to see the Training Certificates directory link in the sidebar.',
+    ],
 
     // Admin
     'Admin' => 'group name',

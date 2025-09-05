@@ -30,7 +30,7 @@ class FormClass
 
         } elseif ($form_name == 'first month performance evaluation form') {
             $user = Auth::user();
-            $roleNames = ['security guard', 'security office', 'head guard'];
+            $roleNames = ['guard', 'security office', 'head guard'];
             $guards = User::whereHas('roles', function ($query) use ($roleNames) {
                 $query->whereIn('name', $roleNames);
             })->where('detachment_id', $user->detachment_id)->get();

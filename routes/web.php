@@ -52,6 +52,8 @@ Route::middleware(['auth:web'])->group(function () {
     Route::get('/user/my-profile', [UsersController::class, 'profile'])->name('my-profile');
     Route::get('/user/profile/{id}', [UsersController::class, 'profile'])->name('user-profile');
     Route::get('/user/{id}', [UsersController::class, 'show'])->name('user-show');
+    Route::get('/user/{id}/files', [UsersController::class, 'getUserFiles'])->name('user-files.get');
+    Route::post('/user/upload-file', [UsersController::class, 'uploadFile'])->name('user-files.upload');
     Route::post('/user/profile-photo', [UsersController::class, 'updateProfilePhoto'])->name('user-profile-photo.update');
     Route::patch('/user/{id}', [UsersController::class, 'update'])->name('user-update');
     Route::delete('/user/{id}', [UsersController::class, 'delete'])->name('user->delete');
@@ -59,7 +61,6 @@ Route::middleware(['auth:web'])->group(function () {
     // In routes/web.php, inside the auth middleware group
     Route::get('/profile/complete-profile', [UsersController::class, 'showCompletionForm'])->name('profile.completion.form');
     Route::post('/profile/complete-profile', [UsersController::class, 'completeProfile'])->name('profile.completion.submit');
-
     // Staff Routes Used by Personnel page, Staff Page and Detachment Profile page
     Route::get('/staffs', [UsersController::class, 'staffs_index'])->name('staffs');
     Route::post('/staffs/store', [UsersController::class, 'store']);
@@ -69,6 +70,9 @@ Route::middleware(['auth:web'])->group(function () {
     Route::put('/staffs/update/{id}', [UsersController::class, 'update']);
     Route::delete('/staffs/delete/{id}', [UsersController::class, 'delete']);
     Route::patch('/staffs/remove/{id}', [UsersController::class, 'remove']);
+
+    // This is the correct route for the file deletion AJAX call
+    Route::delete('/user-files/{file}', [UsersController::class, 'deleteFile'])->name('user-files.delete');
     Route::post('/staffs/suspend/', [UsersController::class, 'suspend']);
     Route::post('/staffs/unsuspend/', [UsersController::class, 'unsuspend']);
 

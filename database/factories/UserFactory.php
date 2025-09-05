@@ -49,6 +49,7 @@ class UserFactory extends Factory
             'philhealth_number' => fake()->numerify('####-####-####'),
             'pagibig_number' => fake()->numerify('####-####-####'),
             'birthdate' => fake()->dateTimeBetween('-50 years', '-20 years'),
+            'license_number' => fake()->numerify('###-###-####'),
             'remember_token' => Str::random(10),
             // 'detachment_id' => Detachment::inRandomOrder()->first()->id,
 

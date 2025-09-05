@@ -1,5 +1,14 @@
 'use strict';
 $(function () {
+  // --- Global AJAX Setup for CSRF Token ---
+  // This is the standard and most reliable way to ensure all AJAX requests
+  // include the CSRF token, preventing mismatch errors.
+  $.ajaxSetup({
+    headers: {
+      'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    }
+  });
+
   // Get the hash from the current URL (e.g., '#notifications')
   var hash = window.location.hash;
 
@@ -34,8 +43,6 @@ $(function () {
       // 3. Use FormData to prepare the file for upload
       const form_data = new FormData();
       form_data.append('photo', file);
-      // We also need to add the CSRF token for Laravel to accept the POST request
-      form_data.append('_token', $('meta[name="csrf-token"]').attr('content'));
       form_data.append('user_id', $change_photo_button.data('user-id'));
       // Show a loading state with SweetAlert
       Swal.fire({
@@ -119,7 +126,6 @@ $(function () {
     $add_training_form.on('submit', function (e) {
       e.preventDefault(); // snake_case variable
       const form_data = new FormData(this);
-      form_data.append('_token', $('meta[name="csrf-token"]').attr('content'));
 
       $.ajax({
         url: '/training-certificates/store',
@@ -253,4 +259,228 @@ $(function () {
 
   // --- Trigger ready event for other scripts ---
   $(document).trigger('datatable:ready');
+
+  // --- File Explorer & Upload Logic ---
+  // This section is wrapped in a check to ensure it only runs on the profile page.
+  if ($('#file_manager_app').length) {
+    let current_view_mode = 'list';
+    let current_category_filter = 'all';
+    let current_search_term = '';
+    let current_page_number = 1;
+    const user_id_for_files = $('#upload_file_form input[name="user_id"]').val();
+
+    // --- Main AJAX Fetch Function (defined at the top of the scope) ---
+    function fetchFiles(page_number = 1) {
+      current_page_number = page_number;
+      const display_area = $('#file_display_area');
+      const pagination_links = $('#file_pagination_links');
+
+      // Show a loading spinner or overlay
+      display_area.html(
+        '<div class="d-flex justify-content-center mt-5"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>'
+      );
+      pagination_links.empty();
+      $('#no_files_in_category_message, #no_search_results_message').hide();
+
+      $.ajax({
+        url: `/user/${user_id_for_files}/files`,
+        data: {
+          page: current_page_number,
+          category: current_category_filter,
+          search: current_search_term,
+          view_mode: current_view_mode
+        },
+        success: function (response) {
+          display_area.html(response.html);
+          pagination_links.html(response.pagination);
+
+          // Update category counts
+          for (const category in response.counts) {
+            $(`#file_category_list a[data-category="${category}"] .badge`).text(response.counts[category]);
+          }
+
+          // Check if the returned HTML is empty or just whitespace
+          if (!response.html.trim()) {
+            if (current_search_term) {
+              $('#no_search_results_message').show();
+            } else {
+              $('#no_files_in_category_message').show();
+            }
+          }
+        },
+        error: function () {
+          display_area.html('<p class="text-center text-danger">Could not load files. Please try again.</p>');
+        }
+      });
+    }
+
+    // --- Event Handlers ---
+
+    // Category selection
+    $('#file_category_list a').on('click', function (e) {
+      e.preventDefault();
+      $('#file_category_list a').removeClass('active');
+      $(this).addClass('active');
+      $('#file_search_input').val('');
+      current_search_term = '';
+      current_category_filter = $(this).data('category');
+      fetchFiles(1); // Fetch page 1 of the new category
+    });
+
+    // View mode toggle
+    $('#file_view_grid_btn').on('click', function () {
+      current_view_mode = 'grid';
+      $(this).addClass('active');
+      $('#file_view_list_btn').removeClass('active');
+      fetchFiles(current_page_number);
+    });
+
+    $('#file_view_list_btn').on('click', function () {
+      current_view_mode = 'list';
+      $(this).addClass('active');
+      $('#file_view_grid_btn').removeClass('active');
+      fetchFiles(current_page_number);
+    });
+
+    // Live search (with debounce to avoid excessive requests)
+    let search_timeout;
+    $('#file_search_input').on('keyup', function () {
+      clearTimeout(search_timeout);
+      current_search_term = $(this).val().toLowerCase();
+      search_timeout = setTimeout(function () {
+        fetchFiles(1); // Always go to page 1 for a new search
+      }, 300); // 300ms delay
+    });
+
+    // Pagination links (using event delegation)
+    $(document).on('click', '#file_pagination_links a', function (e) {
+      e.preventDefault();
+      const page_number = $(this).attr('href').split('page=')[1];
+      fetchFiles(page_number);
+    });
+
+    // --- Event Delegation for Dynamic Content ---
+    // We attach the listeners to a static parent container, '#file_manager_app'.
+    // This ensures that events are captured for elements loaded via AJAX.
+    const file_manager_app = $('#file_manager_app');
+    file_manager_app.on('click', '.delete-file-btn', function (e) {
+      e.preventDefault();
+      const file_id_to_delete = $(this).data('file-id');
+
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!',
+        customClass: {
+          confirmButton: 'btn btn-danger me-3',
+          cancelButton: 'btn btn-label-secondary'
+        },
+        buttonsStyling: false
+      }).then(function (result) {
+        if (result.isConfirmed) {
+          $.ajax({
+            url: `/user-files/${file_id_to_delete}`,
+            method: 'POST', // Use POST with method spoofing for DELETE
+            data: { _method: 'DELETE' },
+            success: function (response) {
+              Swal.fire('Deleted!', response.message, 'success');
+              fetchFiles(current_page_number);
+            },
+            error: function (xhr) {
+              const error_message = xhr.responseJSON?.message || 'Could not delete the file.';
+              Swal.fire('Error!', error_message, 'error');
+            }
+          });
+        }
+      });
+    });
+
+    // --- File Preview Logic (using event delegation) ---
+    file_manager_app.on('click', '.file-card-item, .file-list-item', function (e) {
+      // Stop if the click was on a dropdown or a button inside it
+      if ($(e.target).closest('.dropdown').length) {
+        return;
+      }
+
+      const file_url_for_preview = $(this).data('file-url');
+      const file_title_for_preview = $(this).data('file-title');
+      const mime_type_for_preview = $(this).data('mime-type');
+      const preview_container = $('#file_preview_container');
+      const preview_modal = $('#filePreviewModal');
+
+      preview_container.html(
+        '<div class="d-flex justify-content-center align-items-center h-100"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>'
+      );
+      preview_modal.find('.modal-title').text(file_title_for_preview);
+      $('#download_file_btn').attr('href', file_url_for_preview);
+
+      if (mime_type_for_preview.startsWith('image/')) {
+        preview_container.html(
+          `<img src="${file_url_for_preview}" class="img-fluid" style="max-height: 100%; object-fit: contain;">`
+        );
+      } else if (mime_type_for_preview === 'application/pdf') {
+        preview_container.html(
+          `<embed src="${file_url_for_preview}" type="application/pdf" width="100%" height="100%" />`
+        );
+      } else {
+        preview_container.html(`
+          <div class="d-flex flex-column justify-content-center align-items-center h-100">
+            <i class="ti tabler-file-alert ti-lg mb-3"></i>
+            <h5>No Preview Available</h5>
+            <p class="text-muted">You can download the file to view it.</p>
+          </div>
+        `);
+      }
+
+      preview_modal.modal('show');
+    });
+
+    // --- Upload File Logic (Reverted to simpler version) ---
+    const upload_file_form = $('#upload_file_form');
+    upload_file_form.on('submit', function (e) {
+      e.preventDefault();
+      const form_data = new FormData(this);
+      // The CSRF token is now handled globally by $.ajaxSetup,
+      // so we don't need to append it here manually.
+
+      // Show a loading state
+      Swal.fire({
+        title: 'Uploading...',
+        text: 'Please wait while your file is being uploaded.',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      $.ajax({
+        url: '/user/upload-file',
+        method: 'POST',
+        data: form_data,
+        processData: false,
+        contentType: false,
+        success: function (response) {
+          $('#uploadFileModal').modal('hide');
+          upload_file_form[0].reset();
+          fetchFiles(1); // Immediately refresh the file list to show the new file
+          Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: response.message,
+            timer: 1500, // Auto-close the alert after 1.5 seconds
+            showConfirmButton: false
+          });
+        },
+        error: function (xhr) {
+          const error_message = xhr.responseJSON?.message || 'An unexpected error occurred.';
+          Swal.fire('Upload Failed', error_message, 'error');
+        }
+      });
+    });
+
+    // --- Initial Render ---
+    fetchFiles(1);
+  }
 });

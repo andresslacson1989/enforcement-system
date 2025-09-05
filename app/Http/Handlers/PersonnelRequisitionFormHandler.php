@@ -16,7 +16,7 @@ class PersonnelRequisitionFormHandler
     // It's better to use the consistent name from the config file.
     protected string $form_name = 'Personnel Requisition Form';
 
-    public array $personnel_types = ['Security Officer', 'Security Guard', 'Lady Guard', 'EMT/First Aiders', 'Protection Agents', 'CCTV Operator', 'Security Escort'];
+    public array $personnel_types = ['Security Officer', 'Guard', 'EMT/First Aiders', 'Protection Agents', 'CCTV Operator', 'Security Escort'];
 
     public array $purposes = ['New Client', 'Additional Posting', 'Seasonal/Augmentation', 'Reliever', 'Replacement', 'Special Project'];
 

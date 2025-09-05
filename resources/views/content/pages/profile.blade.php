@@ -1,5 +1,5 @@
 @php
-    use App\Models\User;use Carbon\Carbon;use Spatie\Permission\Models\Role;$configData = Helper::appClasses();
+    use App\Http\Classes\UserClass;use App\Models\User;use Carbon\Carbon;use Spatie\Permission\Models\Role;$configData = Helper::appClasses();
 @endphp
 
 @extends('layouts/layoutMaster')
@@ -68,20 +68,30 @@
                             <div class="profile-pic-container position-relative d-inline-block">
                                 <img src="{{ $user->profile_photo_url }}" alt="Profile Picture" class="img img-thumbnail rounded-3 w-px-160" id="profile-pic-img" />
                                 @if(Auth::id() == $user->id || Auth::user()->can(config("permit.edit personnel.name")))
-                                    <button class="btn btn-icon btn-label-gray position-absolute bottom-0 end-0" id="change-photo-btn" data-custom-tooltip="tooltip" data-user-id="{{ $user->id }}" custom-tooltip-title="Change Photo">
+                                    <button class="btn btn-icon btn-label-dark bt-sm position-absolute bottom-0 end-0 mb-1 me-1" id="change-photo-btn" data-custom-tooltip="tooltip" data-user-id="{{ $user->id }}"
+                                            custom-tooltip-title="Change Photo">
                                         <i class="ti icon-lg tabler-camera"></i>
                                     </button>
                                 @endif
                             </div>
                             <input type="file" id="profile-photo-input" name="photo" class="d-none" accept="image/png, image/jpeg, image/jpg">
                             <h4 class="card-title mt-3"> {{ $user->name ?? '' }} </h4>
-                            <p class="text-muted mb-1">Employee No.: #{{ $user->employee_number ?? '' }} </p>
+                            @if($user->license_number)
+                                <p class="d-flex justify-content-center">
+                                    <buton class="btn btn-xs btn-label-info btn-icon me-1"><i class="ti tabler-eye"></i></buton>
+                                    {{ $user->license_number }}
+                                </p>
+                            @endif
                             <h5>
-                                <span class="badge bg-primary"> {{ ucwords(Role::findById($user->primary_role_id)->name ?? '') }} </span>
-                                <span class="badge bg-success"> {{ ucwords($user->status ?? '') }} </span>
+                                @foreach($user->getRoleNames() as $role)
+                                    <span class="badge bg-label-info mb-2"> {{ ucwords($role) }} </span>
+                                @endforeach
                             </h5>
                             <hr>
                             <div class="text-start profile-details">
+                                <p class="text-muted mb-1"><i class="ti tabler-id me-2"></i><strong>Employee No.: </strong>#{{ $user->employee_number ?? '' }} </p>
+                                <p><i class="ti tabler-user-star me-2"></i><strong>Status:</strong> <span class="badge bg-label-primary">{{ strtoupper($user->status ?? '') }}</span></p>
+                                <hr>
                                 <p><i class="ti tabler-mail me-2"></i><strong>Email:</strong> {{ $user->email ?? 'N/A' }}</p>
                                 <p><i class="ti tabler-phone me-2"></i><strong>Phone:</strong> {{ $user->phone_number ?? 'N/A' }}</p>
                                 <p><i class="ti tabler-brand-telegram me-2"></i><strong>Telegram:</strong> {{ $user->telegram_chat_id ?? 'N/A' }}</p>
@@ -110,16 +120,25 @@
                 <div class="col-lg-8">
 
                     <div class="card shadow-sm mb-4">
-                        <div class="card-header bg-white">
-                            <h5 class="card-title mb-0"><i class="fas fa-building me-2"></i>Current Detachment</h5>
-                        </div>
-                        <div class="card-body">
-                            <h4> {{ $user->detachment?->name ?? 'N/A' }}</h4>
-                            <p class="text-muted"> {{ ucwords($user->detachment?->street ?? '') }} {{ ucwords($user->detachment?->city ?? '') }} {{ ucwords($user->detachment?->province ?? '') }} {{ $user->detachment?->zip_code ?? '' }}</p>
-                            <hr>
-                            <p><strong>Assigned Officer:</strong> {{ $user->detachment?->assignedOfficer?->name ?? 'N/A' }} </p>
-                            <p><strong>Contact Number:</strong> {{ $user->detachment?->phone_number ?? 'N/A' }} </p>
-                        </div>
+                        @if(in_array($user->primaryRole->name, (new UserClass())->listStaffRoles()))
+                            <div class="card-header bg-white">
+                                <h5 class="card-title mb-0"><i class="fas fa-building me-2"></i>{{ strtoupper($user->primaryRole->department) }} DEPARTMENT</h5>
+                            </div>
+                            <div class="card-body">
+                                <h4> {{ ucwords($user->primaryRole->name) }}</h4>
+                            </div>
+                        @else
+                            <div class="card-header bg-white">
+                                <h5 class="card-title mb-0"><i class="fas fa-building me-2"></i>Current Detachment</h5>
+                            </div>
+                            <div class="card-body">
+                                <h4> {{ $user->detachment?->name ?? 'N/A' }}</h4>
+                                <p class="text-muted"> {{ ucwords($user->detachment?->street ?? '') }} {{ ucwords($user->detachment?->city ?? '') }} {{ ucwords($user->detachment?->province ?? '') }} {{ $user->detachment?->zip_code ?? '' }}</p>
+                                <hr>
+                                <p><strong>Assigned Officer:</strong> {{ $user->detachment?->assignedOfficer?->name ?? 'N/A' }} </p>
+                                <p><strong>Contact Number:</strong> {{ $user->detachment?->phone_number ?? 'N/A' }} </p>
+                            </div>
+                        @endif
                     </div>
                     <!-- Tab Navigation & Content -->
                     <div class="col-md-12">
@@ -146,12 +165,17 @@
                                             Trainings
                                         </button>
                                     </li>
+                                    <li class="nav-item " role="presentation">
+                                        <button class="nav-link" id="files-tab" data-bs-toggle="tab" data-bs-target="#files" type="button" role="tab" aria-controls="files" aria-selected="false">
+                                            Files
+                                        </button>
+                                    </li>
                                 </ul>
                             </div>
                             <div class="card-body p-4 tab-content" id="detachmentTabContent">
                                 <!-- Forms -->
                                 <div class="tab-pane show active" id="documents" role="tabpanel" aria-labelledby="documents-tab">
-                                    <span class="text-info">*Forms submitted by or subjected to you are listed here.</span>
+                                    <small class="text-info">*Forms submitted by or subjected to you are listed here.</small>
                                     @if($forms->count() > 0)
                                         <table class="table-sm table-borderless table-flush-spacing" id="forms_table">
                                             <thead>
@@ -348,6 +372,88 @@
                                         </table>
                                     </div>
                                 </div>
+                                <!-- Files Tab -->
+                                <div class="tab-pane" id="files" role="tabpanel" aria-labelledby="files-tab">
+                                    <div class="d-flex justify-content-between align-items-center mb-4">
+                                        <h5 class="mb-0">User Files</h5>
+                                        @can(config("permit.edit personnel.name"))
+                                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadFileModal">
+                                                <i class="ti tabler-upload me-2"></i>Upload New File
+                                            </button>
+                                        @endcan
+                                    </div>
+
+                                    <!-- File Explorer Layout -->
+                                    <div class="row" id="file_manager_app">
+                                        <!-- Left Sidebar: Categories/Folders -->
+                                        <div class="col-lg-3 col-md-4">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <div class="list-group list-group-flush" id="file_category_list">
+                                                        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center active" data-category="all">
+                                                            <i class="ti tabler-folder me-2"></i> All Files
+                                                            <span class="badge bg-label-dark ms-1">4</span>
+                                                        </a>
+                                                        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-category="licenses">
+                                                            <i class="ti tabler-id me-2 text-primary"></i> Licenses
+                                                            <span class="badge bg-label-primary ms-1">1</span>
+                                                        </a>
+                                                        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-category="documents">
+                                                            <i class="ti tabler-files me-2 text-info"></i> Docs
+                                                            <span class="badge bg-label-info ms-1">1</span>
+                                                        </a>
+                                                        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-category="images">
+                                                            <i class="ti tabler-photo me-2 text-success"></i> Images
+                                                            <span class="badge bg-label-success ms-1">1</span>
+                                                        </a>
+                                                        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-category="pdfs">
+                                                            <i class="ti tabler-file-type-pdf me-2 text-danger"></i> PDFs
+                                                            <span class="badge bg-label-danger ms-1">1</span>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Right Content Area: File Display -->
+                                        <div class="col-lg-9 col-md-8">
+                                            <!-- Header with Search and View Toggles -->
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <div class="flex-grow-1 me-3">
+                                                    <div class="input-group input-group-merge">
+                                                        <span class="input-group-text"><i class="ti tabler-search"></i></span>
+                                                        <input type="text" class="form-control" id="file_search_input" placeholder="Search files...">
+                                                    </div>
+                                                </div>
+                                                <div class="btn-group" role="group" aria-label="View toggle">
+                                                    <button type="button" class="btn btn-outline-secondary" id="file_view_grid_btn" data-bs-toggle="tooltip" title="Grid View"><i class="ti tabler-layout-grid"></i></button>
+                                                    <button type="button" class="btn btn-outline-secondary active" id="file_view_list_btn" data-bs-toggle="tooltip" title="List View"><i class="ti tabler-list"></i></button>
+                                                </div>
+                                            </div>
+
+                                            <!-- File Display Area -->
+                                            <div id="file_display_area">
+                                                {{-- This area will be populated by JavaScript --}}
+                                            </div>
+                                            <!-- Pagination Container -->
+                                            <div class="d-flex justify-content-center mt-4">
+                                                <nav id="file_pagination_links"></nav>
+                                            </div>
+
+                                            <!-- "No Files" Message Placeholders -->
+                                            <div id="no_files_in_category_message" class="text-center text-muted mt-5" style="display: none;">
+                                                <i class="ti tabler-folder-off tabler-lg mb-2"></i>
+                                                <h5>This category is empty</h5>
+                                                <p>Upload a file to get started.</p>
+                                            </div>
+                                            <div id="no_search_results_message" class="text-center text-muted mt-5" style="display: none;">
+                                                <i class="ti tabler-file-search tabler-lg mb-2"></i>
+                                                <h5>No files found</h5>
+                                                <p>Your search did not match any files.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -358,6 +464,65 @@
     @can(config("permit.edit personnel.name"))
         @include('content.modals.edit-profile-modal')
     @endcan
+
+    <!-- Upload File Modal -->
+    <div class="modal fade" id="uploadFileModal" tabindex="-1" aria-labelledby="uploadFileModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="uploadFileModalLabel">Upload New File</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="upload_file_form">
+                        <input type="hidden" name="user_id" value="{{ $user->id }}">
+                        <div class="mb-3">
+                            <label for="file_upload_input" class="form-label">File</label>
+                            <input class="form-control" type="file" id="file_upload_input" name="files[]" required multiple>
+                        </div>
+                        <div class="mb-3">
+                            <label for="file_category" class="form-label">Category</label>
+                            <select class="form-select" id="file_category" name="category" required>
+                                <option value="" selected disabled>Select a category...</option>
+                                <option value="licenses">License</option>
+                                <option value="documents">Document</option>
+                                <option value="images">Image</option>
+                                <option value="pdfs">PDF</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary" form="upload_file_form">Upload</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- File Preview Modal -->
+    <div class="modal fade" id="filePreviewModal" tabindex="-1" aria-labelledby="filePreviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="filePreviewModalLabel">File Preview</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center p-0">
+                    <div id="file_preview_container" style="height: 80vh;">
+                        {{-- Preview content will be injected here by JavaScript --}}
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <a href="#" id="download_file_btn" class="btn btn-primary" download><i class="ti tabler-download me-2"></i>Download</a>
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden element to pass asset path to JS -->
+    <div id="file_icon_path" data-path="{{ asset('assets/img/icons/misc/file-icon.png') }}" style="display: none;"></div>
 
     <!-- View Certificate Modal -->
     <div class="modal fade" id="viewCertificateModal" tabindex="-1" aria-labelledby="viewCertificateModalLabel" aria-hidden="true">
@@ -382,3 +547,9 @@
         </div>
     </div>
 @endsection
+
+@push('page-script')
+    <script>
+        // This script will be replaced by the new logic in pages-profile.js
+    </script>
+@endpush

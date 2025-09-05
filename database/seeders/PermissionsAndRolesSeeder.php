@@ -34,42 +34,21 @@ class PermissionsAndRolesSeeder extends Seeder
             Permission::firstOrCreate(['name' => $permission['name'], 'group' => $name, 'description' => $permission['description'], 'guard_name' => 'web']);
         }
 
-        // 4. Create Roles using firstOrCreate.
-        foreach ($roles as $key => $role) {
-            foreach ($role as $item) {
-                Role::firstOrCreate(['name' => $item['name'], 'group' => $key, 'description' => $item['description'], 'guard_name' => 'web']);
+        // 4. Define and Create Permission sets for assignment, referencing the array to avoid magic strings.
+        $permissions = config('permit');
+        foreach ($permissions as $permit) {
+            if ($permit == 'group name') {
+                continue;
             }
+            Permission::firstOrCreate(['name' => $permit['name'], 'description' => $permit['description'], 'guard_name' => 'web']);
         }
-        $root = Role::firstOrCreate(['name' => 'root'], ['description' => 'Super Admin Access']);
-
-        $president = Role::firstOrCreate(['name' => 'president'], ['description' => 'Admin Access', 'group' => 'admin']);
-        $vice_president = Role::firstOrCreate(['name' => 'vice president'], ['description' => 'Admin Access', 'group' => 'admin']);
-        $general_manager = Role::firstOrCreate(['name' => 'general manager'], ['description' => 'General Manager', 'group' => 'admin']);
-
-        $accounting_manager = Role::firstOrCreate(['name' => 'accounting manager'], ['description' => 'Accounting Manager', 'group' => 'staff']);
-        $senior_accounting_manager = Role::firstOrCreate(['name' => 'senior accounting manager'], ['description' => 'Senior Accounting Manager', 'group' => 'staff']);
-        $accounting_specialist = Role::firstOrCreate(['name' => 'accounting specialist'], ['description' => 'Accounting Specialist', 'group' => 'staff']);
-        $hr_manager = Role::firstOrCreate(['name' => 'hr manager'], ['description' => 'HR Manager', 'group' => 'staff']);
-        $hr_specialist = Role::firstOrCreate(['name' => 'hr specialist'], ['description' => 'HR Specialist', 'group' => 'staff']);
-        $operation_manager = Role::firstOrCreate(['name' => 'operation manager'], ['description' => 'Overall management', 'group' => 'staff']);
-
-        $assigned_officer = Role::firstOrCreate(['name' => 'assigned officer'], ['description' => 'Head of Detachment', 'group' => 'personnel-admin']);
-        $detachment_commander = Role::firstOrCreate(['name' => 'detachment commander'], ['description' => 'Overall in charge', 'group' => 'personnel-admin']);
-        $officer_in_charge = Role::firstOrCreate(['name' => 'officer in charge'], ['description' => 'OIC in absence of Commander', 'group' => 'personnel-admin']);
-        $security_in_charge = Role::firstOrCreate(['name' => 'security in charge'], ['description' => 'Second in command', 'group' => 'personnel-admin']);
-
-        $cluster_head_guard = Role::firstOrCreate(['name' => 'cluster head guard'], ['description' => 'Supervises a cluster', 'group' => 'personnel-base']);
-        $head_guard = Role::firstOrCreate(['name' => 'head guard'], ['description' => 'In charge of the small team', 'group' => 'personnel-base']);
-        $assistant_head_guard = Role::firstOrCreate(['name' => 'assistant head guard'], ['description' => 'Assists the Head Guard', 'group' => 'personnel-base']);
-        $security_guard = Role::firstOrCreate(['name' => 'security guard'], ['description' => 'The main security force (male)', 'group' => 'personnel-base']);
-        $lady_guard = Role::firstOrCreate(['name' => 'lady guard'], ['description' => 'The main security force (female)', 'group' => 'personnel-base']);
-
-        // 5. Define Permission sets for assignment, referencing the array to avoid magic strings.
         $basic_permissions = [
             'view form library menu', 'view detachment profile menu',
             'view my profile menu',
 
             'view own personnel profile', 'view own detachment profile',
+
+            'fill id application form', 'view id application form',
         ];
 
         $admin_permissions = [
@@ -89,12 +68,29 @@ class PermissionsAndRolesSeeder extends Seeder
         $hr_permissions = [
             'view staffs', 'edit staff', 'delete staff', 'change staff role', 'suspend staff',
 
-            'fill requirement transmittal form', 'view requirement transmittal form', 'edit requirement transmittal form',
             'print requirement transmittal form', 'view first month performance evaluation form', 'add detachment',
+
+            'add personnel', 'view personnel', 'suspend personnel', 'view any personnel profile', 'edit personnel', 'remove personnel', 'edit own personnel profile', 'add personnel to detachment', 'delete personnel', 'change personnel role', 'view own personnel profile', 'view any detachment personnel',
+            'view detachment', 'add detachment', 'edit detachment', 'view any detachment profile',
+
+            'add certificate', 'delete certificate', 'edit certificate', 'view own certificate', 'view any certificate', 'print certificate',
+
+            'print id application form', 'edit id application form', 'delete id application form',
+
+            'view personnel requisition form', 'print personnel requisition form', 'edit personnel requisition form',
+
+            'view first month performance evaluation form', 'edit first month performance evaluation form', 'print first month performance evaluation form',
+
+            'view third month performance evaluation form', 'edit third month performance evaluation form', 'print third month performance evaluation form',
+
+            'view sixth month performance evaluation form', 'edit sixth month performance evaluation form', 'print sixth month performance evaluation form',
+
+            'view requirement transmittal form', 'edit requirement transmittal form', 'print requirement transmittal form',
+
             'view detachments menu',
         ];
 
-        $operation_permissions = [
+        $operations_permissions = [
             'view requirement transmittal form', 'view first month performance evaluation form',
             'fill first month performance evaluation form', 'edit first month performance evaluation form',
         ];
@@ -122,48 +118,64 @@ class PermissionsAndRolesSeeder extends Seeder
             'view first month performance evaluation form',
         ];
 
-        // 6. Assign Permissions to Roles in a structured way.
-        $allRoles = Role::where('name', '!=', 'root')->get();
-        foreach ($allRoles as $role) {
-            $role->givePermissionTo($basic_permissions);
-        }
-
-        $president->givePermissionTo($admin_permissions);
-        $vice_president->givePermissionTo($admin_permissions);
-        $general_manager->givePermissionTo($admin_permissions);
-
-        foreach ([$accounting_manager, $senior_accounting_manager, $accounting_specialist] as $role) {
-            $role->givePermissionTo($accounting_permissions);
-        }
-
-        foreach ([$hr_manager, $hr_specialist] as $role) {
-            $role->givePermissionTo($hr_permissions);
-        }
-
-        $operation_manager->givePermissionTo($operation_permissions);
-
-        foreach ([$assigned_officer, $detachment_commander, $officer_in_charge, $security_in_charge] as $role) {
-            $role->givePermissionTo($personnel_admin_permissions);
-        }
-
-        foreach ([$cluster_head_guard, $head_guard, $assistant_head_guard, $security_guard, $lady_guard] as $role) {
-            $role->givePermissionTo($personnel_base_permissions);
+        // 5. Create Roles using firstOrCreate.
+        foreach ($roles as $role) {
+            $personnel = Role::firstOrCreate([
+                'name' => $role['name'],
+                'group' => $role['group'],
+                'description' => $role['description'],
+                'department' => $role['department'],
+                'guard_name' => 'web',
+            ]);
+            if ($role['group'] == 'Super Admin') {
+                continue;
+            }
+            $personnel->givePermissionTo(${$role['department'].'_permissions'});
         }
 
         User::where('name', 'BytesPH')->forceDelete();
         $admin = User::firstOrCreate([
-            'id' => 1,
             'name' => 'BytesPH',
-            'first_name' => 'BytesPH',
-            'middle_name' => 'BytesPH',
-            'last_name' => 'BytesPH',
-            'suffix' => 'BytesPH',
+            'first_name' => 'Bytes',
+            'middle_name' => 'Pinas',
+            'last_name' => 'PH',
             'email' => 'phcyber2018@gmail.com',
             'password' => '123456',
             'employee_number' => uniqid(),
+            'birthdate' => fake()->date,
+            'sss_number' => fake()->numerify('##-#######-#'),
+            'pagibig_number' => fake()->numerify('##-#######-#'),
+            'philhealth_number' => fake()->numerify('##-#######-#'),
+            'phone_number' => fake()->phoneNumber,
+            'street' => fake()->streetAddress(),
+            'city' => fake()->city,
+            'province' => fake()->city,
+            'zip_code' => fake()->postcode,
+
         ]);
         $admin->assignRole('root');
         $admin->setPrimaryRole('root');
+
+        $hr = User::firstOrCreate([
+            'name' => 'Paulo Avila',
+            'first_name' => 'Paulo',
+            'middle_name' => 'Pinas',
+            'last_name' => 'Avila',
+            'email' => 'paulo@gmail.com',
+            'password' => '123456',
+            'employee_number' => uniqid(),
+            'birthdate' => fake()->date,
+            'sss_number' => fake()->numerify('##-#######-#'),
+            'pagibig_number' => fake()->numerify('##-#######-#'),
+            'philhealth_number' => fake()->numerify('##-#######-#'),
+            'phone_number' => fake()->phoneNumber,
+            'street' => fake()->streetAddress(),
+            'city' => fake()->city,
+            'province' => fake()->city,
+            'zip_code' => fake()->postcode,
+        ]);
+        $hr->assignRole('hr manager');
+        $hr->setPrimaryRole('hr manager');
 
     }
 }

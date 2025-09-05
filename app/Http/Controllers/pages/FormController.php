@@ -264,11 +264,7 @@ class FormController
         $employee = (new UserClass)->create($employee_data);
 
         // Assign roles, etc.
-        if ($data['gender'] == 'male') {
-            $employee->assignRole('security guard');
-        } else {
-            $employee->assignRole('lady guard');
-        }
+        $employee->assignRole('guard');
 
         return $employee;
     }

@@ -21,7 +21,7 @@ class DetachmentFactory extends Factory
     {
         return [
             'name' => fake()->company().' - '.fake()->city(),
-            'category' => fake()->randomElement(['commercial', 'industrial', 'residential']),
+            'category' => 'Single Post',
             'status' => 'approved',
             'street' => fake()->streetAddress(),
             'city' => fake()->city(),

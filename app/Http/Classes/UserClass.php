@@ -41,16 +41,16 @@ class UserClass
 
     public function listPersonnelRoles(): array
     {
-        return Role::whereIn('group', ['personnel-base', 'personnel-admin'])->pluck('name')->toArray();
+        return Role::whereIn('group', ['personnel_base', 'personnel_admin'])->pluck('name')->toArray();
     }
 
     public function listPersonnelBaseRoles(): array
     {
-        return Role::where('group', 'personnel-base')->pluck('name')->toArray();
+        return Role::where('group', 'personnel_base')->pluck('name')->toArray();
     }
 
     public function listPersonnelAdminRoles(): array
     {
-        return Role::where('group', 'personnel-admin')->pluck('name')->toArray();
+        return Role::where('group', 'personnel_admin')->pluck('name')->toArray();
     }
 }

@@ -53,7 +53,7 @@
             "icon": "menu-icon icon-base ti tabler-certificate",
             "name": "Training Certificates",
             "slug": "training-certificates",
-            "permission": "view all certificates menu"
+            "permission": "view training certificates menu"
         },
         {
             "menuHeader": "Management"

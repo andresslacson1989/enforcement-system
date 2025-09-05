@@ -3,10 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @property int $id
@@ -51,6 +50,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property-read int|null $requirement_transmittal_form_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
  * @property-read int|null $users_count
+ *
  * @method static \Database\Factories\DetachmentFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment newQuery()
@@ -90,9 +90,10 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereThirteenthMonthPay($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereZipCode($value)
+ *
  * @mixin \Eloquent
  */
-class Detachment extends Model
+class Detachment extends BaseFormModel
 {
     use HasFactory;
     use SoftDeletes;
@@ -135,26 +136,6 @@ class Detachment extends Model
     public function users(): HasMany
     {
         return $this->hasMany(User::class, 'detachment_id', 'id');
-    }
-
-    /**
-     * Get all the performance evaluation forms for the Detachment.
-     */
-    public function firstMonthPerformanceEvaluationForms(): HasMany
-    {
-        // This defines that a Detachment has many forms.
-        // We specify 'deployment' as the foreign key on the other table.
-        return $this->hasMany(FirstMonthPerformanceEvaluationForm::class, 'detachment_id', 'id');
-    }
-
-    /**
-     * Get all the requirement transmittal forms for the Detachment.
-     */
-    public function requirementTransmittalForm(): HasMany
-    {
-        // This defines that a Detachment has many forms.
-        // We specify 'deployment' as the foreign key on the other table.
-        return $this->hasMany(RequirementTransmittalForm::class, 'detachment_id', 'id');
     }
 
     public function assignedOfficer(): HasOne

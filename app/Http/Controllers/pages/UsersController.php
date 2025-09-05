@@ -10,6 +10,7 @@ use App\Models\Detachment;
 use App\Models\Submission;
 use App\Models\Suspension;
 use App\Models\User;
+use App\Models\UserFile;
 use App\Traits\ImageUploadTrait;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -22,6 +23,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 use LaravelIdea\Helper\App\Models\_IH_User_QB;
 use Spatie\Permission\Models\Role;
 use Spatie\Tags\Tag;
@@ -208,7 +211,8 @@ class UsersController
         return match (strtolower($role_name)) {
             'hr manager', 'president', 'general manager' => 'bg-label-primary',
             'accounting manager', 'operation manager' => 'bg-label-info',
-            'detachment commander', 'officer in charge' => 'bg-label-dark',
+            'detachment commander', 'assigned officer' => 'bg-primary',
+            'officer in charge', 'security in charge', 'head guard', 'cluster head guard' => 'bg-label-warning',
             default => 'bg-label-secondary'
         };
     }
@@ -327,7 +331,6 @@ class UsersController
 
     public function personnelTable(Request $request)
     {
-
         // ## 1. Get DataTables parameters
         $draw = $request->input('draw');
         $start = $request->input('start');
@@ -340,7 +343,6 @@ class UsersController
         $user_class = (new UserClass);
         $personnel_roles = $user_class->listPersonnelRoles();
         $query = User::query()
-            ->where('users.id', '!=', Auth::id())
             ->whereHas('roles', function ($q) use ($personnel_roles) {
                 $q->whereIn('name', $personnel_roles);
             })
@@ -393,6 +395,9 @@ class UsersController
         $totalRecords = User::whereHas('roles', function ($q) use ($personnel_roles) {
             return $q->whereIn('name', $personnel_roles);
         })->count();
+
+        // make sure the user don't see his own name on the table
+        $query = $query->where('users.id', '!=', Auth::id());
 
         // ## 3. Apply Filters
         if (! empty($search_value)) {
@@ -533,6 +538,7 @@ class UsersController
      */
     public function updateProfilePhoto(Request $request): JsonResponse
     {
+
         $request->validate([
             'user_id' => ['required', 'exists:users,id'],
             'photo' => ['required', 'mimes:jpg,jpeg,png', 'max:2048'],
@@ -552,5 +558,135 @@ class UsersController
         $user->forceFill(['profile_photo_path' => $path])->save();
 
         return response()->json(['profile_photo_url' => $user->profile_photo_url]);
+    }
+
+    /**
+     * Fetch user files with pagination, filtering, and searching via AJAX.
+     *
+     * @param  int  $id  The ID of the user.
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getUserFiles(Request $request, $id)
+    {
+        // Find the user or fail
+        $user = User::findOrFail($id);
+
+        // Start the query
+        $query = UserFile::where('user_id', $user->id);
+
+        // Apply category filter
+        if ($request->has('category') && $request->category !== 'all') {
+            $query->where('category', $request->category);
+        }
+
+        // Apply search term
+        if ($request->has('search') && ! empty($request->search)) {
+            $search_term = $request->search;
+            $query->where(function ($q) use ($search_term) {
+                $q->where('title', 'LIKE', "%{$search_term}%")
+                    ->orWhere('filename', 'LIKE', "%{$search_term}%");
+            });
+        }
+
+        // Paginate the results
+        $files = $query->latest()->paginate(12); // 12 files per page, adjust as needed
+
+        $files->getCollection()->transform(function ($file) {
+            $file->file_url = $file->file_url;
+            $file->thumbnail_url = $file->thumbnail_url;
+
+            return $file;
+        });
+
+        // Return the paginated data and the rendered HTML view for the files
+        return response()->json([
+            'html' => view('content.snippets.file-explorer-items', ['files' => $files, 'view_mode' => $request->view_mode ?? 'list'])->render(),
+            'pagination' => (string) $files->links(),
+            'counts' => [
+                'all' => UserFile::where('user_id', $user->id)->count(),
+                'licenses' => UserFile::where('user_id', $user->id)->where('category', 'licenses')->count(),
+                'documents' => UserFile::where('user_id', $user->id)->where('category', 'documents')->count(),
+                'images' => UserFile::where('user_id', $user->id)->where('category', 'images')->count(),
+                'pdfs' => UserFile::where('user_id', $user->id)->where('category', 'pdfs')->count(),
+            ],
+        ]);
+    }
+
+    public function uploadFile(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'category' => 'required|string|in:licenses,documents,images,pdfs',
+            'files' => 'required|array', // Expect an array of files
+            'files.*' => 'file|max:10240', // Validate each file in the array (Max 10MB)
+        ]);
+
+        $user = User::findOrFail($request->input('user_id'));
+        $files = $request->file('files');
+        $category = $request->input('category');
+
+        foreach ($files as $file) {
+            $thumbnail_path = null;
+
+            // Check if the uploaded file is an image and generate a thumbnail
+            if (Str::startsWith($file->getMimeType(), 'image/')) {
+                $manager = new ImageManager(new Driver);
+                $thumbnail = $manager->read($file->getRealPath())->resize(200, 200, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                })->encode();
+
+                $thumbnail_filename = 'thumb_'.pathinfo($file->hashName(), PATHINFO_FILENAME).'.jpg';
+                $thumbnail_path = "user_files/{$user->id}/{$category}/thumbnails/{$thumbnail_filename}";
+                Storage::disk('public')->put($thumbnail_path, $thumbnail);
+            }
+
+            // Store the file in a user-specific directory for better organization
+            $path = $file->store("user_files/{$user->id}/{$category}", 'public');
+
+            UserFile::create([
+                'user_id' => $user->id,
+                'title' => pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME), // Use original filename as title
+                'filename' => $file->getClientOriginalName(),
+                'path' => $path,
+                'category' => $category,
+                'mime_type' => $file->getMimeType(),
+                'size' => $file->getSize(), // Size in bytes
+                'thumbnail_path' => $thumbnail_path,
+            ]);
+        }
+
+        return response()->json(['message' => 'Files uploaded successfully!']);
+    }
+
+    /**
+     * Delete a user's file from storage and the database.
+     *
+     * @param  UserFile  $file
+     * @return JsonResponse
+     */
+    public function deleteFile(UserFile $file): JsonResponse
+    {
+        // Optional: Add authorization check to ensure the logged-in user can delete this file
+        // For example: Gate::authorize('delete', $file);
+
+        try {
+            // Delete the main file from storage
+            Storage::disk('public')->delete($file->path);
+
+            // Delete the thumbnail if it exists
+            if ($file->thumbnail_path) {
+                Storage::disk('public')->delete($file->thumbnail_path);
+            }
+
+            // Delete the database record
+            $file->delete();
+
+            return response()->json(['message' => 'File deleted successfully!']);
+        } catch (\Exception $e) {
+            \Log::error('File deletion failed: '.$e->getMessage());
+
+            return response()->json(['message' => 'An error occurred while deleting the file.'], 500);
+        }
     }
 }

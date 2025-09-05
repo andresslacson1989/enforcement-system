@@ -29,6 +29,11 @@ class ActivityLogController extends Controller
             'User',
             'Detachment',
             'Role',
+            'First Month Performance Evaluation',
+            'Third Month Performance Evaluation',
+            'Sixth Month Performance Evaluation',
+            'Id Application',
+            'Personnel Requisition',
         ];
 
         // 2. Get all form models from the configuration
