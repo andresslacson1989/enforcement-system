@@ -489,4 +489,142 @@ $(function () {
     // --- Initial Render ---
     fetchFiles(1);
   }
+
+  // --- Kanban Board Logic ---
+  const kanban_container = $('#kanban-board-container');
+
+  if (kanban_container.length) {
+    // Get the user ID from the data attribute on the container
+    const user_id = kanban_container.data('user-id');
+
+    fetchFormsForKanban(user_id);
+  }
+
+  function fetchFormsForKanban(user_id, page = 1) {
+    $.ajax({
+      url: `/user/${user_id}/forms-kanban?page=${page}`,
+      type: 'GET',
+      dataType: 'json',
+      success: function (response) {
+        // Clear loaders from all columns on first load
+        if (page === 1) {
+          $('.kanban-loader').remove();
+        }
+
+        // Group forms by status client-side
+        const forms_by_status = groupForms(response.data);
+
+        // Populate each lane
+        for (const status in forms_by_status) {
+          const lane = $(`#lane-${status}`);
+          const count_badge = $(`#count-${status}`);
+
+          if (lane.length) {
+            forms_by_status[status].forEach(form_submission => {
+              lane.append(createFormCard(form_submission));
+            });
+
+            // Update count
+            const current_count = parseInt(count_badge.text()) || 0;
+            count_badge.text(current_count + forms_by_status[status].length);
+          }
+        }
+
+        // If there are more pages, fetch them
+        if (response.next_page_url) {
+          fetchFormsForKanban(user_id, page + 1);
+        } else {
+          // After all pages are loaded, add the 'no forms' message to empty columns
+          $('.kanban-column').each(function () {
+            if ($(this).children('.card').length === 0) {
+              $(this).html(`
+                                 <div class="text-center text-muted p-5">
+                                     <i class="ti ti-folder-off ti-lg mb-2"></i>
+                                     <p>No forms in this category.</p>
+                                 </div>
+                             `);
+            }
+          });
+        }
+      },
+      error: function (xhr) {
+        console.error('Error fetching forms:', xhr);
+        $('.kanban-loader').html('<p class="text-danger">Could not load forms.</p>');
+      }
+    });
+  }
+
+  function groupForms(submissions) {
+    const grouped = {};
+    const status_map = {
+      approved: 'processed' // Map 'approved' status to the 'processed' column
+    };
+
+    submissions.forEach(submission => {
+      if (submission.submittable) {
+        let status = submission.submittable.status;
+        // Use the mapped status if it exists, otherwise use the original
+        let target_status = status_map[status] || status;
+
+        if (!grouped[target_status]) {
+          grouped[target_status] = [];
+        }
+        grouped[target_status].push(submission);
+      }
+    });
+    return grouped;
+  }
+
+  function createFormCard(submission) {
+    const form = submission.submittable;
+    if (!form) return '';
+
+    const form_slug = form.name.toLowerCase().replace(/ /g, '-');
+    const view_url = `/form/view/${form_slug}/${form.id}`;
+
+    const employee_html = form.employee
+      ? `<a href="/user/profile/${form.employee.id}">${form.employee.name}</a>`
+      : 'N/A';
+
+    const submitted_by_html = submission.submitted_by
+      ? `<a href="/user/profile/${submission.submitted_by.id}">${submission.submitted_by.name}</a>`
+      : 'N/A';
+
+    const created_date = new Date(form.created_at).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+
+    return `
+             <div class="card shadow-none border mb-2">
+                 <div class="card-header py-2 px-3">
+                     <a href="${view_url}" class="fw-bold text-body d-block text-truncate">
+                         ${form.name}
+                     </a>
+                 </div>
+                 <div class="card-body p-3">
+                     <div class="d-flex justify-content-between">
+                         <div class="details-section">
+                             <div class="d-flex align-items-center mb-2">
+                                 <i class="ti ti-user-check ti-sm me-2 text-muted"></i>
+                                 <div class="text-muted small">
+                                     ${employee_html}
+                                 </div>
+                             </div>
+                             <div class="d-flex align-items-center">
+                                 <i class="ti ti-user-edit ti-sm me-2 text-muted"></i>
+                                 <div class="text-muted small">
+                                     ${submitted_by_html}
+                                 </div>
+                             </div>
+                         </div>
+                         <div class="text-end">
+                             <small class="text-muted">${created_date}</small>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+         `;
+  }
 });

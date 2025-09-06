@@ -407,7 +407,6 @@ class FormController
         $validated_data['is_delivered'] = $request->has('is_delivered');
 
         if ($is_hr_update) {
-            $validated_data['completed_by'] = Auth::id();
 
             // --- New Notification Logic ---
             // Find the original submission record to get the submitter's ID
@@ -416,6 +415,11 @@ class FormController
 
             // Check if the 'is_card_done' status has just been changed to true
             if ($validated_data['is_card_done'] && ! $submission->submittable->is_card_done) {
+
+                // change status to processing
+                $validated_data['status'] = 'processing';
+
+                // prepare and send notification to submitter
                 $title = 'ID Card Ready for Pickup';
                 $employee_name = $submission->submittable->employee->name;
                 $message = "The ID card for {$employee_name} is now ready for pickup.";
@@ -426,10 +430,8 @@ class FormController
             }
 
             if ($validated_data['is_delivered']) {
+                $validated_data['completed_by'] = Auth::id();
                 $validated_data['status'] = 'processed';
-            } else {
-                // If delivered is unchecked, revert status to submitted
-                $validated_data['status'] = 'submitted';
             }
         }
 

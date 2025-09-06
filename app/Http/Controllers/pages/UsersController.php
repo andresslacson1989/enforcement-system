@@ -61,8 +61,9 @@ class UsersController
             $bot_username = config('telegram.username');
             $telegram_linking_url = "https://t.me/{$bot_username}?start={$telegram_token}";
         }
+        $pageConfigs = ['contentLayout' => 'wide', 'navbarType' => 'hidden'];
 
-        return view('content.pages.profile') // Changed to snake_case
+        return view('content.pages.profile', ['pageConfigs' => $pageConfigs]) // Changed to snake_case
             ->with('user', $personnel)
             ->with('notifications', $notifications)
             ->with('detachment', $personnel->detachment)
@@ -70,6 +71,33 @@ class UsersController
             ->with('roles', $roles)
             ->with('all_tags', $all_tags)
             ->with('telegram_linking_url', $telegram_linking_url);
+    }
+
+    /**
+     * Fetch forms for a user's profile via AJAX for the Kanban board.
+     */
+    public function getUserFormsForKanban(Request $request, $user_id): JsonResponse
+    {
+        // 1. Get the new 'types' array from the config file.
+        $formTypes = config('forms.types');
+
+        // 2. Use array_column() to extract just the 'model' class names into a simple array.
+        $submittableModels = array_column($formTypes, 'model');
+
+        $query = Submission::whereHasMorph(
+            'submittable',
+            $submittableModels,
+            function ($query) use ($user_id) {
+                $query->where('employee_id', $user_id)
+                    ->orWhere('submitted_by', $user_id);
+            }
+        )->with(['submittable', 'submittedBy'])
+            ->latest();
+
+        // 3. Paginate the results
+        $forms = $query->paginate(10); // Paginate 10 forms at a time
+
+        return response()->json($forms);
     }
 
     /**
@@ -661,9 +689,6 @@ class UsersController
 
     /**
      * Delete a user's file from storage and the database.
-     *
-     * @param  UserFile  $file
-     * @return JsonResponse
      */
     public function deleteFile(UserFile $file): JsonResponse
     {

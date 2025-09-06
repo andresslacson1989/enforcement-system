@@ -52,6 +52,7 @@ Route::middleware(['auth:web'])->group(function () {
     Route::get('/user/my-profile', [UsersController::class, 'profile'])->name('my-profile');
     Route::get('/user/profile/{id}', [UsersController::class, 'profile'])->name('user-profile');
     Route::get('/user/{id}', [UsersController::class, 'show'])->name('user-show');
+    Route::get('/user/{id}/forms-kanban', [UsersController::class, 'getUserFormsForKanban'])->name('user-forms-kanban.get');
     Route::get('/user/{id}/files', [UsersController::class, 'getUserFiles'])->name('user-files.get');
     Route::post('/user/upload-file', [UsersController::class, 'uploadFile'])->name('user-files.upload');
     Route::post('/user/profile-photo', [UsersController::class, 'updateProfilePhoto'])->name('user-profile-photo.update');

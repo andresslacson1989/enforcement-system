@@ -44,7 +44,7 @@ class Submission extends Model
      *
      * @param  int  $id  The user_id of either the subject (employee_id) or the submitter (submitted_by).
      */
-    public function getSubmittedForms(int $id): Collection
+    public function getSubmittedForms(mixed $id): Collection
     {
         // 1. Get the new 'types' array from the config file.
         $formTypes = config('forms.types');
