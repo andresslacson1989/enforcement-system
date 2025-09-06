@@ -42,9 +42,10 @@
 
     @if ($submission)
         {{-- This is now an EDIT form --}}
-
         <div class="row">
-            <form action="/forms/update/third-month-performance-evaluation-form/{{ $submission->id }}" method="POST" id="third_month_performance_evaluation_form_edit">
+            <form id="{{ strtolower(str_replace(' ', '-', $form_name) )}}" method="PUT"
+                  @can(config("permit.edit ".strtolower($form_name).".name"))
+                      action="{{ route('forms.update', [strtolower(str_replace(' ', '-', $form_name)), $submission->id]) }}" @endcan>
                 @csrf
                 @method('PUT')
                 <div class="col-12">
@@ -365,8 +366,8 @@
                             </div>
 
                         </div>
-                        @if ($submission->status == 'pending')
-                            @can(config('permit.approve ' . $form_name.'.name'))
+                        @if ($submission->status == 'submitted')
+                            @can(config('permit.edit ' . $form_name.'.name'))
                                 <div class="row mt-4 p-4 mb-4">
                                     <div class="d-grid d-md-flex justify-content-md-end gap-2">
                                         <button type="submit" class="btn btn-primary">Update Form</button>
@@ -381,8 +382,8 @@
     @else
         {{-- This is the CREATE form --}}
         <div class="row">
-            <form action="/forms/store/{{ str_replace(' ', '-', strtolower($form_name)) }}" method="post"
-                  id="{{ str_replace(' ', '-', strtolower($form_name)) }}">
+            <form id="{{ strtolower(str_replace(' ', '-', $form_name) )}}" method="POST"
+                  @can(config("permit.fill ".strtolower($form_name).".name"))  action="{{ route('forms.store', strtolower(str_replace(' ', '-', $form_name)) ) }}" @endcan>
                 @csrf
                 <input type="hidden" name="meeting_date" id="meeting_date_input">
                 <div class="col-12">

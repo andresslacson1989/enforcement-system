@@ -45,7 +45,8 @@
 
     @if($submission)
         <div class="row">
-            <form @can(config("permit.edit ".$form_name.".name")) action="/forms/update/{{ str_replace(' ', '-', strtolower($submission->name)) }}/{{ $submission->id }}" method="put" id="requirement_transmittal_form" @endcan>
+            <form id="{{ strtolower(str_replace(' ', '-', $form_name) )}}" method="PUT"
+                  @can(config("permit.edit ".strtolower($form_name).".name"))  action="{{ route('forms.update', [strtolower(str_replace(' ', '-', $form_name)), $submission->id]) }}" @endcan>
                 @csrf
                 <input type="hidden" value="{{ $submission->id }}" id="form_id" name="form_id">
                 <div class="col-12">
@@ -212,10 +213,10 @@
             </form>
         </div>
         <div class="row">
-            <form action="/form/requirement-transmittal-form/approve" id="approval_form" method="patch">
+            <form action="/form/remarks/requirement-transmittal-form" id="remarks_form" method="patch">
                 @csrf
-                <input type="hidden" id="form_id" value="{{ $submission->id }}">
-                <input type="hidden" id="form_type" value="{{ $submission->name }}">
+                <input type="hidden" id="form_id" name="form_id" value="{{ $submission->id }}">
+                <input type="hidden" id="form_type" name="form_type" value="{{ $submission->name }}">
                 <div class="card">
                     <div class="card-body pt-6">
                         <div class="row g-6">
@@ -265,7 +266,8 @@
 
     @else
         <div class="row">
-            <form action="{{ route('forms.store','requirement-transmittal-form') }}" method="post" id="requirement_transmittal_form">
+            <form id="{{ strtolower(str_replace(' ', '-', $form_name) )}}" method="POST"
+                  @can(config("permit.fill ".strtolower($form_name).".name"))  action="{{ route('forms.store', strtolower(str_replace(' ', '-', $form_name)) ) }}" @endcan>
                 @csrf
                 <div class="col-12">
                     <div class="card">
@@ -387,18 +389,15 @@
                                             </table>
                                         </div>
                                     </div>
-                                    <div class="row g-6 mt-5">
-                                        {{--                                        <div class="col-md-12">
-                                                                                    <div class="alert alert-danger" role="alert">
-                                                                                        <i class="icon-base ti tabler-alert-square-rounded icon-md me-1"></i>
-                                                                                        This document is a system-generated form. By submitting this form, you acknowledge and agree that all relevant information, including your employee ID, will be recorded for processing and
-                                                                                        record-keeping purposes.
-                                                                                    </div>
-                                                                                </div>--}}
-                                        <div class="d-grid d-md-flex justify-content-md-end gap-2 mb-5">
-                                            <button type="submit" class="btn btn-primary">Submit Form</button>
-                                        </div>
-                                    </div>
+                                    @if($submission->status == 'submitted')
+                                        @can(config("permit.edit ".$form_name.".name"))
+                                            <div class="row mt-4 p-4 mb-4">
+                                                <div class="d-grid d-md-flex justify-content-md-end gap-2">
+                                                    <button type="submit" class="btn btn-primary">Update Form</button>
+                                                </div>
+                                            </div>
+                                        @endif
+                                    @endif
                                 </div>
                             </div>
                         </div>

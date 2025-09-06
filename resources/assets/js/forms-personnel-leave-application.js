@@ -2,28 +2,29 @@
 
 $(function () {
   $('.select2').select2();
+  // Initialize Flatpickr for the date inputs
+  const start_date_input = $('#start_date');
+  const end_date_input = $('#end_date');
 
-  // --- New Photo Upload Logic ---
-  const changePhotoButton = $('#change-photo-btn');
-  const photoInput = $('#profile-photo-input');
-  const photoPreview = $('#profile-pic-preview');
+  if (start_date_input.length) {
+    start_date_input.flatpickr({
+      altInput: true,
+      altFormat: 'F j, Y',
+      dateFormat: 'Y-m-d'
+    });
+  }
 
-  // 1. Trigger the hidden file input when the camera button is clicked
-  changePhotoButton.on('click', function () {
-    photoInput.click();
-  });
+  if (end_date_input.length) {
+    end_date_input.flatpickr({
+      altInput: true,
+      altFormat: 'F j, Y',
+      dateFormat: 'Y-m-d'
+    });
+  }
 
-  // 2. Handle the file selection and show a preview
-  photoInput.on('change', function () {
-    const file = this.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = e => photoPreview.attr('src', e.target.result);
-      reader.readAsDataURL(file);
-    }
-  });
+  // Handle form submission with jQuery AJAX
+  const form = $('#personnel-leave-application-form');
 
-  const form = $('#id-application-form');
   if (form.length) {
     form.on('submit', function (e) {
       e.preventDefault(); // Prevent the default form submission
@@ -41,9 +42,7 @@ $(function () {
         if (result.isConfirmed) {
           const url = form.attr('action');
           const type = form.attr('method');
-          // Use FormData to correctly handle file uploads
-          // The 'form[0]' gets the raw DOM element, which is needed by FormData
-          const post_data = new FormData(form[0]);
+          const post_data = form.serialize();
 
           // Show a loading indicator
           Swal.fire({
@@ -60,8 +59,6 @@ $(function () {
             type: type,
             url: url,
             data: post_data,
-            contentType: false, // Important for file uploads
-            processData: false, // Important for file uploads
             headers: {
               'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },

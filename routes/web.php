@@ -89,13 +89,13 @@ Route::middleware(['auth:web'])->group(function () {
     Route::post('/form/update-roles', [Access::class, 'form_update_roles']);
 
     // Form Universal Routes
-    Route::get('/form/create/{formSlug}', [FormController::class, 'create'])->name('forms.create');
-    Route::get('/form/view/{formSlug}/{id}', [FormController::class, 'view'])->name('forms.view');
+    Route::get('/form/create/{form_slug}', [FormController::class, 'create'])->name('forms.create');
+    Route::get('/form/view/{form_slug}/{id}', [FormController::class, 'view'])->name('forms.view');
 
     // Form Controller Universal route for storing forms
-    Route::post('/forms/store/{formSlug}', [FormController::class, 'store'])->name('forms.store');
-    Route::put('/forms/update/{formSlug}/{id}', [FormController::class, 'update'])->name('forms.update');
-    Route::get('/forms/print/{formSlug}/{id}', [FormController::class, 'print'])->name('forms.print');
+    Route::post('/forms/store/{form_slug}', [FormController::class, 'store'])->name('forms.store');
+    Route::put('/forms/update/{form_slug}/{id}', [FormController::class, 'update'])->name('forms.update');
+    Route::get('/forms/print/{form_slug}/{id}', [FormController::class, 'print'])->name('forms.print');
 
     // report a form print
     Route::put('/forms/print-report/{fromType}/{id}', [FormController::class, 'printReport']);

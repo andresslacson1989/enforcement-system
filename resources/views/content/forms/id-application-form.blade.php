@@ -53,14 +53,39 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-8">
-                <div class="card">
-                    <form id="id_application_form"
-                          action="{{ $submission ? route('forms.update', ['formSlug' => 'id-application-form', 'id' => $submission->id]) : route('forms.store', 'id-application-form') }}"
-                          method="POST">
-                        @include('content.snippets.form_header')
-                        <div class="card-body">
 
-                            @csrf
+                <div class="card">
+
+                    <form id="{{ strtolower(str_replace(' ', '-', $form_name) )}}" method="POST" enctype="multipart/form-data"
+                          @if($submission)
+                              @can(config("permit.edit ".strtolower($form_name).".name"))
+                                  action="{{ route('forms.update', [strtolower(str_replace(' ', '-', $form_name)), $submission->id]) }}" @endcan>
+                        @else
+                            @can(config("permit.fill ".strtolower($form_name).".name"))
+                                action="{{ route('forms.store', strtolower(str_replace(' ', '-', $form_name)) ) }}"
+                            @endcan>
+                        @endif
+                        @csrf
+                        @include('content.snippets.form_header')
+
+                        <div class="card-body">
+                            @if($submission && $submission->is_card_done && !$submission->is_delivered)
+                                <div class="alert alert-info alert-dismissible m-1" role="alert">
+                                    <h4 class="alert-heading d-flex align-items-center"><span class="alert-icon rounded"><i class="icon-base ti tabler-info-circle icon-md"></i></span>Ready for pickup!</h4>
+                                    <hr>
+                                    <p class="mb-0">Your application has been processed. And your ID is ready for pickup. Please contact HR Department.</p>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+                                    </button>
+                                </div>
+                            @elseif($submission && $submission->is_delivered)
+                                <div class="alert alert-success alert-dismissible m-1" role="alert">
+                                    <h4 class="alert-heading d-flex align-items-center"><span class="alert-icon rounded"><i class="icon-base ti tabler-info-circle icon-md"></i></span>Card Delievered!</h4>
+                                    <hr>
+                                    <p class="mb-0">Card has been delivered.</p>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+                                    </button>
+                                </div>
+                            @endif
                             @php
                                 // Define the employee object to use, whether creating or viewing
                                 $employee = $submission->employee ?? auth()->user();
@@ -200,21 +225,25 @@
                                     </div>
                                 @endcan
                             @endif
-                            @if ($submission && in_array($submission->status, ['submitted', 'pending']))
-                                {{-- Only show the update button if the user has permission to edit this form --}}
-                                @can(config('permit.edit id application form.name'))
-                                    <div class="d-grid">
-                                        <button type="submit" id="submitBtn" class="btn btn-primary">Update Application</button>
-                                    </div>
-                                @endcan
-                            @elseif($submission && $submission->status == 'processed' && Auth::user()->can("permit.edit processed form.name"))
-                                <div class="d-grid">
-                                    <button type="submit" id="submitBtn" class="btn btn-primary">Update Application</button>
-                                </div>
+                            @if($submission)
+                                @if ($submission->status == 'submitted')
+                                    {{-- Only show the update button if the user has permission to edit this form --}}
+                                    @can(config('permit.edit id application form.name'))
+                                        <div class="d-grid">
+                                            <button type="submit" id="submitBtn" class="btn btn-primary">Update Form</button>
+                                        </div>
+                                    @endcan
+                                @elseif($submission->status == 'processed')
+                                    @can(config("permit.edit processed form.name"))
+                                        <div class="d-grid">
+                                            <button type="submit" id="submitBtn" class="btn btn-primary">Update Form</button>
+                                        </div>
+                                    @endcan
+                                @endif
                             @else
                                 {{-- This is a new form, so it uses the 'fill' permission --}}
                                 <div class="d-grid">
-                                    <button type="submit" id="submitBtn" class="btn btn-primary">Submit Application</button>
+                                    <button type="submit" id="submitBtn" class="btn btn-primary">Submit Form</button>
                                 </div>
                             @endif
                         </div>

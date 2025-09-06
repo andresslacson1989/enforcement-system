@@ -24,6 +24,10 @@ class UserObserver
         if ($user->detachment_id) {
             $this->updateDetachmentCategory(Detachment::find($user->detachment_id));
         }
+        if (! $user->primary_role_id) {
+            $user->primary_role_id = $user->getRoleNames()[0]->id ?? null;
+            $user->saveQuietly();
+        }
     }
 
     /**

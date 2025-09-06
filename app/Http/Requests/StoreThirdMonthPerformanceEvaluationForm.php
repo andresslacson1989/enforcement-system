@@ -28,11 +28,8 @@ class StoreThirdMonthPerformanceEvaluationForm extends FormRequest
     {
         // These rules are based on a standard performance evaluation.
         // Adjust them to match the exact fields on your form.
-        return [
-            'employee_id' => 'required|exists:users,id',
-            'employee_number' => 'nullable|string',
-            'detachment_id' => 'required|exists:detachments,id',
-            'submitted_by' => 'required|exists:users,id',
+        $rules = [
+            // dates
             'period_review_start_date' => 'required|date',
             'period_review_end_date' => 'required|date|after_or_equal:period_review_start_date',
 
@@ -71,5 +68,16 @@ class StoreThirdMonthPerformanceEvaluationForm extends FormRequest
             'supervisor_comment' => 'nullable|string|max:2000',
             'security_comment' => 'nullable|string|max:2000',
         ];
+
+        if ($this->isMethod('POST')) {
+            $rules = array_merge($rules, [
+                'employee_id' => 'required|exists:users,id',
+                'employee_number' => 'nullable|string',
+                'detachment_id' => 'required|exists:detachments,id',
+                'submitted_by' => 'required|exists:users,id',
+            ]);
+        }
+
+        return $rules;
     }
 }

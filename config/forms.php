@@ -88,6 +88,18 @@ return [
                 'notify_employee' => false,
             ],
         ],
+        'personnel-leave-application-form' => [
+            'name' => 'Personnel Leave Application Form',
+            'model' => \App\Models\PersonnelLeaveApplicationForm::class,
+            'request' => \App\Http\Requests\StorePersonnelLeaveApplicationFormRequest::class,
+            // We will create this handler next
+            'handler' => \App\Http\Handlers\PersonnelLeaveApplicationFormHandler::class,
+            'one_to_one' => false, // A user can have multiple leave applications
+            'notifications' => [
+                'roles' => ['hr-manager', 'operation-manager'], // Notify HR and Operations by default
+                'notify_employee' => false,
+            ],
+        ],
         // Add any new form types here
     ],
 ];

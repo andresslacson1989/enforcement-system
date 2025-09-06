@@ -23,12 +23,13 @@ window.Echo = new Echo({
  * @param {object} notificationData The JSON data from the Pusher event.
  */
 function updateNotifications(notificationData) {
-  console.log(notificationData);
+  console.log(notificationData.title, notificationData.message, notificationData);
   // --- 1. Update the notification count ---
   let countElement = $('#notification-count');
   let currentCount = parseInt(countElement.text().replace(' New', '')) || 0;
 
   if (notificationData) {
+    notificationData = notificationData[0];
     currentCount++;
     countElement.text(currentCount + ' New');
     $('#notification-bell-badge').removeClass('d-none');

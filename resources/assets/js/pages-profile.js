@@ -1,5 +1,10 @@
 'use strict';
 $(function () {
+  $('.select2').select2({
+    dropdownParent: $('#uploadFileModal'),
+    minimumResultsForSearch: -1,
+    placeholder: 'Select a category...'
+  });
   // --- Global AJAX Setup for CSRF Token ---
   // This is the standard and most reliable way to ensure all AJAX requests
   // include the CSRF token, preventing mismatch errors.
@@ -181,6 +186,7 @@ $(function () {
         }
       });
     } else {
+      yarn;
       Swal.fire({
         title: `Tags for: ${certificate_name}`,
         text: 'No tags have been assigned to this certificate.',

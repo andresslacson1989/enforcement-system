@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 
@@ -68,10 +67,36 @@ class SixthMonthPerformanceEvaluationForm extends BaseFormModel
     }
 
     /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'period_review_start_date' => 'date',
+        'period_review_end_date' => 'date',
+    ];
+
+    /**
      * Get the employee (user) that this form is for.
      */
     public function employee(): BelongsTo
     {
         return $this->belongsTo(User::class, 'employee_id');
+    }
+
+    /**
+     * Get the user who submitted the form.
+     */
+    public function submittedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'submitted_by');
+    }
+
+    /**
+     * Get the detachment that this form belongs to.
+     */
+    public function detachment(): BelongsTo
+    {
+        return $this->belongsTo(Detachment::class, 'detachment_id');
     }
 }

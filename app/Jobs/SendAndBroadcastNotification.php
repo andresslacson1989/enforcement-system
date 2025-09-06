@@ -54,7 +54,7 @@ class SendAndBroadcastNotification implements ShouldQueue
                     // If a link is provided, add an inline button to the message.
                     if ($this->link) {
                         $params['reply_markup'] = json_encode([
-                            'inline_keyboard' => [[['text' => 'View Details', 'url' => $this->link]]],
+                            'inline_keyboard' => [[['text' => 'View Details', 'url' => url($this->link)]]],
                         ]);
                     }
 

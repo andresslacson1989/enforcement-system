@@ -8,27 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
-/**
- * @property int $id
- * @property int|null $submitted_by
- * @property string $submittable_type
- * @property int $submittable_id
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read mixed $user
- * @property-read Model|\Eloquent $submittable
- * @property-read \App\Models\User|null $submittedBy
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Submission newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Submission newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Submission query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Submission whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Submission whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Submission whereSubmittableId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Submission whereSubmittableType($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Submission whereSubmittedBy($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Submission whereUpdatedAt($value)
- * @mixin \Eloquent
- */
 class Submission extends Model
 {
     use HasFactory;

@@ -24,32 +24,30 @@ class StoreIdApplicationFormRequest extends FormRequest
      */
     public function rules(): array
     {
+        // Rules for the update by HR
+        $rules = [
+            'is_info_complete' => 'nullable|boolean',
+            'has_id_picture' => 'nullable|boolean',
+            'is_for_filing' => 'nullable|boolean',
+            'is_encoded' => 'nullable|boolean',
+            'is_card_done' => 'nullable|boolean',
+            'is_delivered' => 'nullable|boolean',
+            'status' => 'nullable|string|in:pending,processed,approved,denied',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ];
+
         // Rules for the initial submission by the employee
         if ($this->isMethod('POST')) {
-            return [
+            $rules = array_merge($rules, [
                 'employee_id' => 'required|exists:users,id',
                 'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048', // Add validation for the photo
                 'emergency_contact_name' => 'required|string|max:255',
                 'emergency_contact_relation' => 'required|string|max:255',
                 'emergency_contact_address' => 'required|string|max:1000',
                 'emergency_contact_number' => 'required|string|max:20',
-            ];
+            ]);
         }
 
-        // Rules for the update by HR
-        if ($this->isMethod('PUT') || $this->isMethod('PATCH')) {
-            return [
-                'is_info_complete' => 'nullable|boolean',
-                'has_id_picture' => 'nullable|boolean',
-                'is_for_filing' => 'nullable|boolean',
-                'is_encoded' => 'nullable|boolean',
-                'is_card_done' => 'nullable|boolean',
-                'is_delivered' => 'nullable|boolean',
-                'status' => 'nullable|string|in:pending,processed,approved,denied',
-                'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            ];
-        }
-
-        return [];
+        return $rules;
     }
 }

@@ -51,6 +51,13 @@
 @endsection
 
 @section('content')
+    <style>
+        @media (min-width: 1200px) {
+            .modal-xl {
+                --bs-modal-width: 1550px !important;
+            }
+        }
+    </style>
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><span class="fw-bold">Main</span></li>
@@ -61,7 +68,7 @@
     <div class="row g-6">
         <div class="container my-4 my-md-5">
             <div class="row">
-                <div class="col-lg-4 mb-4">
+                <div class="col-lg-3 mb-4">
                     <div class="card text-center profile-card shadow-sm">
                         <div class="card-header"></div>
                         <div class="card-body">
@@ -92,7 +99,7 @@
                                 <p class="text-muted mb-1"><i class="ti tabler-id me-2"></i><strong>Employee No.: </strong>#{{ $user->employee_number ?? '' }} </p>
                                 <p><i class="ti tabler-user-star me-2"></i><strong>Status:</strong> <span class="badge bg-label-primary">{{ strtoupper($user->status ?? '') }}</span></p>
                                 <hr>
-                                <p><i class="ti tabler-mail me-2"></i><strong>Email:</strong> {{ $user->email ?? 'N/A' }}</p>
+                                <p><i class="ti tabler-mail me-2"></i><strong>Email:</strong> <small>{{ $user->email ?? 'N/A' }}</small></p>
                                 <p><i class="ti tabler-phone me-2"></i><strong>Phone:</strong> {{ $user->phone_number ?? 'N/A' }}</p>
                                 <p><i class="ti tabler-brand-telegram me-2"></i><strong>Telegram:</strong> {{ $user->telegram_chat_id ?? 'N/A' }}</p>
                                 <hr>
@@ -117,7 +124,7 @@
                     </div>
                 </div>
 
-                <div class="col-lg-8">
+                <div class="col-lg-9">
 
                     <div class="card shadow-sm mb-4">
                         @if(in_array($user->primaryRole->name, (new UserClass())->listStaffRoles()))
@@ -390,25 +397,25 @@
                                             <div class="card">
                                                 <div class="card-body">
                                                     <div class="list-group list-group-flush" id="file_category_list">
-                                                        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center active" data-category="all">
-                                                            <i class="ti tabler-folder me-2"></i> All Files
-                                                            <span class="badge bg-label-dark ms-1">4</span>
+                                                        <a href="#" class="btn btn-label-dark text-nowrap d-inline-flex position-relative me-4 mb-1 active" data-category="all">
+                                                            All Files
+                                                            <span class="position-absolute top-0 start-100 translate-middle badge badge-center rounded-pill bg-primary text-white">0</span>
                                                         </a>
-                                                        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-category="licenses">
-                                                            <i class="ti tabler-id me-2 text-primary"></i> Licenses
-                                                            <span class="badge bg-label-primary ms-1">1</span>
+                                                        <a href="#" class="btn btn-label-info text-nowrap d-inline-flex position-relative me-4 mb-1" data-category="licenses">
+                                                            Licenses
+                                                            <span class="position-absolute top-0 start-100 translate-middle badge badge-center rounded-pill bg-info text-white">0</span>
                                                         </a>
-                                                        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-category="documents">
-                                                            <i class="ti tabler-files me-2 text-info"></i> Docs
-                                                            <span class="badge bg-label-info ms-1">1</span>
+                                                        <a href="#" class="btn btn-label-success text-nowrap d-inline-flex position-relative me-4 mb-1" data-category="documents">
+                                                            Docs
+                                                            <span class="position-absolute top-0 start-100 translate-middle badge badge-center rounded-pill bg-success text-white">0</span>
                                                         </a>
-                                                        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-category="images">
-                                                            <i class="ti tabler-photo me-2 text-success"></i> Images
-                                                            <span class="badge bg-label-success ms-1">1</span>
+                                                        <a href="#" class="btn btn-label-warning text-nowrap d-inline-flex position-relative me-4 mb-1" data-category="images">
+                                                            Images
+                                                            <span class="position-absolute top-0 start-100 translate-middle badge badge-center rounded-pill bg-warning text-white">0</span>
                                                         </a>
-                                                        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-category="pdfs">
-                                                            <i class="ti tabler-file-type-pdf me-2 text-danger"></i> PDFs
-                                                            <span class="badge bg-label-danger ms-1">1</span>
+                                                        <a href="#" class="btn btn-label-danger text-nowrap d-inline-flex position-relative me-4 mb-1" data-category="pdfs">
+                                                            PDFs
+                                                            <span class="position-absolute top-0 start-100 translate-middle badge badge-center rounded-pill bg-danger text-white">0</span>
                                                         </a>
                                                     </div>
                                                 </div>
@@ -482,7 +489,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="file_category" class="form-label">Category</label>
-                            <select class="form-select" id="file_category" name="category" required>
+                            <select class="form-control select2" id="file_category" name="category" required>
                                 <option value="" selected disabled>Select a category...</option>
                                 <option value="licenses">License</option>
                                 <option value="documents">Document</option>

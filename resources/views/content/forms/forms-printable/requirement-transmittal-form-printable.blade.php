@@ -33,11 +33,9 @@
                 <td>
                     <span class="fw-bold mb">1. Application Form with 2 pcs. 2x2 recent picture (white background)</span>
                     <div class="mt-2">
-                        <input class="form-check-input ms-5" type="checkbox" id="original_application_form_and_recent_picture" name="original_application_form_and_recent_picture"
-                               @if($submission->original_application_form_and_recent_picture ?? false) checked @endif>
+                        <i class="ms-5 fa-regular {{ $submission->original_application_form_and_recent_picture ? 'fa-square-check' : 'fa-square' }}"></i>
                         <label class="me-2" for="original_application_form_and_recent_picture">Original</label>
-                        <input class="form-check-input ms-5" type="checkbox" id="photocopy_application_form_and_recent_picture" name="photocopy_application_form_and_recent_picture"
-                               @if($submission->photocopy_application_form_and_recent_picture ?? false) checked @endif>
+                        <i class="ms-5 fa-regular {{ $submission->photocopy_application_form_and_recent_picture ? 'fa-square-check' : 'fa-square' }}"></i>
                         <label class="me-2" for="photocopy_application_form_and_recent_picture">Photocopy</label>
                     </div>
                 </td>
@@ -46,11 +44,11 @@
             <tr>
                 <td>
                     <span class="fw-bold">2. Security License</span>
-                    <input class="form-check-input ms-5" type="checkbox" id="sbr" name="sbr" @if($submission->sbr ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->sbr ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="sbr">SBR</label>
-                    <input class="form-check-input ms-5" type="checkbox" id="original_security_license" name="original_security_license" @if($submission->original_security_license ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->original_security_license ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="original_security_license">Original</label>
-                    <input class="form-check-input ms-5" type="checkbox" id="photocopy_security_license" name="photocopy_security_license" @if($submission->photocopy_security_license ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->photocopy_security_license ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="photocopy_security_license">Photocopy</label>
                 </td>
                 <td>
@@ -60,9 +58,9 @@
             <tr>
                 <td>
                     <span class="fw-bold">3. NBI Clearance</span>
-                    <input class="form-check-input ms-5" type="checkbox" id="original_nbi_clearance" name="original_nbi_clearance" @if($submission->original_nbi_clearance ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->original_nbi_clearance ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="original_nbi_clearance">Original</label>
-                    <input class="form-check-input ms-5" type="checkbox" id="photocopy_nbi_clearance" name="photocopy_nbi_clearance" @if($submission->photocopy_nbi_clearance ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->photocopy_nbi_clearance ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="photocopy_nbi_clearance">Photocopy</label>
                 </td>
                 <td>
@@ -72,9 +70,9 @@
             <tr>
                 <td>
                     <span class="fw-bold">4. National Police Clearance</span>
-                    <input class="form-check-input ms-5" type="checkbox" id="original_national_police_clearance" name="original_national_police_clearance" @if($submission->original_national_police_clearance?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->original_national_police_clearance ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="original_national_police_clearance">Original</label>
-                    <input class="form-check-input ms-5" type="checkbox" id="photocopy_national_police_clearance" name="photocopy_national_police_clearance" @if($submission->photocopy_national_police_clearance ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->photocopy_national_police_clearance ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="photocopy_national_police_clearance">Photocopy</label>
                 </td>
                 <td>
@@ -84,9 +82,9 @@
             <tr>
                 <td>
                     <span class="fw-bold">5. Police Clearance</span>
-                    <input class="form-check-input ms-5" type="checkbox" id="original_police_clearance" name="original_police_clearance" @if($submission->original_police_clearance ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->original_police_clearance ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="original_police_clearance">Original</label>
-                    <input class="form-check-input ms-5" type="checkbox" id="photocopy_police_clearance" name="photocopy_police_clearance" @if($submission->photocopy_police_clearance ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->photocopy_police_clearance ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="photocopy_police_clearance">Photocopy</label>
                 </td>
                 <td>
@@ -96,9 +94,9 @@
             <tr>
                 <td>
                     <span class="fw-bold">6. Court Clearance</span>
-                    <input class="form-check-input ms-5" type="checkbox" id="original_court_clearance" name="original_court_clearance" @if($submission->original_court_clearance?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->original_court_clearance ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="original_court_clearance">Original</label>
-                    <input class="form-check-input ms-5" type="checkbox" id="photocopy_court_clearance" name="photocopy_court_clearance" @if($submission->photocopy_court_clearance ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->photocopy_court_clearance ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="photocopy_court_clearance">Photocopy</label>
                 </td>
                 <td>
@@ -108,9 +106,9 @@
             <tr>
                 <td>
                     <span class="fw-bold">7. Barangay Clearance</span>
-                    <input class="form-check-input ms-5" type="checkbox" id="original_barangay_clearance" name="original_barangay_clearance" @if($submission->original_barangay_clearance ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->original_barangay_clearance ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="original_barangay_clearance">Original</label>
-                    <input class="form-check-input ms-5" type="checkbox" id="photocopy_barangay_clearance" name="photocopy_barangay_clearance" @if($submission->photocopy_barangay_clearance ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->photocopy_barangay_clearance ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="photocopy_barangay_clearance">Photocopy</label>
                 </td>
                 <td>
@@ -120,9 +118,9 @@
             <tr>
                 <td>
                     <span class="fw-bold">8. Neuro Psychiatric Test</span>
-                    <input class="form-check-input ms-5" type="checkbox" id="original_neuro_psychiatric_test" name="original_neuro_psychiatric_test" @if($submission->original_neuro_psychiatric_test ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->original_neuro_psychiatric_test ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="original_neuro_psychiatric_test">Original</label>
-                    <input class="form-check-input ms-5" type="checkbox" id="photocopy_neuro_psychiatric_test" name="photocopy_neuro_psychiatric_test" @if($submission->photocopy_neuro_psychiatric_test ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->photocopy_neuro_psychiatric_test ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="photocopy_neuro_psychiatric_test">Photocopy</label>
                 </td>
                 <td>
@@ -132,9 +130,9 @@
             <tr>
                 <td>
                     <span class="fw-bold">9. Drug Test</span>
-                    <input class="form-check-input ms-5" type="checkbox" id="original_drug_test" name="original_drug_test" @if($submission->original_drug_test ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->original_drug_test ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="original_drug_test">Original</label>
-                    <input class="form-check-input ms-5" type="checkbox" id="photocopy_drug_test" name="photocopy_drug_test" @if($submission->photocopy_drug_test ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->photocopy_drug_test ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="photocopy_drug_test">Photocopy</label>
                 </td>
                 <td>
@@ -144,13 +142,13 @@
             <tr>
                 <td>
                     <span class="fw-bold">10. Diploma</span>
-                    <input class="form-check-input ms-5" type="checkbox" id="diploma_hs" name="diploma_hs" @if($submission->diploma_hs ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->diploma_hs ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="diploma_hs">High School</label>
-                    <input class="form-check-input ms-5" type="checkbox" id="diploma_college" name="diploma_college" @if($submission->diploma_college ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->diploma_college ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="diploma_college">College</label>
-                    <input class="form-check-input ms-5" type="checkbox" id="original_diploma" name="original_diploma" @if($submission->original_diploma ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->original_diploma ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="original_diploma">Original</label>
-                    <input class="form-check-input ms-5" type="checkbox" id="photocopy_diploma" name="photocopy_diploma" @if($submission->photocopy_diploma ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->photocopy_diploma ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="photocopy_diploma">Photocopy</label>
                 </td>
                 <td class="bg-dark-subtle"></td>
@@ -158,9 +156,9 @@
             <tr>
                 <td>
                     <span class="fw-bold">11. Transcript of Records</span>
-                    <input class="form-check-input ms-5" type="checkbox" id="original_transcript" name="original_transcript" @if($submission->original_transcript ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->original_transcript ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="original_transcript">Original</label>
-                    <input class="form-check-input ms-5" type="checkbox" id="photocopy_transcript" name="photocopy_transcript" @if($submission->photocopy_transcript ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->photocopy_transcript ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="photocopy_transcript">Photocopy</label>
                 </td>
                 <td class="bg-dark-subtle"></td>
@@ -168,9 +166,9 @@
             <tr>
                 <td>
                     <span class="fw-bold">12. Training Certificate, Opening, Closing</span>
-                    <input class="form-check-input ms-5" type="checkbox" id="original_training_certificate" name="original_training_certificate" @if($submission->original_training_certificate ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->original_training_certificate ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="original_training_certificate">Original</label>
-                    <input class="form-check-input ms-5" type="checkbox" id="photocopy_training_certificate" name="photocopy_training_certificate" @if($submission->photocopy_training_certificate ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->photocopy_training_certificate ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="photocopy_training_certificate">Photocopy</label>
                 </td>
                 <td>
@@ -180,9 +178,9 @@
             <tr>
                 <td>
                     <span class="fw-bold">13. PSA Birth Certificate</span>
-                    <input class="form-check-input ms-5" type="checkbox" id="original_psa_birth" name="original_psa_birth" @if($submission->original_psa_birth ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->original_psa_birth ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="original_psa_birth">Original</label>
-                    <input class="form-check-input ms-5" type="checkbox" id="photocopy_psa_birth" name="photocopy_psa_birth" @if($submission->photocopy_psa_birth ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->photocopy_psa_birth ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="photocopy_psa_birth">Photocopy</label>
                 </td>
                 <td class="bg-dark-subtle"></td>
@@ -190,9 +188,9 @@
             <tr>
                 <td>
                     <span class="fw-bold">14. PSA Marriage Certificate</span>
-                    <input class="form-check-input ms-5" type="checkbox" id="original_psa_marriage" name="original_psa_marriage" @if($submission->original_psa_marriage ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->original_psa_marriage ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="original_psa_marriage">Original</label>
-                    <input class="form-check-input ms-5" type="checkbox" id="photocopy_psa_marriage" name="photocopy_psa_marriage" @if($submission->photocopy_psa_marriage ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->photocopy_psa_marriage ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="photocopy_psa_marriage">Photocopy</label>
                 </td>
                 <td class="bg-dark-subtle"></td>
@@ -200,9 +198,9 @@
             <tr>
                 <td>
                     <span class="fw-bold">15. PSA Birth Certificates of Dependents (Children)</span>
-                    <input class="form-check-input ms-5" type="checkbox" id="original_psa_birth_dependents" name="original_psa_birth_dependents" @if($submission->original_psa_birth_dependents ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->original_psa_birth_dependents ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="original_psa_birth_dependents">Original</label>
-                    <input class="form-check-input ms-5" type="checkbox" id="photocopy_psa_birth_dependents" name="photocopy_psa_birth_dependents" @if($submission->photocopy_psa_birth_dependents?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->photocopy_psa_birth_dependents ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="photocopy_psa_birth_dependents">Photocopy</label>
                 </td>
                 <td class="bg-dark-subtle"></td>
@@ -211,10 +209,9 @@
                 <td>
                     <span class="fw-bold mb-3">16. Certificate of Employment (Previous Security Agency)</span>
                     <div class="mt-2">
-                        <input class="form-check-input ms-5" type="checkbox" id="original_certificate_of_employment" name="original_certificate_of_employment" @if($submission->original_certificate_of_employment ?? false) checked @endif>
+                        <i class="ms-5 fa-regular {{ $submission->original_certificate_of_employment ? 'fa-square-check' : 'fa-square' }}"></i>
                         <label class="me-2" for="original_certificate_of_employment">Original</label>
-                        <input class="form-check-input ms-5" type="checkbox" id="photocopy_certificate_of_employment" name="photocopy_certificate_of_employment"
-                               @if($submission->photocopy_certificate_of_employment ?? false) checked @endif>
+                        <i class="ms-5 fa-regular {{ $submission->photocopy_certificate_of_employment ? 'fa-square-check' : 'fa-square' }}"></i>
                         <label class="me-2" for="photocopy_certificate_of_employment">Photocopy</label>
                     </div>
                 </td>
@@ -223,9 +220,9 @@
             <tr>
                 <td>
                     <span class="fw-bold">17. Community Tax Certificate</span>
-                    <input class="form-check-input ms-5" type="checkbox" id="original_community_tax_certificate" name="original_community_tax_certificate" @if($submission->original_community_tax_certificate ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->original_community_tax_certificate ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="original_community_tax_certificate">Original</label>
-                    <input class="form-check-input ms-5" type="checkbox" id="photocopy_community_tax_certificate" name="photocopy_community_tax_certificate" @if($submission->photocopy_community_tax_certificate ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->photocopy_community_tax_certificate ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="photocopy_community_tax_certificate">Photocopy</label>
                 </td>
                 <td class="bg-dark-subtle"></td>
@@ -233,9 +230,9 @@
             <tr>
                 <td>
                     <span class="fw-bold">18. Tax Identification Number</span>
-                    <input class="form-check-input ms-5" type="checkbox" id="original_tax_id_number" name="original_tax_id_number" @if($submission->original_tax_id_number ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->original_tax_id_number ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="original_tax_id_number">Original</label>
-                    <input class="form-check-input ms-5" type="checkbox" id="photocopy_tax_id_number" name="photocopy_tax_id_number" @if($submission->photocopy_tax_id_number ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->photocopy_tax_id_number ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="photocopy_tax_id_number">Photocopy</label>
                 </td>
                 <td class="bg-dark-subtle"></td>
@@ -243,9 +240,9 @@
             <tr>
                 <td>
                     <span class="fw-bold">19. E1 Form SSS</span>
-                    <input class="form-check-input ms-5" type="checkbox" id="original_e1_form" name="original_e1_form" @if($submission->original_e1_form ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->original_e1_form ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="original_e1_form">Original</label>
-                    <input class="form-check-input ms-5" type="checkbox" id="photocopy_e1_form" name="photocopy_e1_form" @if($submission->photocopy_e1_form ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->photocopy_e1_form ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="photocopy_e1_form">Photocopy</label>
                 </td>
                 <td class="bg-dark-subtle"></td>
@@ -253,13 +250,13 @@
             <tr>
                 <td>
                     <span class="fw-bold">20. SSS</span>
-                    <input class="form-check-input ms-5" type="checkbox" id="sss_id" name="sss_id" @if($submission->sss_id ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->sss_id ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="sss_id">SSS ID</label>
-                    <input class="form-check-input ms-5" type="checkbox" id="sss_slip" name="sss_slip" @if($submission->sss_slip ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->sss_slip ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="sss_slip">SSS Slip</label>
-                    <input class="form-check-input ms-5" type="checkbox" id="original_sss_id" name="original_sss_id" @if($submission->original_sss_id ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->original_sss_id ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="original_sss_id">Original</label>
-                    <input class="form-check-input ms-5" type="checkbox" id="photocopy_sss_id" name="photocopy_sss_id" @if($submission->photocopy_sss_id?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->photocopy_sss_id ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="photocopy_sss_id">Photocopy</label>
                 </td>
                 <td class="bg-dark-subtle"></td>
@@ -267,11 +264,11 @@
             <tr>
                 <td>
                     <span class="fw-bold">21. PhilHealth ID</span>
-                    <input class="form-check-input ms-5" type="checkbox" id="philhealth_mdr" name="philhealth_mdr" @if($submission->philhealth_mdr ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->philhealth_mdr ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="philhealth_mdr">MDR</label>
-                    <input class="form-check-input ms-5" type="checkbox" id="original_philhealth_id" name="original_philhealth_id" @if($submission->original_philhealth_id ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->original_philhealth_id ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="original_philhealth_id">Original</label>
-                    <input class="form-check-input ms-5" type="checkbox" id="photocopy_philhealth_id" name="photocopy_philhealth_id" @if($submission->photocopy_philhealth_id ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->photocopy_philhealth_id ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="photocopy_philhealth_id">Photocopy</label>
                 </td>
                 <td>
@@ -281,11 +278,11 @@
             <tr>
                 <td>
                     <span class="fw-bold">22. Pag-IBIG ID</span>
-                    <input class="form-check-input ms-5" type="checkbox" id="pagibig_mdf" name="pagibig_mdf" @if($submission->pagibig_mdf ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->pagibig_mdf ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="pagibig_mdf">MDF</label>
-                    <input class="form-check-input ms-5" type="checkbox" id="original_pagibig_id" name="original_pagibig_id" @if($submission->original_pagibig_id ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->original_pagibig_id ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="original_pagibig_id">Original</label>
-                    <input class="form-check-input ms-5" type="checkbox" id="photocopy_pagibig_id" name="photocopy_pagibig_id" @if($submission->photocopy_pagibig_id?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->photocopy_pagibig_id ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="photocopy_pagibig_id">Photocopy</label>
                 </td>
                 <td>
@@ -295,9 +292,9 @@
             <tr>
                 <td>
                     <span class="fw-bold">23. Statement of Account (Previous Loan)</span>
-                    <input class="form-check-input ms-5" type="checkbox" id="original_statement_of_account" name="original_statement_of_account" @if($submission->original_statement_of_account ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->original_statement_of_account ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="original_statement_of_account">Original</label>
-                    <input class="form-check-input ms-5" type="checkbox" id="photocopy_statement_of_account" name="photocopy_statement_of_account" @if($submission->photocopy_statement_of_account ?? false) checked @endif>
+                    <i class="ms-5 fa-regular {{ $submission->photocopy_statement_of_account ? 'fa-square-check' : 'fa-square' }}"></i>
                     <label class="me-2" for="photocopy_statement_of_account">Photocopy</label>
                 </td>
                 <td class="bg-dark-subtle"></td>

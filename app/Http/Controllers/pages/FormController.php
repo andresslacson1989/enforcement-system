@@ -5,6 +5,7 @@ namespace App\Http\Controllers\pages;
 use App\Helpers\NotificationHelper;
 use App\Http\Classes\UserClass;
 use App\Jobs\SendAndBroadcastNotification;
+use App\Models\IdApplicationForm;
 use App\Models\User;
 use App\Services\FormSubmissionService;
 use Carbon\Carbon;
@@ -115,6 +116,7 @@ class FormController
         // 3. Handle one-to-one form checks BEFORE creating any models.
         $is_one_to_one = $form_config['one_to_one'] ?? false;
         if ($is_one_to_one) {
+
             // Special check for the onboarding form, as the user doesn't exist yet.
             if ($form_slug === 'requirement-transmittal-form') {
                 $existing_user = User::where('employee_number', $validated_data['employee_number'])
@@ -149,6 +151,12 @@ class FormController
             $validated_data = $this->_handle_id_application_form_data($request, $validated_data);
         }
 
+        // For leave applications, the employee is the one submitting the form.
+        if ($form_slug === 'personnel-leave-application-form') {
+            $validated_data['user_id'] = $user->id;
+            $validated_data['employee_id'] = $user->id;
+        }
+
         // 6. Determine notification recipients
         $users_to_notify_ids = (new NotificationHelper)->determineRecipients($form_slug, $validated_data, $user, $employee);
 
@@ -167,6 +175,7 @@ class FormController
             'icon' => 'success',
             'text' => 'Form submitted successfully!',
             'form_id' => $form->id,
+            'form_name' => $form_slug,
             'employee_id' => $employee->id ?? '',
         ]);
     }
@@ -207,10 +216,10 @@ class FormController
 
         // Step 4: Proceed with the update logic using the clean data
         $form = $form_config['model']::findOrFail($id);
-        $user = User::findOrFail($form->employee_id);
+        $employee = User::findOrFail($form->employee_id); // make sure to double-check this sometimes employee id is the staff.
 
-        DB::transaction(function () use ($user, $form, $validated_data) {
-            $user_data = Arr::only($validated_data, $user->getFillable());
+        DB::transaction(function () use ($employee, $form, $validated_data) {
+            $user_data = Arr::only($validated_data, $employee->getFillable());
             $form_data = Arr::only($validated_data, $form->getFillable());
 
             // --- This is the fix ---
@@ -221,7 +230,7 @@ class FormController
                 unset($user_data['status']);
             }
 
-            $user->update($user_data);
+            $employee->update($user_data);
             $form->update($form_data);
         });
 
@@ -229,6 +238,8 @@ class FormController
             'message' => 'Success',
             'icon' => 'success',
             'text' => 'Form updated successfully!',
+            'form_name' => $form_type,
+            'employee_id' => $employee->id,
             'form_id' => $form->id,
         ]);
     }
@@ -242,6 +253,7 @@ class FormController
      */
     private function _handle_create_user_from_requirement_transmittal_form_data(array $data): User
     {
+        $default_role = 'guard';
         $employee_name = trim($data['first_name'].' '.$data['last_name'].' '.($data['suffix'] ?? ''));
         $employee_data = [
             'name' => $employee_name,
@@ -264,7 +276,8 @@ class FormController
         $employee = (new UserClass)->create($employee_data);
 
         // Assign roles, etc.
-        $employee->assignRole('guard');
+        $employee->assignRole($default_role);
+        $employee->setPrimaryRole($default_role);
 
         return $employee;
     }
@@ -372,7 +385,7 @@ class FormController
         if ($request->hasFile('photo')) {
             // If this is an update, find the existing form and delete the old photo.
             if ($form_id) {
-                $current_form = \App\Models\IdApplicationForm::findOrFail($form_id);
+                $current_form = IdApplicationForm::findOrFail($form_id);
                 if ($current_form && $current_form->photo_path) {
                     Storage::disk('public')->delete($current_form->photo_path);
                 }
@@ -380,6 +393,7 @@ class FormController
 
             // Store the new photo and add its path to the data.
             $validated_data['photo_path'] = $request->file('photo')->store('id-applications', 'public');
+
         }
 
         // Handle HR Processing section updates
@@ -387,7 +401,6 @@ class FormController
         // Check if any of the HR fields were part of the submitted form data.
         $is_hr_update = Arr::hasAny($request->all(), $hr_fields);
 
-        // --- This is the fix ---
         // We must always check for the presence of the checkbox fields in the request.
         // If they are not present, it means they were unchecked, and we must set them to false.
         $validated_data['is_card_done'] = $request->has('is_card_done');
@@ -398,7 +411,7 @@ class FormController
 
             // --- New Notification Logic ---
             // Find the original submission record to get the submitter's ID
-            $submission = \App\Models\IdApplicationForm::findOrFail($form_id)->submission;
+            $submission = IdApplicationForm::findOrFail($form_id)->submission;
             $submitter_id = $submission->submitted_by;
 
             // Check if the 'is_card_done' status has just been changed to true
@@ -406,7 +419,7 @@ class FormController
                 $title = 'ID Card Ready for Pickup';
                 $employee_name = $submission->submittable->employee->name;
                 $message = "The ID card for {$employee_name} is now ready for pickup.";
-                $link = route('forms.view', ['formSlug' => 'id-application-form', 'id' => $form_id]);
+                $link = route('forms.view', ['form_slug' => 'id-application-form', 'id' => $form_id]);
 
                 // Dispatch the notification job to the original submitter
                 SendAndBroadcastNotification::dispatch($title, $message, $link, [$submitter_id]);

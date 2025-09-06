@@ -245,6 +245,18 @@
                                     </div>
                                 </div>
                             @endcan
+                            @can(config("permit.fill personnel leave application form.name"))
+                                <div class="col" data-category="personnel">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Personnel Leave Application</h5>
+                                            <p class="card-text small text-muted">Request for personal or sick leave.</p>
+                                            <span class="badge bg-primary">Personnel</span>
+                                        </div>
+                                        <div class="card-footer"><a href="{{ route('forms.create', ['form_slug' => 'personnel-leave-application-form']) }}" class="btn btn-primary w-100">Fill Form</a></div>
+                                    </div>
+                                </div>
+                            @endcan
                         </div>
                     </div>
                 </div>

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -52,44 +53,99 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read int|null $users_count
  *
  * @method static \Database\Factories\DetachmentFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereApprovedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereApprovedBy($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereAssignedOfficer($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereCashBond($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereCategory($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereCity($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereEcola($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereHolOtRate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereHolRate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereHoursPerShift($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereHrRate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereMaxHrsDuty($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereMaxOt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereNdRate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereOtRate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment wherePhoneNumber($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereProvince($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereRdHolOtRate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereRdHolRate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereRdShOtRate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereRdShRate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereRddOtRate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereRddRate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereRetirementPay($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereShOtRate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereShRate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereSil($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereStatus($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereStreet($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereThirteenthMonthPay($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Detachment whereZipCode($value)
+ * @method static Builder|Detachment newModelQuery()
+ * @method static Builder|Detachment newQuery()
+ * @method static Builder|Detachment query()
+ * @method static Builder|Detachment onlyTrashed()
+ * @method static Builder|Detachment withTrashed()
+ * @method static Builder|Detachment withoutTrashed()
+ *
+ * @mixin \Eloquent
+ */
+
+/**
+ * @property int $id
+ * @property string $name
+ * @property string|null $category
+ * @property int|null $assigned_officer
+ * @property string $status
+ * @property int|null $approved_by
+ * @property string|null $approved_at
+ * @property string $street
+ * @property string $city
+ * @property string $province
+ * @property string $zip_code
+ * @property string $phone_number
+ * @property int|null $hours_per_shift
+ * @property int|null $max_hrs_duty
+ * @property int|null $max_ot
+ * @property string|null $hr_rate
+ * @property string|null $ot_rate
+ * @property string|null $nd_rate
+ * @property string|null $rdd_rate
+ * @property string|null $rdd_ot_rate
+ * @property string|null $hol_rate
+ * @property string|null $hol_ot_rate
+ * @property string|null $sh_rate
+ * @property string|null $sh_ot_rate
+ * @property string|null $rd_hol_rate
+ * @property string|null $rd_hol_ot_rate
+ * @property string|null $rd_sh_rate
+ * @property string|null $rd_sh_ot_rate
+ * @property string|null $cash_bond
+ * @property string|null $sil
+ * @property string|null $ecola
+ * @property string|null $retirement_pay
+ * @property string|null $thirteenth_month_pay
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\User|null $assignedOfficer
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FirstMonthPerformanceEvaluationForm> $firstMonthPerformanceEvaluationForms
+ * @property-read int|null $first_month_performance_evaluation_forms_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\RequirementTransmittalForm> $requirementTransmittalForm
+ * @property-read int|null $requirement_transmittal_form_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @property-read int|null $users_count
+ *
+ * @method static \Database\Factories\DetachmentFactory factory($count = null, $state = [])
+ * @method static Builder<static>|Detachment newModelQuery()
+ * @method static Builder<static>|Detachment newQuery()
+ * @method static Builder<static>|Detachment query()
+ * @method static Builder<static>|Detachment whereApprovedAt($value)
+ * @method static Builder<static>|Detachment whereApprovedBy($value)
+ * @method static Builder<static>|Detachment whereAssignedOfficer($value)
+ * @method static Builder<static>|Detachment whereCashBond($value)
+ * @method static Builder<static>|Detachment whereCategory($value)
+ * @method static Builder<static>|Detachment whereCity($value)
+ * @method static Builder<static>|Detachment whereCreatedAt($value)
+ * @method static Builder<static>|Detachment whereEcola($value)
+ * @method static Builder<static>|Detachment whereHolOtRate($value)
+ * @method static Builder<static>|Detachment whereHolRate($value)
+ * @method static Builder<static>|Detachment whereHoursPerShift($value)
+ * @method static Builder<static>|Detachment whereHrRate($value)
+ * @method static Builder<static>|Detachment whereId($value)
+ * @method static Builder<static>|Detachment whereMaxHrsDuty($value)
+ * @method static Builder<static>|Detachment whereMaxOt($value)
+ * @method static Builder<static>|Detachment whereName($value)
+ * @method static Builder<static>|Detachment whereNdRate($value)
+ * @method static Builder<static>|Detachment whereOtRate($value)
+ * @method static Builder<static>|Detachment wherePhoneNumber($value)
+ * @method static Builder<static>|Detachment whereProvince($value)
+ * @method static Builder<static>|Detachment whereRdHolOtRate($value)
+ * @method static Builder<static>|Detachment whereRdHolRate($value)
+ * @method static Builder<static>|Detachment whereRdShOtRate($value)
+ * @method static Builder<static>|Detachment whereRdShRate($value)
+ * @method static Builder<static>|Detachment whereRddOtRate($value)
+ * @method static Builder<static>|Detachment whereRddRate($value)
+ * @method static Builder<static>|Detachment whereRetirementPay($value)
+ * @method static Builder<static>|Detachment whereShOtRate($value)
+ * @method static Builder<static>|Detachment whereShRate($value)
+ * @method static Builder<static>|Detachment whereSil($value)
+ * @method static Builder<static>|Detachment whereStatus($value)
+ * @method static Builder<static>|Detachment whereStreet($value)
+ * @method static Builder<static>|Detachment whereThirteenthMonthPay($value)
+ * @method static Builder<static>|Detachment whereUpdatedAt($value)
+ * @method static Builder<static>|Detachment whereZipCode($value)
  *
  * @mixin \Eloquent
  */

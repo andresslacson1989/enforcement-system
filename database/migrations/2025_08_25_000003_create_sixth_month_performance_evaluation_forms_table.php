@@ -27,7 +27,7 @@ return new class extends Migration
             $table->string('employee_number')->nullable();
             $table->string('job_title')->nullable();
             $table->foreignId('detachment_id')->constrained('detachments')->onDelete('cascade');
-            $table->string('status')->default('pending');
+            $table->string('status')->default('submitted');
 
             // Performance Criteria Ratings
             $table->string('attendance_punctuality_a');

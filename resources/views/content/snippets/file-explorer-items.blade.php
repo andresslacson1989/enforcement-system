@@ -1,11 +1,11 @@
 @php
     // Helper to map category names to icons and colors
     $category_styles = [
-        'licenses' => ['icon' => 'ti-license', 'color' => 'primary'],
-        'documents' => ['icon' => 'ti-file-text', 'color' => 'info'],
-        'images' => ['icon' => 'ti-photo', 'color' => 'success'],
-        'pdfs' => ['icon' => 'ti-file-type-pdf', 'color' => 'danger'],
-        'default' => ['icon' => 'ti-file', 'color' => 'secondary'],
+        'licenses' => ['icon' => 'tabler-license', 'color' => 'primary'],
+        'documents' => ['icon' => 'tabler-file-text', 'color' => 'info'],
+        'images' => ['icon' => 'tabler-photo', 'color' => 'success'],
+        'pdfs' => ['icon' => 'tabler-file-type-pdf', 'color' => 'danger'],
+        'default' => ['icon' => 'tabler-file', 'color' => 'secondary'],
     ];
 @endphp
 

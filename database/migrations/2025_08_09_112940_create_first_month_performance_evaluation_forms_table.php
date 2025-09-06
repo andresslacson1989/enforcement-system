@@ -30,7 +30,7 @@ return new class extends Migration
 
             // actions
             $table->dateTime('meeting_date')->nullable();
-            $table->string('status')->default('pending');
+            $table->string('status')->default('submitted');
             $table->boolean('printed')->default(false);
             $table->boolean('times_printed')->default(false);
             $table->dateTime('date_last_printed')->nullable();

@@ -30,6 +30,8 @@ return new class extends Migration
                 ->constrained('detachments')
                 ->onDelete('cascade');
 
+            $table->string('status')->default('submitted');
+
             // Form specific data
             $table->date('evaluation_date')->nullable();
             $table->date('period_review_start_date')->nullable();
@@ -69,9 +71,6 @@ return new class extends Migration
             $table->string('overall_standing')->nullable();
             $table->text('supervisor_comment')->nullable();
             $table->text('security_comment')->nullable();
-
-            // Signatures
-            $table->string('status')->default('pending');
 
             $table->timestamps();
         });

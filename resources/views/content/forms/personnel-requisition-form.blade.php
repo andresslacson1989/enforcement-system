@@ -43,10 +43,9 @@
 
 @section('content')
     @if($submission)
-
         <div class="row">
             <div class="col-12">
-                <form @can(config("permit.edit ".$form_name.".name"))  action="{{ route('forms.store', 'personnel-requisition-form') }}" method="POST" id="personnel_requisition_form" @endcan>
+                <form id="{{ str_replace(' ', '-', $form_name) }}" method="PUT" @can(config("permit.edit ".$form_name.".name"))  action="{{ route('forms.update', str_replace(' ', '-', $form_name) ) }}" @endcan>
                     <div class="card">
                         @include('content.snippets.form_header')
                         <div class="card-body pt-6">
@@ -201,7 +200,7 @@
     @else
         <div class="row">
             <div class="col-12">
-                <form @can(config("permit.edit ".$form_name.".name"))  action="{{ route('forms.store', 'personnel-requisition-form') }}" method="POST" id="personnel_requisition_form" @endcan>
+                <form id="{{ str_replace(' ', '-', $form_name) }}" method="POST" @can(config("permit.fill ".$form_name.".name"))  action="{{ route('forms.store', str_replace(' ', '-', $form_name) ) }}" @endcan>
                     <div class="card">
                         @include('content.snippets.form_header')
                         <div class="card-body pt-6">

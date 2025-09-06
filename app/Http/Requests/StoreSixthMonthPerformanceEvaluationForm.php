@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreSixthMonthPerformanceEvaluationForm extends FormRequest
@@ -14,17 +15,17 @@ class StoreSixthMonthPerformanceEvaluationForm extends FormRequest
         // It's good practice to check for permissions here.
         // This can be adjusted based on your exact permission names.
         if ($this->isMethod('POST')) {
-            return $this->user()->can('fill Sixth Month Performance Evaluation Form');
+            return $this->user()->can(config('permit.fill sixth month performance evaluation form.name'));
         }
 
         // For updates (PUT/PATCH)
-        return $this->user()->can('edit Sixth Month Performance Evaluation Form');
+        return $this->user()->can(config('permit.edit sixth month performance evaluation form'));
     }
 
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
+     * @return array<string, ValidationRule|array|string>
      */
     public function rules(): array
     {
@@ -72,14 +73,14 @@ class StoreSixthMonthPerformanceEvaluationForm extends FormRequest
 
         // Add rules that ONLY apply when CREATING a new record (store).
         if ($this->isMethod('POST')) {
-            $rules['detachment_id'] = 'required|exists:detachments,id';
-            $rules['submitted_by'] = 'required|exists:users,id';
-            $rules['employee_number'] = 'nullable|string|max:255';
+            $rules = array_merge($rules, [
+                'employee_id' => 'required|exists:users,id',
+                'employee_number' => 'nullable|string',
+                'detachment_id' => 'required|exists:detachments,id',
+                'submitted_by' => 'required|exists:users,id',
+            ]);
         }
 
-        // This rule is needed for both create and update, but must be first.
-        return [
-            'employee_id' => 'required|exists:users,id',
-        ] + $rules;
+        return $rules;
     }
 }

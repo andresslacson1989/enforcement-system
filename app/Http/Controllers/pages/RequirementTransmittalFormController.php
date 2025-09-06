@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\pages;
 
+use App\Http\Classes\FormClass;
 use App\Jobs\SendAndBroadcastNotification;
 use App\Models\RequirementTransmittalForm;
 use Illuminate\Http\Request;
@@ -11,28 +12,32 @@ class RequirementTransmittalFormController
 {
     public function remarks(Request $request)
     {
+        foreach ($request->all() as $key => $item) {
+            if ($item == 'on') {
+                $request->request->set($key, true);
+            }
+        }
+
         try {
             $request->validate([
-                'id' => 'required|integer',
-                'qualified_for_loan' => 'nullable|boolean',
-                'complete_requirements' => 'nullable|boolean',
+                'form_id' => 'required|integer',
+                'qualified_for_loan' => 'sometimes|boolean',
+                'complete_requirements' => 'sometimes|boolean',
                 'form_type' => 'required|string',
             ]);
 
-            $id = $request->id;
-            $qualified_for_loan = $request->qualified_for_loan;
-            $complete_requirements = $request->complete_requirements;
+            $id = $request->form_id;
             $form_type = $request->form_type;
             $user = Auth::user();
 
             $form = RequirementTransmittalForm::find($id);
-            $form->qualified_for_loan = $qualified_for_loan;
-            $form->complete_requirements = $complete_requirements;
+            $form->qualified_for_loan = $request->qualified_for_loan ?? false;
+            $form->complete_requirements = $request->complete_requirements ?? false;
             $form->save();
 
             // parameters to send
             $form_name = 'Requirement Transmittal Form';
-            $users_id = [$form->submitted_by, $form->employee_id]; // submitted by and employee
+            $users_id = [$form->employee_id]; // submitted by and employee
             $form_id = $form->id;
             $title = $form_name;
             $message = ucfirst($user->name)." has updated  $form_type request.";
@@ -43,9 +48,14 @@ class RequirementTransmittalFormController
             SendAndBroadcastNotification::dispatch($title, $message, $link, $users_id);
 
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Error', 'error' => $e->getMessage()], 500);
+            return (new FormClass)->sendErrorMessage($e);
         }
 
-        return response()->json(['message' => 'Success', 'form_id' => $form->id]);
+        return response()->json(['message' => 'Success', 'text' => 'Successfully updated remarks', 'icon' => 'success', 'form_id' => $form->id, 'form_name' => $form_type]);
+    }
+
+    public function qualified()
+    {
+        dd('test');
     }
 }

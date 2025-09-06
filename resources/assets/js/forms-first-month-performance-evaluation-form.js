@@ -5,75 +5,80 @@
 'use strict';
 
 $(function () {
-  const form = $('#first-month-performance-evaluation-form');
   $('.select2').select2({
     dropdownParent: $('#users_modal .modal-body')
   });
-  form.on('submit', function (e) {
-    e.preventDefault(); // Prevent the default form submission
 
-    // Show a simple confirmation SweetAlert
-    Swal.fire({
-      title: 'Are you sure?',
-      text: 'This action will submit the evaluation.',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, submit it!',
-      cancelButtonText: 'Cancel'
-    }).then(result => {
-      // Check if the user clicked the "confirm" button.
-      if (result.isConfirmed) {
-        // If confirmed, proceed with the AJAX form submission.
-        // NOTE: The line for setting the meeting_date_input has been removed.
-        const url = form.attr('action');
-        const formData = form.serialize();
-        Swal.fire({
-          title: 'Please Wait!',
-          text: 'Processing your request...',
-          allowOutsideClick: false,
-          showConfirmButton: false, // This hides the "OK" button
-          willOpen: () => {
-            Swal.showLoading(); // 2. Show the spinner
-          }
-        });
+  const form = $('#first-month-performance-evaluation-form');
+  if (form.length) {
+    form.on('submit', function (e) {
+      e.preventDefault(); // Prevent the default form submission
 
-        $.ajax({
-          type: 'POST',
-          url: url,
-          data: formData,
-          headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-          },
-          success: function (data) {
-            Swal.fire({
-              title: data.message,
-              text: data.text,
-              icon: data.icon,
-              customClass: {
-                confirmButton: 'btn btn-primary'
-              },
-              buttonsStyling: false
-            }).then(function () {
-              if (data.message === 'Success') {
-                window.location.href = '/form/view/first-month-performance-evaluation-form/' + data.form_id;
-              }
-            });
-          },
-          error: jqXHR => {
-            Swal.fire({
-              icon: jqXHR.responseJSON.icon || 'error',
-              title: jqXHR.responseJSON.message || 'An error occurred!',
-              text: jqXHR.responseJSON.text, // Use the 'text' from our JSON response
-              customClass: {
-                confirmButton: 'btn btn-primary'
-              },
-              buttonsStyling: false
-            });
-          }
-        });
-      }
+      // Show a simple confirmation SweetAlert
+      Swal.fire({
+        title: 'Are you sure?',
+        text: 'This action will submit the form.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, submit it!',
+        cancelButtonText: 'Cancel'
+      }).then(result => {
+        // Check if the user clicked the "confirm" button.
+        if (result.isConfirmed) {
+          const url = form.attr('action');
+          const type = form.attr('method');
+          const post_data = form.serialize();
+
+          // Show a loading indicator
+          Swal.fire({
+            title: 'Please Wait!',
+            text: 'Processing your request...',
+            allowOutsideClick: false,
+            showConfirmButton: false, // This hides the "OK" button
+            willOpen: () => {
+              Swal.showLoading(); // 2. Show the spinner
+            }
+          });
+
+          $.ajax({
+            type: type,
+            url: url,
+            data: post_data,
+            headers: {
+              'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function (data) {
+              Swal.fire({
+                title: data.message,
+                text: data.text,
+                icon: data.icon,
+                customClass: {
+                  confirmButton: 'btn btn-primary'
+                },
+                buttonsStyling: false
+              }).then(function () {
+                if (data.message === 'Success') {
+                  window.location.href = '/form/view/' + data.form_name + '/' + data.form_id;
+                }
+              });
+            },
+            error: function (xhr, status, error) {
+              console.log(xhr, status, error);
+              Swal.fire({
+                title: 'Error',
+                text: xhr.responseJSON.message,
+                icon: 'error',
+                customClass: {
+                  confirmButton: 'btn btn-primary'
+                },
+                buttonsStyling: false
+              });
+            }
+          });
+        }
+      });
     });
-  });
+  }
 
   //fetch employee data
   // Listen for the 'change' event on your employee dropdown
